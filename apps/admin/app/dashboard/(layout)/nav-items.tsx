@@ -42,17 +42,11 @@ export const navItems: HeaderNavItem[] = [
   {
     title: "Orders",
     href: `${DASHBOARD_ROOT_PATH}/orders`,
-    icon: Package2,
-    subItems: [
-      {
-        title: "Drafts",
-        href: `${DASHBOARD_ROOT_PATH}/draft-orders`,
-      },
-    ]
+    icon: Package2
   },
   {
     title: "Customers",
-    href: `${DASHBOARD_ROOT_PATH}/orders`,
+    href: `${DASHBOARD_ROOT_PATH}/customers`,
     icon: Users2,
   },
 ];

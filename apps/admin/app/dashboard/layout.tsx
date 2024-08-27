@@ -14,7 +14,7 @@ type DashboardLayoutProps = Readonly<{
 export default function DashboardLayout({ children }: DashboardLayoutProps) {
   return (
     <div className="flex">
-      <aside className="fixed top-0 md:w-60 z-20">
+      <aside className="fixed top-0 md:w-60 z-20 bg-white">
         <Sheet>
           <SheetTrigger asChild>
             <Button
@@ -38,7 +38,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
         <SearchBar />
         <AccountDropdown />
       </header>
-      <main className="px-4 md:ml-60 pt-20 w-full bg-slate-50">{children}</main>
+      <main className="px-4 md:ml-60 pt-20 w-full bg-slate-50 min-h-screen">{children}</main>
     </div>
   );
 }
