@@ -1,0 +1,108 @@
+# ------------------------------------------------------
+# THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
+# ------------------------------------------------------
+
+"""AuthSignin"""
+type AuthSignin {
+  accessToken: String!
+  refreshToken: String!
+}
+
+input AuthSigninInput {
+  email: String!
+  password: String!
+}
+
+"""AuthSignout"""
+type AuthSignout {
+  success: Boolean!
+}
+
+"""
+A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date-time format.
+"""
+scalar DateTime
+
+type Mutation {
+  createUser(input: UserCreateInput!): User!
+
+  """Refresh auth token"""
+  refresh: AuthSignin!
+
+  """Sign in"""
+  signin(input: AuthSigninInput!): AuthSignin!
+
+  """Sign out"""
+  signout: AuthSignout!
+  updateUser(input: UserUpdateInput!): User!
+}
+
+type Query {
+  """Get current user"""
+  me: User!
+  user(id: String!): User!
+  users(cursor: String, skip: Int! = 0, sortOrder: SortOrder, take: Int! = 25): [User!]!
+}
+
+enum SortOrder {
+  ASC
+  DESC
+}
+
+"""user"""
+type User {
+  """Date the User was created"""
+  createdAt: DateTime!
+
+  """Email of the User"""
+  email: String!
+
+  """Whether the User email is verified"""
+  emailVerified: Boolean!
+
+  """First name of the User"""
+  firstName: String
+
+  """ID of the User"""
+  id: ID!
+
+  """URL of the User image"""
+  imageUrl: String
+
+  """Last name of the User"""
+  lastName: String
+
+  """Date the User was last updated"""
+  updatedAt: DateTime!
+}
+
+input UserCreateInput {
+  """Email of the User"""
+  email: String!
+
+  """First name of the User"""
+  firstName: String
+
+  """URL of the User image"""
+  imageUrl: String
+
+  """Last name of the User"""
+  lastName: String
+
+  """Password of the User"""
+  password: String
+}
+
+input UserUpdateInput {
+  """First name of the User"""
+  firstName: String
+
+  """ID of the User"""
+  id: String!
+
+  """URL of the User image"""
+  imageUrl: String
+
+  """Last name of the User"""
+  lastName: String
+}
