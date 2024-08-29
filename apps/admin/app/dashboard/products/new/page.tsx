@@ -33,7 +33,7 @@ import {
 } from '@libs/components/ui/select';
 import { Input } from '@libs/components/ui/input';
 import { Textarea } from '@libs/components/ui/textarea';
-import { PlusCircle } from 'lucide-react';
+import { ArrowLeft, PlusCircle } from 'lucide-react';
 
 const FormSchema = z.object({
   title: z.string().min(2, {
@@ -84,7 +84,12 @@ export default function CreateProductPage() {
         className="container mx-auto space-y-6"
       >
         <div className="flex flex-row justify-between items-center pb-4">
-          <h3 className="text-xl text-slate-500">Create a new Product</h3>
+          <div className="flex items-center gap-2">
+            <Button type="button" variant="ghost" className="p-2">
+              <ArrowLeft />
+            </Button>
+            <h3 className="text-xl text-slate-500">Create product</h3>
+          </div>
           <Link href="/dashboard/products/new">
             <Button type="submit">Save</Button>
           </Link>
@@ -100,7 +105,10 @@ export default function CreateProductPage() {
                     <FormItem>
                       <FormLabel>Title</FormLabel>
                       <FormControl>
-                        <Input placeholder="Gaming controller" {...field} />
+                        <Input
+                          placeholder="Universal Gaming controller"
+                          {...field}
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -157,7 +165,10 @@ export default function CreateProductPage() {
                     <FormItem>
                       <FormLabel>Category</FormLabel>
                       <FormControl>
-                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <Select
+                          onValueChange={field.onChange}
+                          defaultValue={field.value}
+                        >
                           <SelectTrigger>
                             <SelectValue placeholder="Select a category" />
                           </SelectTrigger>
@@ -245,7 +256,10 @@ export default function CreateProductPage() {
                       <FormItem>
                         <FormLabel>Unit</FormLabel>
                         <FormControl>
-                          <Select onValueChange={field.onChange} defaultValue={field.value}>
+                          <Select
+                            onValueChange={field.onChange}
+                            defaultValue={field.value}
+                          >
                             <SelectTrigger>
                               <SelectValue placeholder="Unit" />
                             </SelectTrigger>
@@ -342,7 +356,10 @@ export default function CreateProductPage() {
                     <FormItem>
                       <FormLabel>Status</FormLabel>
                       <FormControl>
-                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <Select
+                          onValueChange={field.onChange}
+                          defaultValue={field.value}
+                        >
                           <SelectTrigger>
                             <SelectValue placeholder="Status" />
                           </SelectTrigger>
@@ -370,7 +387,10 @@ export default function CreateProductPage() {
                     <FormItem>
                       <FormLabel>Sales channels</FormLabel>
                       <FormControl>
-                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <Select
+                          onValueChange={field.onChange}
+                          defaultValue={field.value}
+                        >
                           <SelectTrigger>
                             <SelectValue />
                           </SelectTrigger>
@@ -400,7 +420,10 @@ export default function CreateProductPage() {
                     <FormItem>
                       <FormLabel>Tags</FormLabel>
                       <FormControl>
-                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <Select
+                          onValueChange={field.onChange}
+                          defaultValue={field.value}
+                        >
                           <SelectTrigger>
                             <SelectValue />
                           </SelectTrigger>
@@ -422,7 +445,10 @@ export default function CreateProductPage() {
                     <FormItem>
                       <FormLabel>Collections</FormLabel>
                       <FormControl>
-                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <Select
+                          onValueChange={field.onChange}
+                          defaultValue={field.value}
+                        >
                           <SelectTrigger>
                             <SelectValue />
                           </SelectTrigger>
