@@ -1,13 +1,13 @@
-import type { Metadata } from "next";
-import { Inter } from "next/font/google";
-import { cn } from "@libs/utils";
-import "@config/globals.css";
-
-const inter = Inter({ subsets: ["latin"] });
+import type { Metadata } from 'next';
+import { Inter } from 'next/font/google';
+import { cn } from '@libs/utils';
+import '@config/globals.css';
+import { ThemeProvider } from 'next-themes';
+const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
-  title: "Dashboard",
-  description: "Manage your packages & bookings",
+  title: 'Dashboard',
+  description: 'Manage your packages & bookings',
 };
 
 export default function RootLayout({
@@ -17,7 +17,14 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={cn(inter.className, "min-h-full")}>{children}
+      <body className={cn(inter.className, 'min-h-full')}>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem={true}
+        >
+          {children}
+        </ThemeProvider>
       </body>
     </html>
   );
