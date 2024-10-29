@@ -9,7 +9,12 @@ async function bootstrap() {
   app.use(cookieParser(process.env.COOKIE_SECRET!));
   app.setGlobalPrefix(globalPrefix);
   app.useGlobalPipes(new ValidationPipe());
-  app.enableCors();
+  
+  const allowedOrigins = process.env.ALLOWED_ORIGINS?.split(',') || [];
+  app.enableCors({
+    origin: allowedOrigins,
+    credentials: true
+  });
 
   const port = process.env.PORT! || 4100;
   await app.listen(port);

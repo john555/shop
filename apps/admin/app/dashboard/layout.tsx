@@ -1,17 +1,64 @@
-import { ReactNode } from "react";
-import { Button } from "@components/ui/button";
-import { Sheet, SheetContent, SheetTrigger } from "@components/ui/sheet";
+'use client';
 
-import { Menu } from "lucide-react";
-import { NavItems } from "./(layout)/nav-items";
-import { SearchBar } from "./(layout)/search-bar";
-import { AccountDropdown } from "./(layout)/account-dropdown";
+import { ReactNode, useState, useEffect } from 'react';
+import { redirect } from 'next/navigation';
+import { gql } from '@apollo/client';
+import { client } from '@/utils/apollo';
+import { cache } from 'react';
+import { Button } from '@components/ui/button';
+import { Sheet, SheetContent, SheetTrigger } from '@components/ui/sheet';
+
+import { Menu } from 'lucide-react';
+import { NavItems } from './(layout)/nav-items';
+import { SearchBar } from './(layout)/search-bar';
+import { AccountDropdown } from './(layout)/account-dropdown';
 
 type DashboardLayoutProps = Readonly<{
   children: ReactNode;
 }>;
 
+const ME_QUERY = gql`
+  query me {
+    me {
+      id
+      email
+      emailVerified
+      imageUrl
+      updatedAt
+    }
+  }
+`;
+
+const getUser = cache(async () => {
+  const { data } = await client.query({
+    query: ME_QUERY,
+  });
+  return data?.me;
+});
+
 export default function DashboardLayout({ children }: DashboardLayoutProps) {
+  const [isLoading, setIsLoading] = useState(true);
+  const [user, setUser] = useState(null);
+
+  useEffect(() => {
+    getUser()
+      .then((user) => {
+        setUser(user);
+      })
+      .finally(() => {
+        setIsLoading(false);
+      });
+  }, []);
+
+  if (!isLoading && !user) {
+    redirect('/auth/signin');
+  }
+  
+
+  if (isLoading && !user) {
+    return <>Loading...</>;
+  }
+
   return (
     <div className="flex">
       <aside className="fixed top-0 md:w-60 z-20 bg-white">
@@ -38,7 +85,9 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
         <SearchBar />
         <AccountDropdown />
       </header>
-      <main className="px-4 md:ml-60 pt-20 w-full bg-slate-50 min-h-screen">{children}</main>
+      <main className="px-4 md:ml-60 pt-20 w-full bg-slate-50 min-h-screen">
+        {children}
+      </main>
     </div>
   );
 }

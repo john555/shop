@@ -18,6 +18,19 @@ type AuthSignout {
   success: Boolean!
 }
 
+"""AuthSignup"""
+type AuthSignup {
+  accessToken: String!
+  refreshToken: String!
+}
+
+input AuthSignupInput {
+  email: String!
+  firstName: String
+  lastName: String
+  password: String!
+}
+
 """
 A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date-time format.
 """
@@ -34,6 +47,9 @@ type Mutation {
 
   """Sign out"""
   signout: AuthSignout!
+
+  """Sign up new user"""
+  signup(input: AuthSignupInput!): AuthSignup!
   updateUser(input: UserUpdateInput!): User!
 }
 

@@ -41,7 +41,7 @@ import {
 import { Card } from '@components/ui/card';
 import React from 'react';
 import { Product } from '@libs/common/types/product';
-import products  from '@utils/fixtures/products.json';
+import products  from '@/utils/fixtures/products.json';
 
 const columns: ColumnDef<Product>[] = [
   {

@@ -1,6 +1,6 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { AuthSigninInput, TokenPayload } from './auth.dto';
-import { AuthSignin } from './auth.entity';
+import { AuthSigninInput, AuthSignupInput, TokenPayload } from './auth.dto';
+import { AuthSignin, AuthSignup } from './auth.entity';
 import { JwtService } from '@nestjs/jwt';
 import { UserService } from '@api/user/user.service';
 import { comparePassword } from '@api/utils/hashing';
@@ -45,6 +45,24 @@ export class AuthService {
     if (!(await comparePassword(refreshToken, user.refreshTokenHash))) {
       throw new BadRequestException('Invalid refresh token');
     }
+
+    const result = await this.createTokensForUser(user);
+    await this.userService.updateRefreshToken(user.id, result.refreshToken);
+    return result;
+  }
+
+  async signup(input: AuthSignupInput): Promise<AuthSignup> {
+    const existingUser = await this.userService.getUserByEmail(input.email);
+    if (existingUser) {
+      throw new BadRequestException('Email already exists');
+    }
+
+    const user = await this.userService.create({
+      email: input.email,
+      password: input.password,
+      firstName: input.firstName,
+      lastName: input.lastName,
+    });
 
     const result = await this.createTokensForUser(user);
     await this.userService.updateRefreshToken(user.id, result.refreshToken);

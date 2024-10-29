@@ -1,8 +1,8 @@
 import { UseGuards } from '@nestjs/common';
 import { Args, Context, Mutation, Query, Resolver } from '@nestjs/graphql';
-import { AuthSignin, AuthSignout } from './auth.entity';
+import { AuthSignin, AuthSignout, AuthSignup } from './auth.entity';
 import { AuthService } from './auth.service';
-import { AuthSigninInput } from './auth.dto';
+import { AuthSigninInput, AuthSignupInput } from './auth.dto';
 import { User } from '@api/user/user.entity';
 import { JwtAuthGuard } from './guard/jwt-auth.guard';
 import { JwtRefreshGuard } from './guard/jwt-refresh.guard';
@@ -51,5 +51,17 @@ export class AuthResolver {
     return {
       success: true,
     };
+  }
+
+  @Mutation(() => AuthSignup, { description: 'Sign up new user' })
+  async signup(
+    @Context() context: any,
+    @Args('input') input: AuthSignupInput
+  ): Promise<AuthSignin> {
+    const result = await this.authService.signup(input);
+
+    this.authService.setAuthCookies(context.res, result);
+
+    return result;
   }
 }

@@ -17,7 +17,7 @@
     "paths": {
       "@libs/*": ["libs/*"],
       "@api/*": ["libs/api/*"],
-      "@utils/*": ["libs/utils/*"],
+      "@/utils/*": ["libs/utils/*"],
       "@admin/*": ["libs/admin/*"],
       "@components": ["libs/components"],
       "@components/*": ["libs/components/*"],
