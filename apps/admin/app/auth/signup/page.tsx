@@ -58,7 +58,7 @@ export default function SignupPage() {
       setIsLoading(true);
       setError(null);
       
-      const result = await client.mutate({
+      await client.mutate({
         mutation: SIGNUP_MUTATION,
         variables: {
           input: data

@@ -63,7 +63,7 @@ const errorLink = onError(({ graphQLErrors, operation, forward }) => {
           .catch(() => {
             isRefreshing = false;
             pendingRequests.length = 0;
-            window.location.href = '/login';
+            window.location.href = '/auth/signin';
           });
       });
     }

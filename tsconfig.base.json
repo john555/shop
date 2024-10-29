@@ -21,7 +21,8 @@
       "@admin/*": ["libs/admin/*"],
       "@components": ["libs/components"],
       "@components/*": ["libs/components/*"],
-      "@config/*": ["config/*"]
+      "@config/*": ["config/*"],
+      "@/hooks/*": ["libs/admin/hooks/*"]
     }
   },
   "exclude": ["node_modules", "tmp"]

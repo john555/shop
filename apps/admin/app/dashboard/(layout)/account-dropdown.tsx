@@ -6,18 +6,34 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@components/ui/dropdown-menu";
+} from '@components/ui/dropdown-menu';
 
-import { Avatar, AvatarImage, AvatarFallback } from "@components/ui/avatar";
-import Link from "next/link";
+import { Avatar, AvatarImage, AvatarFallback } from '@components/ui/avatar';
+import { useCurrentUser } from '@libs/admin/hooks/useCurrentUser';
 
 export function AccountDropdown() {
+  const { user, isLoading, signOut } = useCurrentUser();
+
+  if (isLoading) {
+    return null;
+  }
+
+  if (!user && !isLoading) {
+    return null;
+  }
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger>
         <Avatar>
-          <AvatarImage src="https://github.com/john555.png" alt="@john555" />
-          <AvatarFallback>CN</AvatarFallback>
+          <AvatarImage
+            src={user.imageUrl}
+            alt={`${user.firstName} ${user.lastName}`}
+          />
+          <AvatarFallback>
+            {user.firstName?.[0]}
+            {user.lastName?.[0]}
+          </AvatarFallback>
         </Avatar>
       </DropdownMenuTrigger>
       <DropdownMenuContent
@@ -27,10 +43,7 @@ export function AccountDropdown() {
         <DropdownMenuLabel>My Account</DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuGroup>
-          <DropdownMenuItem>Account</DropdownMenuItem>
-          <DropdownMenuItem>Billing</DropdownMenuItem>
-          <DropdownMenuItem>Team</DropdownMenuItem>
-          <DropdownMenuItem>Log out</DropdownMenuItem>
+          <DropdownMenuItem onClick={signOut}>Log out</DropdownMenuItem>
         </DropdownMenuGroup>
       </DropdownMenuContent>
     </DropdownMenu>
