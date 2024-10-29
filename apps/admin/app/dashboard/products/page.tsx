@@ -1,8 +1,10 @@
 'use client';
 
+import { ProductsTable } from '@libs/admin/features/products-table';
 import { Button } from '@libs/components/ui/button';
 import Link from 'next/link';
 import * as React from 'react';
+
 
 export default function ProductsPage() {
   return (
@@ -13,6 +15,7 @@ export default function ProductsPage() {
           <Button>Create product</Button>
         </Link>
       </div>
+      <ProductsTable />
     </div>
   );
 }

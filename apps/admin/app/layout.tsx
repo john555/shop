@@ -3,7 +3,7 @@ import { Inter } from 'next/font/google';
 import { cn } from '@libs/utils';
 import '@config/globals.css';
 import { ThemeProvider } from 'next-themes';
-const inter = Inter({ subsets: ['latin'] });
+const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
 
 export const metadata: Metadata = {
   title: 'Dashboard',
