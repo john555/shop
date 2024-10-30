@@ -1,4 +1,4 @@
-import { Button } from '@libs/components/ui/button';
+import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import * as React from 'react';
 

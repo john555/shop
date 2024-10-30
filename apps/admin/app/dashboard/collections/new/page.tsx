@@ -1,6 +1,6 @@
 'use client';
 
-import { Button } from '@libs/components/ui/button';
+import { Button } from '@/components/ui/button';
 
 import {
   Card,
@@ -8,7 +8,7 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-} from '@libs/components/ui/card';
+} from '@/components/ui/card';
 import Link from 'next/link';
 import * as React from 'react';
 import { z } from 'zod';
@@ -22,18 +22,18 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from '@libs/components/ui/form';
+} from '@/components/ui/form';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@libs/components/ui/select';
-import { Input } from '@libs/components/ui/input';
-import { Textarea } from '@libs/components/ui/textarea';
-import { RadioGroup, RadioGroupItem } from '@libs/components/ui/radio-group';
-import { Label } from '@libs/components/ui/label';
+} from '@/components/ui/select';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Label } from '@/components/ui/label';
 import { ArrowLeft } from 'lucide-react';
 
 const FormSchema = z.object({

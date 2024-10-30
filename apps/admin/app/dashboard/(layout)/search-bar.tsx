@@ -10,8 +10,8 @@ import {
   CommandList,
   CommandSeparator,
   CommandShortcut,
-} from "@components/ui/command";
-import { cn } from "@libs/utils";
+} from "@/components/ui/command";
+import { cn } from "@/lib/utils";
 import { useState } from "react";
 
 function SearchBarContent({

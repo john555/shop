@@ -6,8 +6,8 @@ module.exports = {
   darkMode: ['class'],
   content: [
     join(__dirname, '../apps/admin/app/**/*.{ts,tsx}'),
-    join(__dirname, '../libs/components/**/*.{ts,tsx}'),
-    join(__dirname, '../libs/admin/**/*.{ts,tsx}'),
+    join(__dirname, '../components/**/*.{ts,tsx}'),
+    join(__dirname, '../lib/admin/**/*.{ts,tsx}'),
   ],
   theme: {
     container: {

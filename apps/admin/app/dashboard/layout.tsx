@@ -2,14 +2,14 @@
 
 import { ReactNode } from 'react';
 import { redirect } from 'next/navigation';
-import { Button } from '@components/ui/button';
-import { Sheet, SheetContent, SheetTrigger } from '@components/ui/sheet';
+import { Button } from '@/components/ui/button';
+import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 
 import { Menu } from 'lucide-react';
 import { NavItems } from './(layout)/nav-items';
 import { SearchBar } from './(layout)/search-bar';
 import { AccountDropdown } from './(layout)/account-dropdown';
-import { useCurrentUser } from '@libs/admin/hooks/useCurrentUser';
+import { useCurrentUser } from '@/lib/admin/hooks/useCurrentUser';
 
 type DashboardLayoutProps = Readonly<{
   children: ReactNode;

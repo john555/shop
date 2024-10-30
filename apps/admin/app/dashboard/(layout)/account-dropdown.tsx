@@ -6,10 +6,10 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from '@components/ui/dropdown-menu';
+} from '@/components/ui/dropdown-menu';
 
-import { Avatar, AvatarImage, AvatarFallback } from '@components/ui/avatar';
-import { useCurrentUser } from '@libs/admin/hooks/useCurrentUser';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
+import { useCurrentUser } from '@/lib/admin/hooks/useCurrentUser';
 
 export function AccountDropdown() {
   const { user, isLoading, signOut } = useCurrentUser();

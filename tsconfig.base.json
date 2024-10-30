@@ -15,15 +15,14 @@
     "skipDefaultLibCheck": true,
     "baseUrl": ".",
     "paths": {
-      "@libs/*": ["libs/*"],
+      "@/lib/*": ["lib/*"],
       "@/types/*": ["types/*"],
-      "@api/*": ["libs/api/*"],
-      "@/utils/*": ["libs/utils/*"],
-      "@admin/*": ["libs/admin/*"],
-      "@components": ["libs/components"],
-      "@components/*": ["libs/components/*"],
-      "@config/*": ["config/*"],
-      "@/hooks/*": ["libs/admin/hooks/*"]
+      "@/api/*": ["lib/api/*"],
+      "@/utils/*": ["lib/utils/*"],
+      "@/admin/*": ["lib/admin/*"],
+      "@/components/*": ["components/*"],
+      "@/config/*": ["config/*"],
+      "@/hooks/*": ["lib/admin/hooks/*"]
     }
   },
   "exclude": ["node_modules", "tmp"]

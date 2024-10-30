@@ -1,7 +1,7 @@
 'use client';
 
-import { ProductsTable } from '@libs/admin/features/products-table';
-import { Button } from '@libs/components/ui/button';
+import { ProductsTable } from '@/lib/admin/features/products-table';
+import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import * as React from 'react';
 

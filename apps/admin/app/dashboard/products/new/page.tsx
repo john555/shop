@@ -1,12 +1,12 @@
 'use client';
 
-import { Button } from '@libs/components/ui/button';
+import { Button } from '@/components/ui/button';
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
-} from '@libs/components/ui/card';
+} from '@/components/ui/card';
 import Link from 'next/link';
 import * as React from 'react';
 import { z } from 'zod';
@@ -19,16 +19,16 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from '@libs/components/ui/form';
+} from '@/components/ui/form';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@libs/components/ui/select';
-import { Input } from '@libs/components/ui/input';
-import { Textarea } from '@libs/components/ui/textarea';
+} from '@/components/ui/select';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import { ArrowLeft, GripVertical, PlusCircle, X, Upload } from 'lucide-react';
 import {
   Table,
@@ -37,9 +37,9 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@libs/components/ui/table';
-import { Checkbox } from '@libs/components/ui/checkbox';
-import { Separator } from '@libs/components/ui/separator';
+} from '@/components/ui/table';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Separator } from '@/components/ui/separator';
 import {
   DndContext,
   closestCenter,

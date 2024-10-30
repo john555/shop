@@ -4,9 +4,9 @@ import {
   TemplateModuleCreateInput,
   TemplateModuleUpdateInput,
 } from './template-module.dto';
-import { PrismaService } from '@api/prisma/prisma.service';
-import { PaginationArgs } from '@api/pagination/pagination.args';
-import { paginate } from '@api/pagination/paginate';
+import { PrismaService } from '@/api/prisma/prisma.service';
+import { PaginationArgs } from '@/api/pagination/pagination.args';
+import { paginate } from '@/api/pagination/paginate';
 
 @Injectable()
 export class TemplateModuleService {
