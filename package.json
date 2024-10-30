@@ -4,7 +4,8 @@
   "license": "MIT",
   "scripts": {
     "shadcn": "TS_NODE_PROJECT=apps/admin/tsconfig.json pnpm dlx shadcn-ui@latest",
-    "gen": "ts-node scripts/generate-module/main.ts"
+    "gen": "ts-node scripts/generate-module/main.ts",
+    "gen:types": "graphql-codegen"
   },
   "private": true,
   "dependencies": {
@@ -63,6 +64,9 @@
   "devDependencies": {
     "@babel/core": "^7.14.5",
     "@babel/preset-react": "^7.14.5",
+    "@graphql-codegen/cli": "^5.0.3",
+    "@graphql-codegen/typescript": "^4.1.1",
+    "@graphql-codegen/typescript-resolvers": "^4.4.0",
     "@nestjs/schematics": "^10.0.1",
     "@nestjs/testing": "^10.0.2",
     "@nx/eslint": "19.5.7",
@@ -76,6 +80,7 @@
     "@nx/web": "19.5.7",
     "@nx/webpack": "19.5.7",
     "@nx/workspace": "19.5.7",
+    "@parcel/watcher": "^2.4.1",
     "@swc-node/register": "~1.9.1",
     "@swc/core": "~1.5.7",
     "@swc/helpers": "~0.5.11",

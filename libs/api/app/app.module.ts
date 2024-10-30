@@ -23,7 +23,7 @@ import { Request, Response } from 'express';
               },
             }
           : false,
-      autoSchemaFile: join(process.cwd(), 'libs/common/types/api.schema.gql'),
+      autoSchemaFile: join(process.cwd(), 'types/api.schema.gql'),
       sortSchema: true,
     }),
     PrismaModule,

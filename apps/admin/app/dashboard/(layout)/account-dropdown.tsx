@@ -22,12 +22,16 @@ export function AccountDropdown() {
     return null;
   }
 
+  if (!user) {
+    return null;
+  }
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger>
         <Avatar>
           <AvatarImage
-            src={user.imageUrl}
+            src={user.imageUrl ?? ''}
             alt={`${user.firstName} ${user.lastName}`}
           />
           <AvatarFallback>

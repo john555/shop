@@ -16,6 +16,7 @@
     "baseUrl": ".",
     "paths": {
       "@libs/*": ["libs/*"],
+      "@/types/*": ["types/*"],
       "@api/*": ["libs/api/*"],
       "@/utils/*": ["libs/utils/*"],
       "@admin/*": ["libs/admin/*"],

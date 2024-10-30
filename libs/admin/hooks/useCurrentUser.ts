@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { gql } from '@apollo/client';
 import { client } from '@/utils/apollo';
-import { cache } from 'react';
+import { User } from '@/libs/common/types/api';
 
 const ME_QUERY = gql`
   query me {
@@ -24,16 +24,16 @@ const SIGNOUT_MUTATION = gql`
   }
 `;
 
-const getUser = cache(async () => {
-  const { data } = await client.query({
+const getUser = async (): Promise<User | null> => {
+  const { data } = await client.query<{ me: User | null }>({
     query: ME_QUERY,
   });
   return data?.me;
-});
+};
 
 export function useCurrentUser() {
   const [isLoading, setIsLoading] = useState(true);
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState<User | null>(null);
 
   useEffect(() => {
     getUser()
