@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { gql } from '@apollo/client';
 import { client } from 'lib/utils/apollo';
-import { User } from '@/lib/common/types/api';
+import { User } from '@/types/api';
 
 const ME_QUERY = gql`
   query me {
@@ -52,6 +52,6 @@ export function useCurrentUser() {
     setUser(null);
     window.location.href = '/auth/signin';
   };
-
+console.log(user)
   return { user, isLoading, signOut };
 }
