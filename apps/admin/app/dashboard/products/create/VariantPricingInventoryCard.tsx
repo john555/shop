@@ -3,20 +3,31 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Checkbox } from '@/components/ui/checkbox';
 import { FormField, FormItem, FormControl } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { UseFormReturn, UseFieldArrayReturn } from 'react-hook-form';
+import { UseFormReturn, useFieldArray } from 'react-hook-form';
 import { FormValues } from './types';
 
 interface VariantPricingInventoryCardProps {
   form: UseFormReturn<FormValues>;
-  optionFields: UseFieldArrayReturn['fields'];
-  variantFields: UseFieldArrayReturn['fields'];
 }
 
 export function VariantPricingInventoryCard({
   form,
-  optionFields,
-  variantFields,
 }: VariantPricingInventoryCardProps) {
+  const {
+    fields: optionFields,
+    append: appendOption,
+    remove: removeOption,
+    move: moveOption,
+  } = useFieldArray({
+    control: form.control,
+    name: 'options',
+  });
+
+  const { fields: variantFields } = useFieldArray({
+    control: form.control,
+    name: 'variants',
+  });
+
   return (
     <Card>
       <CardHeader>

@@ -1,36 +1,94 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { UseFormReturn, UseFieldArrayReturn } from 'react-hook-form';
+import { UseFormReturn } from 'react-hook-form';
+import { useFieldArray } from 'react-hook-form';
 import { FormValues } from './types';
 import { PlusCircle } from 'lucide-react';
-import { DndContext, DragEndEvent, closestCenter } from '@dnd-kit/core';
-import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
+import {  KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent, DndContext, closestCenter } from '@dnd-kit/core';
+import { SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { restrictToVerticalAxis } from '@dnd-kit/modifiers';
 import { SortableOption } from './SortableOption';
 
 interface VariantsCardProps {
   form: UseFormReturn<FormValues>;
-  optionFields: UseFieldArrayReturn['fields'];
-  appendOption: UseFieldArrayReturn['append'];
-  removeOption: UseFieldArrayReturn['remove'];
-  addOptionValues: (index: number, values: string) => void;
-  generateVariants: () => void;
-  toggleOptionCollapse: (index: number) => void;
-  sensors: any;
-  onDragEnd: (event: DragEndEvent) => void;
 }
 
 export function VariantsCard({
-  form,
-  optionFields,
-  appendOption,
-  removeOption,
-  addOptionValues,
-  generateVariants,
-  toggleOptionCollapse,
-  sensors,
-  onDragEnd,
+  form
 }: VariantsCardProps) {
+  const {
+    fields: optionFields,
+    append: appendOption,
+    remove: removeOption,
+    move: moveOption,
+  } = useFieldArray({
+    control: form.control,
+    name: 'options',
+  });
+
+  const addOptionValues = (optionIndex: number, values: string) => {
+    const newValues = values
+      .split(',')
+      .map((v) => v.trim())
+      .filter((v) => v !== '');
+    const currentValues = form.getValues(`options.${optionIndex}.values`) || [];
+    const updatedValues = [...new Set([...currentValues, ...newValues])];
+    form.setValue(`options.${optionIndex}.values`, updatedValues);
+  };
+
+  const generateVariants = () => {
+    const options = form.getValues('options');
+    if (options.length === 0) return;
+
+    const generateCombinations = (arrays: string[][]) => {
+      return arrays.reduce(
+        (acc, curr) => acc.flatMap((x) => curr.map((y) => [...x, y])),
+        [[]] as string[][]
+      );
+    };
+
+    const optionValues = options.map((option) => option.values || []);
+    const combinations = generateCombinations(optionValues);
+
+    const newVariants = combinations.map((combination) => ({
+      optionCombination: combination,
+      price: form.getValues('price'),
+      available: 0,
+    }));
+
+    form.setValue('variants', newVariants);
+  };
+
+  const toggleOptionCollapse = (index: number) => {
+    const currentOptions = form.getValues('options');
+    if (currentOptions[index]) {
+      currentOptions[index].isCollapsed = !currentOptions[index].isCollapsed;
+      form.setValue('options', currentOptions);
+    }
+  };
+
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
+
+  const onDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+
+    if (active.id !== over?.id) {
+      const oldIndex = optionFields.findIndex((item) => item.id === active.id);
+      const newIndex = optionFields.findIndex((item) => item.id === over?.id);
+      moveOption(oldIndex, newIndex);
+    }
+  };
+
+  function onSubmit(data: FormValues) {
+    console.log(data);
+  }
+
+
   return (
     <Card>
       <CardHeader>
