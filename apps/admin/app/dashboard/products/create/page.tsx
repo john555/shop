@@ -8,15 +8,15 @@ import { ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Form } from '@/components/ui/form';
 
-import { ProductDetailsCard } from './ProductDetailsCard';
-import { PricingCard } from './PricingCard';
-import { VariantsCard } from './VariantsCard';
-import { VariantPricingInventoryCard } from './VariantPricingInventoryCard';
-import { SEOCard } from './SEOCard';
-import { StatusCard } from './StatusCard';
-import { PublishingCard } from './PublishingCard';
-import { ProductOrganizationCard } from './ProductOrganizationCard';
-import { FormSchema, FormValues } from './types';
+import { ProductDetailsCard } from '../(components)/ProductDetailsCard';
+import { PricingCard } from '../(components)/PricingCard';
+import { VariantsCard } from '../(components)/VariantsCard';
+import { VariantPricingInventoryCard } from '../(components)/VariantPricingInventoryCard';
+import { SEOCard } from '../(components)/SEOCard';
+import { StatusCard } from '../(components)/StatusCard';
+import { PublishingCard } from '../(components)/PublishingCard';
+import { ProductOrganizationCard } from '../(components)/ProductOrganizationCard';
+import { FormSchema, FormValues } from '../(components)/types';
 
 export default function CreateProductPage() {
   const form = useForm<FormValues>({
@@ -38,11 +38,6 @@ export default function CreateProductPage() {
       variants: [],
       media: [],
     },
-  });
-
-  const { fields: optionFields, move: moveOption } = useFieldArray({
-    control: form.control,
-    name: 'options',
   });
 
   const { fields: variantFields } = useFieldArray({

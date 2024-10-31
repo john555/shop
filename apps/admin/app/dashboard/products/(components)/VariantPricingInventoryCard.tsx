@@ -15,9 +15,6 @@ export function VariantPricingInventoryCard({
 }: VariantPricingInventoryCardProps) {
   const {
     fields: optionFields,
-    append: appendOption,
-    remove: removeOption,
-    move: moveOption,
   } = useFieldArray({
     control: form.control,
     name: 'options',

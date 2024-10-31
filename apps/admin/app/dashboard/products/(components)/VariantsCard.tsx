@@ -84,11 +84,6 @@ export function VariantsCard({
     }
   };
 
-  function onSubmit(data: FormValues) {
-    console.log(data);
-  }
-
-
   return (
     <Card>
       <CardHeader>
