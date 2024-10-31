@@ -1,6 +1,18 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  FormField,
+  FormItem,
+  FormLabel,
+  FormControl,
+  FormMessage,
+} from '@/components/ui/form';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { UseFormReturn } from 'react-hook-form';
 import { FormValues } from './types';
 
@@ -8,7 +20,9 @@ interface ProductOrganizationCardProps {
   form: UseFormReturn<FormValues>;
 }
 
-export function ProductOrganizationCard({ form }: ProductOrganizationCardProps) {
+export function ProductOrganizationCard({
+  form,
+}: ProductOrganizationCardProps) {
   return (
     <Card>
       <CardHeader>
@@ -17,12 +31,36 @@ export function ProductOrganizationCard({ form }: ProductOrganizationCardProps) 
       <CardContent className="flex flex-col gap-4">
         <FormField
           control={form.control}
+          name="category"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Category</FormLabel>
+              <Select onValueChange={field.onChange} defaultValue={field.value}>
+                <FormControl>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select a category" />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  <SelectItem value="electronics">Electronics</SelectItem>
+                  <SelectItem value="clothing">Clothing</SelectItem>
+                  <SelectItem value="books">Books</SelectItem>
+                </SelectContent>
+              </Select>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
           name="tags"
           render={({ field }) => (
             <FormItem>
               <FormLabel>Tags</FormLabel>
               <Select
-                onValueChange={(value) => field.onChange([...field.value, value])}
+                onValueChange={(value) =>
+                  field.onChange([...field.value, value])
+                }
                 value={field.value[field.value.length - 1]}
               >
                 <FormControl>
@@ -47,7 +85,9 @@ export function ProductOrganizationCard({ form }: ProductOrganizationCardProps) 
             <FormItem>
               <FormLabel>Collections</FormLabel>
               <Select
-                onValueChange={(value) => field.onChange([...field.value, value])}
+                onValueChange={(value) =>
+                  field.onChange([...field.value, value])
+                }
                 value={field.value[field.value.length - 1]}
               >
                 <FormControl>

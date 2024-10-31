@@ -27,7 +27,8 @@ export const FormSchema = z.object({
     z.object({
       optionCombination: z.array(z.string()),
       price: z.number().min(0),
-      available: z.number().int().min(0),
+      available: z.number().int().min(0).optional(),
+      sku: z.string().optional(),
     })
   ),
   media: z.array(
@@ -36,6 +37,9 @@ export const FormSchema = z.object({
       url: z.string(),
     })
   ),
+  available: z.number().int().min(0).optional(),
+  sku: z.string().optional(),
+  trackInventory: z.boolean().optional(),
 });
 
 export type FormValues = z.infer<typeof FormSchema>;

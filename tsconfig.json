@@ -1,6 +1,7 @@
 {
   "compileOnSave": false,
   "compilerOptions": {
+    "jsx": "react-jsx",
     "rootDir": ".",
     "sourceMap": true,
     "declaration": false,
@@ -11,16 +12,16 @@
     "target": "es2015",
     "module": "esnext",
     "lib": ["es2020", "dom"],
+    "types": ["jest", "node"],
     "skipLibCheck": true,
     "skipDefaultLibCheck": true,
     "baseUrl": ".",
     "paths": {
-      "@/lib/*": ["lib/*"],
+      "@/*": ["./*"],
       "@/types/*": ["types/*"],
       "@/api/*": ["lib/api/*"],
       "@/utils/*": ["lib/utils/*"],
       "@/admin/*": ["lib/admin/*"],
-      "@/components/*": ["components/*"],
       "@/config/*": ["config/*"],
       "@/hooks/*": ["lib/admin/hooks/*"]
     }

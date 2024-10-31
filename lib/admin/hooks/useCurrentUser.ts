@@ -52,6 +52,6 @@ export function useCurrentUser() {
     setUser(null);
     window.location.href = '/auth/signin';
   };
-console.log(user)
+  
   return { user, isLoading, signOut };
 }

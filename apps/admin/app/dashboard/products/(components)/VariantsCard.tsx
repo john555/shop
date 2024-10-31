@@ -36,29 +36,6 @@ export function VariantsCard({
     form.setValue(`options.${optionIndex}.values`, updatedValues);
   };
 
-  const generateVariants = () => {
-    const options = form.getValues('options');
-    if (options.length === 0) return;
-
-    const generateCombinations = (arrays: string[][]) => {
-      return arrays.reduce(
-        (acc, curr) => acc.flatMap((x) => curr.map((y) => [...x, y])),
-        [[]] as string[][]
-      );
-    };
-
-    const optionValues = options.map((option) => option.values || []);
-    const combinations = generateCombinations(optionValues);
-
-    const newVariants = combinations.map((combination) => ({
-      optionCombination: combination,
-      price: form.getValues('price'),
-      available: 0,
-    }));
-
-    form.setValue('variants', newVariants);
-  };
-
   const toggleOptionCollapse = (index: number) => {
     const currentOptions = form.getValues('options');
     if (currentOptions[index]) {
@@ -108,7 +85,6 @@ export function VariantsCard({
                 form={form}
                 removeOption={removeOption}
                 addOptionValues={addOptionValues}
-                generateVariants={generateVariants}
                 toggleOptionCollapse={toggleOptionCollapse}
               />
             ))}

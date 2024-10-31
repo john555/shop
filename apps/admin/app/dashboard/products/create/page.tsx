@@ -37,6 +37,9 @@ export default function CreateProductPage() {
       options: [],
       variants: [],
       media: [],
+      available: 0,
+      sku: '',
+      trackInventory: false,
     },
   });
 

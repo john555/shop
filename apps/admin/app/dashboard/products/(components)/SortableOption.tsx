@@ -15,9 +15,34 @@ interface SortableOptionProps {
   form: UseFormReturn<FormValues>;
   removeOption: (index: number) => void;
   addOptionValues: (index: number, values: string) => void;
-  generateVariants: () => void;
   toggleOptionCollapse: (index: number) => void;
 }
+
+const generateVariants = (form: UseFormReturn<FormValues>) => {
+  const options = form.getValues('options');
+  if (options.length === 0) {
+    form.setValue('variants', []);
+    return;
+  }
+
+  const generateCombinations = (arrays: string[][]) => {
+    return arrays.reduce(
+      (acc, curr) => acc.flatMap((x) => curr.map((y) => [...x, y])),
+      [[]] as string[][]
+    );
+  };
+
+  const optionValues = options.map((option) => option.values || []);
+  const combinations = generateCombinations(optionValues);
+
+  const newVariants = combinations.map((combination) => ({
+    optionCombination: combination,
+    price: form.getValues('price'),
+    available: 0,
+  }));
+
+  form.setValue('variants', newVariants);
+};
 
 export function SortableOption({
   id,
@@ -25,7 +50,6 @@ export function SortableOption({
   form,
   removeOption,
   addOptionValues,
-  generateVariants,
   toggleOptionCollapse,
 }: SortableOptionProps) {
   const {
@@ -49,8 +73,13 @@ export function SortableOption({
       addOptionValues(index, inputValue);
       setInputValue('');
     }
-    generateVariants();
+    generateVariants(form);
     toggleOptionCollapse(index);
+  };
+
+  const handleRemoveClick = () => {
+    removeOption(index);
+    generateVariants(form);
   };
 
   return (
@@ -127,7 +156,7 @@ export function SortableOption({
                 type="button"
                 variant="ghost"
                 size="sm"
-                onClick={() => removeOption(index)}
+                onClick={handleRemoveClick}
                 className="self-start mt-6"
               >
                 <X className="h-4 w-4" />
