@@ -3,10 +3,11 @@ import { PassportStrategy } from '@nestjs/passport';
 import { Strategy, ExtractJwt } from 'passport-jwt';
 import { TokenPayload } from '../auth.dto';
 import { Request } from 'express';
+import { PrismaService } from '@/lib/api/prisma/prisma.service';
 
 @Injectable()
 export class JwtAuthStrategy extends PassportStrategy(Strategy) {
-  constructor() {
+  constructor(private readonly prismaService: PrismaService) {
     super({
       secretOrKey: process.env.JWT_AUTH_SECRET,
       jwtCookieName: process.env.JWT_AUTH_COOKIE_NAME,
@@ -20,6 +21,6 @@ export class JwtAuthStrategy extends PassportStrategy(Strategy) {
   }
 
   async validate(payload: TokenPayload) {
-    return payload;
+    return this.prismaService.user.findUniqueOrThrow({where: {id: payload.id}});
   }
 }

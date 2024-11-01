@@ -24,7 +24,34 @@ model User {
   refreshTokenHash String?
   createdAt        DateTime @default(now()) @db.Timestamp(6)
   updatedAt        DateTime @updatedAt @db.Timestamp(6)
+  stores           Store[]
 
   @@index([email])
   @@map("users")
+}
+
+enum StoreType {
+  PHYSICAL_GOODS
+  REAL_ESTATE
+  VEHICLES
+}
+
+enum StoreCurrency {
+  UGX
+}
+
+model Store {
+  id          String        @id @default(cuid())
+  name        String
+  slug        String        @unique
+  description String?
+  email       String
+  type        StoreType
+  currency    StoreCurrency
+  createdAt   DateTime      @default(now()) @db.Timestamp(6)
+  updatedAt   DateTime      @updatedAt @db.Timestamp(6)
+  ownerId     String
+  owner       User?         @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+
+  @@map("stores")
 }

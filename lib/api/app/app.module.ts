@@ -6,6 +6,7 @@ import { PrismaModule } from 'lib/api/prisma/prisma.module';
 import { AuthModule } from 'lib/api/auth/auth.module';
 import { UserModule } from '../user/user.module';
 import { Request, Response } from 'express';
+import { StoreModule } from '../store/store.module';
 
 @Module({
   imports: [
@@ -29,6 +30,7 @@ import { Request, Response } from 'express';
     PrismaModule,
     AuthModule,
     UserModule,
+    StoreModule,
   ],
   providers: [],
 })

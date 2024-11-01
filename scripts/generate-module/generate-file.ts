@@ -8,11 +8,11 @@ import {
 } from '../utils/strings';
 
 export enum FileTypes {
-  DTO = 'dto',
-  ENTITY = 'entity',
-  MODULE = 'module',
+  // DTO = 'dto',
+  // ENTITY = 'entity',
+  // MODULE = 'module',
   RESOLVER = 'resolver',
-  SERVICE = 'service',
+  // SERVICE = 'service',
 }
 
 type GenerateFileOptions = {

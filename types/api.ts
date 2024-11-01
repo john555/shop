@@ -52,6 +52,7 @@ export type AuthSignupInput = {
 
 export type Mutation = {
   __typename?: 'Mutation';
+  createStore: Store;
   createUser: User;
   /** Refresh auth token */
   refresh: AuthSignin;
@@ -61,7 +62,13 @@ export type Mutation = {
   signout: AuthSignout;
   /** Sign up new user */
   signup: AuthSignup;
+  updateStore: Store;
   updateUser: User;
+};
+
+
+export type MutationCreateStoreArgs = {
+  input: StoreCreateInput;
 };
 
 
@@ -80,6 +87,11 @@ export type MutationSignupArgs = {
 };
 
 
+export type MutationUpdateStoreArgs = {
+  input: StoreUpdateInput;
+};
+
+
 export type MutationUpdateUserArgs = {
   input: UserUpdateInput;
 };
@@ -88,8 +100,23 @@ export type Query = {
   __typename?: 'Query';
   /** Get current user */
   me: User;
+  store: Store;
+  stores: Array<Store>;
   user: User;
   users: Array<User>;
+};
+
+
+export type QueryStoreArgs = {
+  id: Scalars['String']['input'];
+};
+
+
+export type QueryStoresArgs = {
+  cursor?: InputMaybe<Scalars['String']['input']>;
+  skip?: Scalars['Int']['input'];
+  sortOrder?: InputMaybe<SortOrder>;
+  take?: Scalars['Int']['input'];
 };
 
 
@@ -109,6 +136,73 @@ export enum SortOrder {
   Asc = 'ASC',
   Desc = 'DESC'
 }
+
+/** store */
+export type Store = {
+  __typename?: 'Store';
+  /** Date the Store was created */
+  createdAt: Scalars['DateTime']['output'];
+  /** Currency of the Store */
+  currency: StoreCurrency;
+  /** Currency of the Store */
+  description?: Maybe<Scalars['String']['output']>;
+  /** Email of the Store */
+  email: Scalars['String']['output'];
+  /** ID of the Store */
+  id: Scalars['ID']['output'];
+  /** Name of the Store */
+  name: Scalars['String']['output'];
+  /** ID of the User who owns the store */
+  ownerId: Scalars['String']['output'];
+  /** Slug of the Store */
+  slug: Scalars['String']['output'];
+  /** Type of the Store */
+  type: StoreType;
+  /** Date the Store was last updated */
+  updatedAt: Scalars['DateTime']['output'];
+};
+
+export type StoreCreateInput = {
+  /** Currency of the Store */
+  currency: StoreCurrency;
+  /** Description of the Store */
+  description?: InputMaybe<Scalars['String']['input']>;
+  /** Contact email of the Store */
+  email?: InputMaybe<Scalars['String']['input']>;
+  /** Email of the Store */
+  name: Scalars['String']['input'];
+  /** Slug of the Store */
+  slug: Scalars['String']['input'];
+  /** Type of the Store */
+  type: StoreType;
+};
+
+/** The currency of store */
+export enum StoreCurrency {
+  Ugx = 'UGX'
+}
+
+/** The type of store */
+export enum StoreType {
+  PhysicalGoods = 'PHYSICAL_GOODS',
+  RealEstate = 'REAL_ESTATE',
+  Vehicles = 'VEHICLES'
+}
+
+export type StoreUpdateInput = {
+  /** Description of the Store */
+  description?: InputMaybe<Scalars['String']['input']>;
+  /** Contact email of the Store */
+  email?: InputMaybe<Scalars['String']['input']>;
+  /** ID of the Store */
+  id: Scalars['ID']['input'];
+  /** Email of the Store */
+  name?: InputMaybe<Scalars['String']['input']>;
+  /** Slug of the Store */
+  slug?: InputMaybe<Scalars['String']['input']>;
+  /** Type of the Store */
+  type?: InputMaybe<StoreType>;
+};
 
 /** user */
 export type User = {
@@ -238,6 +332,11 @@ export type ResolversTypes = {
   Mutation: ResolverTypeWrapper<{}>;
   Query: ResolverTypeWrapper<{}>;
   SortOrder: SortOrder;
+  Store: ResolverTypeWrapper<Store>;
+  StoreCreateInput: StoreCreateInput;
+  StoreCurrency: StoreCurrency;
+  StoreType: StoreType;
+  StoreUpdateInput: StoreUpdateInput;
   String: ResolverTypeWrapper<Scalars['String']['output']>;
   User: ResolverTypeWrapper<User>;
   UserCreateInput: UserCreateInput;
@@ -257,6 +356,9 @@ export type ResolversParentTypes = {
   Int: Scalars['Int']['output'];
   Mutation: {};
   Query: {};
+  Store: Store;
+  StoreCreateInput: StoreCreateInput;
+  StoreUpdateInput: StoreUpdateInput;
   String: Scalars['String']['output'];
   User: User;
   UserCreateInput: UserCreateInput;
@@ -285,18 +387,36 @@ export interface DateTimeScalarConfig extends GraphQLScalarTypeConfig<ResolversT
 }
 
 export type MutationResolvers<ContextType = any, ParentType extends ResolversParentTypes['Mutation'] = ResolversParentTypes['Mutation']> = {
+  createStore?: Resolver<ResolversTypes['Store'], ParentType, ContextType, RequireFields<MutationCreateStoreArgs, 'input'>>;
   createUser?: Resolver<ResolversTypes['User'], ParentType, ContextType, RequireFields<MutationCreateUserArgs, 'input'>>;
   refresh?: Resolver<ResolversTypes['AuthSignin'], ParentType, ContextType>;
   signin?: Resolver<ResolversTypes['AuthSignin'], ParentType, ContextType, RequireFields<MutationSigninArgs, 'input'>>;
   signout?: Resolver<ResolversTypes['AuthSignout'], ParentType, ContextType>;
   signup?: Resolver<ResolversTypes['AuthSignup'], ParentType, ContextType, RequireFields<MutationSignupArgs, 'input'>>;
+  updateStore?: Resolver<ResolversTypes['Store'], ParentType, ContextType, RequireFields<MutationUpdateStoreArgs, 'input'>>;
   updateUser?: Resolver<ResolversTypes['User'], ParentType, ContextType, RequireFields<MutationUpdateUserArgs, 'input'>>;
 };
 
 export type QueryResolvers<ContextType = any, ParentType extends ResolversParentTypes['Query'] = ResolversParentTypes['Query']> = {
   me?: Resolver<ResolversTypes['User'], ParentType, ContextType>;
+  store?: Resolver<ResolversTypes['Store'], ParentType, ContextType, RequireFields<QueryStoreArgs, 'id'>>;
+  stores?: Resolver<Array<ResolversTypes['Store']>, ParentType, ContextType, RequireFields<QueryStoresArgs, 'skip' | 'take'>>;
   user?: Resolver<ResolversTypes['User'], ParentType, ContextType, RequireFields<QueryUserArgs, 'id'>>;
   users?: Resolver<Array<ResolversTypes['User']>, ParentType, ContextType, RequireFields<QueryUsersArgs, 'skip' | 'take'>>;
+};
+
+export type StoreResolvers<ContextType = any, ParentType extends ResolversParentTypes['Store'] = ResolversParentTypes['Store']> = {
+  createdAt?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
+  currency?: Resolver<ResolversTypes['StoreCurrency'], ParentType, ContextType>;
+  description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  email?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  ownerId?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  slug?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  type?: Resolver<ResolversTypes['StoreType'], ParentType, ContextType>;
+  updatedAt?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
 export type UserResolvers<ContextType = any, ParentType extends ResolversParentTypes['User'] = ResolversParentTypes['User']> = {
@@ -318,6 +438,7 @@ export type Resolvers<ContextType = any> = {
   DateTime?: GraphQLScalarType;
   Mutation?: MutationResolvers<ContextType>;
   Query?: QueryResolvers<ContextType>;
+  Store?: StoreResolvers<ContextType>;
   User?: UserResolvers<ContextType>;
 };
 

@@ -37,6 +37,7 @@ A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date
 scalar DateTime
 
 type Mutation {
+  createStore(input: StoreCreateInput!): Store!
   createUser(input: UserCreateInput!): User!
 
   """Refresh auth token"""
@@ -50,12 +51,15 @@ type Mutation {
 
   """Sign up new user"""
   signup(input: AuthSignupInput!): AuthSignup!
+  updateStore(input: StoreUpdateInput!): Store!
   updateUser(input: UserUpdateInput!): User!
 }
 
 type Query {
   """Get current user"""
   me: User!
+  store(id: String!): Store!
+  stores(cursor: String, skip: Int! = 0, sortOrder: SortOrder, take: Int! = 25): [Store!]!
   user(id: String!): User!
   users(cursor: String, skip: Int! = 0, sortOrder: SortOrder, take: Int! = 25): [User!]!
 }
@@ -63,6 +67,91 @@ type Query {
 enum SortOrder {
   ASC
   DESC
+}
+
+"""store"""
+type Store {
+  """Date the Store was created"""
+  createdAt: DateTime!
+
+  """Currency of the Store"""
+  currency: StoreCurrency!
+
+  """Currency of the Store"""
+  description: String
+
+  """Email of the Store"""
+  email: String!
+
+  """ID of the Store"""
+  id: ID!
+
+  """Name of the Store"""
+  name: String!
+
+  """ID of the User who owns the store"""
+  ownerId: String!
+
+  """Slug of the Store"""
+  slug: String!
+
+  """Type of the Store"""
+  type: StoreType!
+
+  """Date the Store was last updated"""
+  updatedAt: DateTime!
+}
+
+input StoreCreateInput {
+  """Currency of the Store"""
+  currency: StoreCurrency!
+
+  """Description of the Store"""
+  description: String
+
+  """Contact email of the Store"""
+  email: String
+
+  """Email of the Store"""
+  name: String!
+
+  """Slug of the Store"""
+  slug: String!
+
+  """Type of the Store"""
+  type: StoreType!
+}
+
+"""The currency of store"""
+enum StoreCurrency {
+  UGX
+}
+
+"""The type of store"""
+enum StoreType {
+  PHYSICAL_GOODS
+  REAL_ESTATE
+  VEHICLES
+}
+
+input StoreUpdateInput {
+  """Description of the Store"""
+  description: String
+
+  """Contact email of the Store"""
+  email: String
+
+  """ID of the Store"""
+  id: ID!
+
+  """Email of the Store"""
+  name: String
+
+  """Slug of the Store"""
+  slug: String
+
+  """Type of the Store"""
+  type: StoreType
 }
 
 """user"""
