@@ -58,8 +58,11 @@ type Mutation {
 type Query {
   """Get current user"""
   me: User!
-  store(id: String!): Store!
-  stores(cursor: String, skip: Int! = 0, sortOrder: SortOrder, take: Int! = 25): [Store!]!
+  myStores(cursor: String, skip: Int! = 0, sortOrder: SortOrder, take: Int! = 25): [Store!]!
+  store(
+    """ID of the Store"""
+    id: ID!
+  ): Store!
   user(id: String!): User!
   users(cursor: String, skip: Int! = 0, sortOrder: SortOrder, take: Int! = 25): [User!]!
 }
@@ -176,6 +179,9 @@ type User {
 
   """Last name of the User"""
   lastName: String
+
+  """Stores owned by the User"""
+  stores: [Store!]!
 
   """Date the User was last updated"""
   updatedAt: DateTime!

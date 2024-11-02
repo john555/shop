@@ -3,6 +3,7 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from '@/api/prisma/prisma.service';
 import { PaginationArgs } from '@/api/pagination/pagination.args';
 import { paginate } from '@/api/pagination/paginate';
+import { GetMyStoresArgs } from './store.dto';
 
 @Injectable()
 export class StoreService {
@@ -14,8 +15,17 @@ export class StoreService {
     });
   }
 
-  async getStores(args: PaginationArgs): Promise<Store[]> {
-    return paginate(this.prismaService.store, args);
+  async getStoresByOwnerId(
+    ownerId: string,
+    args?: PaginationArgs,
+  ): Promise<Store[]> {
+    return paginate({
+      modelDelegate: this.prismaService.store,
+      args,
+      where: {
+        ownerId,
+      } as Prisma.StoreWhereInput,
+    });
   }
 
   async create(input: Prisma.StoreUncheckedCreateInput): Promise<Store> {
@@ -26,7 +36,10 @@ export class StoreService {
     });
   }
 
-  async update(id: string, input: Prisma.StoreUncheckedUpdateInput): Promise<Store> {
+  async update(
+    id: string,
+    input: Prisma.StoreUncheckedUpdateInput
+  ): Promise<Store> {
     return this.prismaService.store.update({
       where: { id },
       data: {

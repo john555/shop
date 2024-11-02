@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { gql } from '@apollo/client';
-import { client } from 'lib/utils/apollo';
+import { client } from '@/lib/common/apollo';
 import { User } from '@/types/api';
 
 const ME_QUERY = gql`
@@ -12,6 +12,9 @@ const ME_QUERY = gql`
       lastName
       imageUrl
       updatedAt
+      stores {
+        id
+      }
     }
   }
 `;
@@ -52,6 +55,6 @@ export function useCurrentUser() {
     setUser(null);
     window.location.href = '/auth/signin';
   };
-  
+
   return { user, isLoading, signOut };
 }

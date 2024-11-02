@@ -100,23 +100,23 @@ export type Query = {
   __typename?: 'Query';
   /** Get current user */
   me: User;
+  myStores: Array<Store>;
   store: Store;
-  stores: Array<Store>;
   user: User;
   users: Array<User>;
 };
 
 
-export type QueryStoreArgs = {
-  id: Scalars['String']['input'];
-};
-
-
-export type QueryStoresArgs = {
+export type QueryMyStoresArgs = {
   cursor?: InputMaybe<Scalars['String']['input']>;
   skip?: Scalars['Int']['input'];
   sortOrder?: InputMaybe<SortOrder>;
   take?: Scalars['Int']['input'];
+};
+
+
+export type QueryStoreArgs = {
+  id: Scalars['ID']['input'];
 };
 
 
@@ -221,6 +221,8 @@ export type User = {
   imageUrl?: Maybe<Scalars['String']['output']>;
   /** Last name of the User */
   lastName?: Maybe<Scalars['String']['output']>;
+  /** Stores owned by the User */
+  stores: Array<Store>;
   /** Date the User was last updated */
   updatedAt: Scalars['DateTime']['output'];
 };
@@ -399,8 +401,8 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
 
 export type QueryResolvers<ContextType = any, ParentType extends ResolversParentTypes['Query'] = ResolversParentTypes['Query']> = {
   me?: Resolver<ResolversTypes['User'], ParentType, ContextType>;
+  myStores?: Resolver<Array<ResolversTypes['Store']>, ParentType, ContextType, RequireFields<QueryMyStoresArgs, 'skip' | 'take'>>;
   store?: Resolver<ResolversTypes['Store'], ParentType, ContextType, RequireFields<QueryStoreArgs, 'id'>>;
-  stores?: Resolver<Array<ResolversTypes['Store']>, ParentType, ContextType, RequireFields<QueryStoresArgs, 'skip' | 'take'>>;
   user?: Resolver<ResolversTypes['User'], ParentType, ContextType, RequireFields<QueryUserArgs, 'id'>>;
   users?: Resolver<Array<ResolversTypes['User']>, ParentType, ContextType, RequireFields<QueryUsersArgs, 'skip' | 'take'>>;
 };
@@ -427,6 +429,7 @@ export type UserResolvers<ContextType = any, ParentType extends ResolversParentT
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   imageUrl?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   lastName?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  stores?: Resolver<Array<ResolversTypes['Store']>, ParentType, ContextType>;
   updatedAt?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };

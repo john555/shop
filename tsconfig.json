@@ -19,10 +19,9 @@
       "@/*": ["./*"],
       "@/types/*": ["types/*"],
       "@/api/*": ["lib/api/*"],
-      "@/utils/*": ["lib/utils/*"],
+      "@/utils/*": ["lib/common/http/*"],
       "@/admin/*": ["lib/admin/*"],
-      "@/config/*": ["config/*"],
-      "@/hooks/*": ["lib/admin/hooks/*"]
+      "@/config/*": ["config/*"]
     }
   },
   "exclude": ["node_modules", "tmp"]

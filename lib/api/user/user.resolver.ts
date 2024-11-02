@@ -1,15 +1,30 @@
-import { Args, Mutation, Query, Resolver } from '@nestjs/graphql';
-import { Logger, NotFoundException, UseGuards } from '@nestjs/common';
+import { Args, Context, Mutation, Parent, Query, ResolveField, Resolver } from '@nestjs/graphql';
+import { Logger, NotFoundException, Res, UseGuards } from '@nestjs/common';
 import { User } from './user.entity';
 import { UserService } from './user.service';
 import { UserCreateInput, UserUpdateInput } from './user.dto';
 import { PaginationArgs } from 'lib/api/pagination/pagination.args';
 import { JwtAuthGuard } from '../auth/guard/jwt-auth.guard';
+import { Store } from '../store/store.entity';
+import { StoreService } from '../store/store.service';
 
 @UseGuards(JwtAuthGuard)
 @Resolver(() => User)
 export class UserResolver {
-  constructor(private readonly userService: UserService) {}
+  constructor(private readonly userService: UserService, private readonly storeService: StoreService) {}
+
+  @UseGuards(JwtAuthGuard)
+  @Query(() => User, { description: 'Get current user' })
+  async me(@Context() context: any) {
+    return this.userService.getUserById(context.req.user.id);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @ResolveField(() => [Store!])
+  async stores(@Parent() user: User): Promise<Store[]> {
+    return this.storeService.getStoresByOwnerId(user.id);
+  }
+
 
   @Query(() => User!)
   async user(@Args('id') id: string): Promise<User> {

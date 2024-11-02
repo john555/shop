@@ -1,6 +1,7 @@
-import { Field, ID, InputType, registerEnumType } from '@nestjs/graphql';
+import { ArgsType, Field, ID, InputType, registerEnumType } from '@nestjs/graphql';
 import { StoreCurrency, StoreType } from '@prisma/client';
 import { IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import { PaginationArgs } from '../pagination/pagination.args';
 
 registerEnumType(StoreType, {
   name: 'StoreType',
@@ -82,4 +83,20 @@ export class StoreUpdateInput {
   @IsNotEmpty()
   @IsOptional()
   type?: StoreType;
+}
+
+@ArgsType()
+export class StoreGetArgs {
+  @Field(() => ID, { description: 'ID of the Store' })
+  @IsString()
+  @IsNotEmpty()
+  id!: string;
+}
+
+@ArgsType()
+export class GetMyStoresArgs extends PaginationArgs {
+  @Field(() => ID, { description: 'ID of the Store' })
+  @IsString()
+  @IsNotEmpty()
+  ownerId: string;
 }

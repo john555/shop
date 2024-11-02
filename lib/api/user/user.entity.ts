@@ -1,6 +1,7 @@
 import { User as UserBase } from '@prisma/client';
 import { Field, ID, ObjectType } from '@nestjs/graphql';
 import { Injectable } from '@nestjs/common';
+import { Store } from '../store/store.entity';
 
 @Injectable()
 @ObjectType({ description: 'user' })
@@ -28,6 +29,9 @@ export class User implements UserBase {
 
   passwordHash: string | null;
   refreshTokenHash: string | null;
+
+  @Field(() => [Store], { description: 'Stores owned by the User'})
+  stores?: Store
 
   @Field(() => Date, {
     description: 'Date the User was last updated',

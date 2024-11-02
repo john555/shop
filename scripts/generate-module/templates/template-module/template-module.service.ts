@@ -19,7 +19,7 @@ export class TemplateModuleService {
   }
 
   async getTemplateModules(args: PaginationArgs): Promise<TemplateModule[]> {
-    return paginate(this.prismaService.templateModule, args);
+    return paginate({ modelDelegate: this.prismaService.templateModule, args });
   }
 
   async create(input: TemplateModuleCreateInput): Promise<TemplateModule> {

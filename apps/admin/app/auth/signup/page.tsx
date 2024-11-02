@@ -6,7 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { useState } from "react";
 import { gql } from '@apollo/client';
-import { client } from "@/utils/apollo";
+import { client } from "@/lib/common/apollo";
 import { Button } from "@/components/ui/button";
 import {
   Card,

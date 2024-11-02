@@ -3,19 +3,12 @@ import { Args, Context, Mutation, Query, Resolver } from '@nestjs/graphql';
 import { AuthSignin, AuthSignout, AuthSignup } from './auth.entity';
 import { AuthService } from './auth.service';
 import { AuthSigninInput, AuthSignupInput } from './auth.dto';
-import { User } from 'lib/api/user/user.entity';
 import { JwtAuthGuard } from './guard/jwt-auth.guard';
 import { JwtRefreshGuard } from './guard/jwt-refresh.guard';
 
 @Resolver(() => AuthSignin)
 export class AuthResolver {
   constructor(private readonly authService: AuthService) {}
-
-  @UseGuards(JwtAuthGuard)
-  @Query(() => User, { description: 'Get current user' })
-  async me(@Context() context: any) {
-    return this.authService.me(context.req.user.id);
-  }
 
   @Mutation(() => AuthSignin, { description: 'Sign in' })
   async signin(

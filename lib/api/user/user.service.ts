@@ -17,7 +17,7 @@ export class UserService {
   }
 
   async getUsers(args: PaginationArgs): Promise<User[]> {
-    return paginate(this.prismaService.user, args);
+    return paginate({ modelDelegate: this.prismaService.user, args });
   }
 
   async create(input: UserCreateInput): Promise<User> {

@@ -1,11 +1,26 @@
-'use client'
+'use client';
 
-import { useState } from 'react'
-import { useTheme } from 'next-themes'
-import { Bell, Laptop, Menu, Moon, Search, ShoppingCart, Sun, Users, X, Package, User, LayoutDashboard, Box, List } from 'lucide-react'
-import Link from 'next/link'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
+import { useState } from 'react';
+import { useTheme } from 'next-themes';
+import {
+  Bell,
+  Laptop,
+  Menu,
+  Moon,
+  Search,
+  ShoppingCart,
+  Sun,
+  Users,
+  X,
+  Package,
+  User,
+  LayoutDashboard,
+  Box,
+  List,
+} from 'lucide-react';
+import Link from 'next/link';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -13,17 +28,23 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
+} from '@/components/ui/dropdown-menu';
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from "@/components/ui/tooltip"
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { Command, CommandEmpty, CommandGroup, CommandItem, CommandList } from "@/components/ui/command"
-import { useCurrentUser } from '@/lib/admin/hooks/useCurrentUser'
-import { redirect } from 'next/navigation'
+} from '@/components/ui/tooltip';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandItem,
+  CommandList,
+} from '@/components/ui/command';
+import { useCurrentUser } from '@/lib/common/hooks/auth';
+import { redirect } from 'next/navigation';
 
 // Dummy data for search results
 const dummySearchResults = {
@@ -42,26 +63,30 @@ const dummySearchResults = {
     { id: 'CUS002', name: 'Charlie Brown', email: 'charlie@example.com' },
     { id: 'CUS003', name: 'Diana Miller', email: 'diana@example.com' },
   ],
-}
+};
 
-export default function DashboardLayout({ children }: { children: React.ReactNode }) {
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false)
-  const [isSearchOpen, setIsSearchOpen] = useState(false)
-  const [searchQuery, setSearchQuery] = useState('')
-  const { setTheme } = useTheme()
+export default function DashboardLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const { setTheme } = useTheme();
   const { user, isLoading, signOut } = useCurrentUser();
 
-  const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen)
+  const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchQuery(e.target.value)
-    setIsSearchOpen(e.target.value.length > 0)
-  }
+    setSearchQuery(e.target.value);
+    setIsSearchOpen(e.target.value.length > 0);
+  };
 
   const handleSearchClose = () => {
-    setSearchQuery('')
-    setIsSearchOpen(false)
-  }
+    setSearchQuery('');
+    setIsSearchOpen(false);
+  };
 
   if (!isLoading && !user) {
     redirect('/auth/signin');
@@ -69,6 +94,22 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   if (isLoading && !user) {
     return <div className="p-4 text-lg text-muted-foreground">Loading...</div>;
+  }
+
+  if (!user?.stores?.length) {
+    return (
+      <div className="min-h-screen bg-background text-foreground flex items-center justify-center">
+        <div className="w-full max-w-md mx-auto px-4 py-6 text-center">
+          <h1 className="text-2xl font-bold">Store Setup</h1>
+          <p className="text-muted-foreground mt-2">
+            You don&apos;t have any stores yet. Create a store to get started.
+          </p>
+          <Link href="/store-setup-wizard">
+            <Button className="mt-4">Create Store</Button>
+          </Link>
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -82,7 +123,12 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         <div className="flex h-full flex-col">
           <div className="flex items-center justify-between p-4">
             <h1 className="text-2xl font-bold">E-commerce</h1>
-            <Button variant="ghost" size="icon" onClick={toggleSidebar} className="lg:hidden">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={toggleSidebar}
+              className="lg:hidden"
+            >
               <Menu className="h-6 w-6" />
               <span className="sr-only">Toggle sidebar</span>
             </Button>
@@ -101,13 +147,21 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                   Products
                 </Link>
               </Button>
-              <Button variant="ghost" className="w-full justify-start pl-8" asChild>
+              <Button
+                variant="ghost"
+                className="w-full justify-start pl-8"
+                asChild
+              >
                 <Link href="/dashboard/collections">
                   <List className="mr-2 h-4 w-4" />
                   Collections
                 </Link>
               </Button>
-              <Button variant="ghost" className="w-full justify-start pl-8" asChild>
+              <Button
+                variant="ghost"
+                className="w-full justify-start pl-8"
+                asChild
+              >
                 <Link href="/dashboard/inventory">
                   <Box className="mr-2 h-4 w-4" />
                   Inventory
@@ -135,7 +189,12 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         {/* Header */}
         <header className="relative flex items-center justify-between border-b bg-card px-4 py-3">
           <div className="flex items-center">
-            <Button variant="ghost" size="icon" onClick={toggleSidebar} className="mr-2 lg:hidden">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={toggleSidebar}
+              className="mr-2 lg:hidden"
+            >
               <Menu className="h-6 w-6" />
               <span className="sr-only">Toggle sidebar</span>
             </Button>
@@ -163,18 +222,33 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               </div>
               {isSearchOpen && (
                 <div className="absolute left-0 right-0 top-full z-50 mt-2">
-                  <Command className="rounded-lg border shadow-md" style={{ width: 'calc(100% + 8rem)', maxWidth: '800px', height: '40vh', maxHeight: '400px' }}>
+                  <Command
+                    className="rounded-lg border shadow-md"
+                    style={{
+                      width: 'calc(100% + 8rem)',
+                      maxWidth: '800px',
+                      height: '40vh',
+                      maxHeight: '400px',
+                    }}
+                  >
                     <CommandList className="h-full overflow-auto">
                       <CommandEmpty>No results found.</CommandEmpty>
                       {dummySearchResults.orders.length > 0 && (
                         <CommandGroup heading="Orders" className="p-2">
                           {dummySearchResults.orders.map((order) => (
-                            <CommandItem key={order.id} className="flex items-center justify-between p-2">
+                            <CommandItem
+                              key={order.id}
+                              className="flex items-center justify-between p-2"
+                            >
                               <div className="flex items-center">
                                 <ShoppingCart className="mr-2 h-4 w-4" />
-                                <span>{order.id} - {order.customer}</span>
+                                <span>
+                                  {order.id} - {order.customer}
+                                </span>
                               </div>
-                              <span className="text-muted-foreground">{order.total}</span>
+                              <span className="text-muted-foreground">
+                                {order.total}
+                              </span>
                             </CommandItem>
                           ))}
                         </CommandGroup>
@@ -182,12 +256,17 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                       {dummySearchResults.products.length > 0 && (
                         <CommandGroup heading="Products" className="p-2">
                           {dummySearchResults.products.map((product) => (
-                            <CommandItem key={product.id} className="flex items-center justify-between p-2">
+                            <CommandItem
+                              key={product.id}
+                              className="flex items-center justify-between p-2"
+                            >
                               <div className="flex items-center">
                                 <Package className="mr-2 h-4 w-4" />
                                 <span>{product.name}</span>
                               </div>
-                              <span className="text-muted-foreground">{product.price}</span>
+                              <span className="text-muted-foreground">
+                                {product.price}
+                              </span>
                             </CommandItem>
                           ))}
                         </CommandGroup>
@@ -195,12 +274,17 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                       {dummySearchResults.customers.length > 0 && (
                         <CommandGroup heading="Customers" className="p-2">
                           {dummySearchResults.customers.map((customer) => (
-                            <CommandItem key={customer.id} className="flex items-center justify-between p-2">
+                            <CommandItem
+                              key={customer.id}
+                              className="flex items-center justify-between p-2"
+                            >
                               <div className="flex items-center">
                                 <User className="mr-2 h-4 w-4" />
                                 <span>{customer.name}</span>
                               </div>
-                              <span className="text-muted-foreground">{customer.email}</span>
+                              <span className="text-muted-foreground">
+                                {customer.email}
+                              </span>
                             </CommandItem>
                           ))}
                         </CommandGroup>
@@ -218,18 +302,28 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             </Button>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="relative h-8 w-8 rounded-full">
+                <Button
+                  variant="ghost"
+                  className="relative h-8 w-8 rounded-full"
+                >
                   <Avatar className="h-8 w-8">
                     <AvatarImage src={user?.imageUrl ?? ''} alt="User avatar" />
-                    <AvatarFallback>{user?.firstName?.[0] ?? ''}{user?.lastName?.[0] ?? ''}</AvatarFallback>
+                    <AvatarFallback>
+                      {user?.firstName?.[0] ?? ''}
+                      {user?.lastName?.[0] ?? ''}
+                    </AvatarFallback>
                   </Avatar>
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent className="w-56" align="end" forceMount>
                 <DropdownMenuLabel className="font-normal">
                   <div className="flex flex-col space-y-1">
-                    <p className="text-sm font-medium leading-none">{user?.firstName ?? ''} {user?.lastName ?? ''}</p>
-                    <p className="text-xs leading-none text-muted-foreground">{user?.email}</p>
+                    <p className="text-sm font-medium leading-none">
+                      {user?.firstName ?? ''} {user?.lastName ?? ''}
+                    </p>
+                    <p className="text-xs leading-none text-muted-foreground">
+                      {user?.email}
+                    </p>
                   </div>
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
@@ -294,9 +388,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                   </div>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={signOut}>
-                  Log out
-                </DropdownMenuItem>
+                <DropdownMenuItem onClick={signOut}>Log out</DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
@@ -308,5 +400,5 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         </main>
       </div>
     </div>
-  )
+  );
 }
