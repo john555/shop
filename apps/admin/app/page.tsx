@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useTheme } from 'next-themes';
-import { Moon, Sun, ChevronDown, Menu, X } from 'lucide-react';
+import { Moon, Sun, ChevronDown, Menu, X, Layers } from 'lucide-react';
 import { Parallax } from 'react-parallax';
 
 // Fix TypeScript prop types for SVG icons in footer
@@ -98,34 +98,7 @@ export default function LandingPage() {
             <div className="flex justify-start lg:w-0 lg:flex-1">
               <a href="/">
                 <span className="sr-only">StoreSaaS</span>
-                <svg
-                  className="h-8 w-auto sm:h-10 text-green-600 dark:text-green-400"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path
-                    d="M12 2L2 7L12 12L22 7L12 2Z"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                  <path
-                    d="M2 17L12 22L22 17"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                  <path
-                    d="M2 12L12 17L22 12"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </svg>
+                <Layers className="h-12 w-12 text-emerald-500" />
               </a>
             </div>
             <div className="-mr-2 -my-2 md:hidden">
@@ -173,13 +146,13 @@ export default function LandingPage() {
             </nav>
             <div className="hidden md:flex items-center justify-end md:flex-1 lg:w-0">
               <a
-                href="/auth/signin"
+                href="/signin"
                 className="whitespace-nowrap text-base font-medium text-gray-500 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white"
               >
                 Log in
               </a>
               <a
-                href="/auth/signup"
+                href="/signup"
                 className="ml-8 whitespace-nowrap inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-base font-medium text-white bg-green-600 hover:bg-green-700"
               >
                 Start free trial
@@ -312,14 +285,14 @@ export default function LandingPage() {
               <div className="py-6 px-5 space-y-6">
                 <div>
                   <a
-                    href="/auth/signup"
+                    href="/signup"
                     className="w-full flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-base font-medium text-white bg-green-600 hover:bg-green-700"
                   >
                     Start free trial
                   </a>
                   <p className="mt-6 text-center text-base font-medium text-gray-500 dark:text-gray-400">
                     Existing customer?{' '}
-                    <a href="/auth/signin" className="text-green-600 hover:text-green-500">
+                    <a href="/signin" className="text-green-600 hover:text-green-500">
                       Log in
                     </a>
                   </p>
@@ -352,7 +325,7 @@ export default function LandingPage() {
               </p>
               <div className="mt-10 flex items-center justify-center gap-x-6">
                 <a
-                  href="/auth/signup"
+                  href="/signup"
                   className="rounded-md bg-green-600 px-3.5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-green-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-green-600"
                 >
                   Start free trial

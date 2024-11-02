@@ -27,7 +27,7 @@ import { motion } from 'framer-motion';
 import { StoreCreateInput, StoreCurrency, StoreType } from '@/types/api';
 import { useCurrentUser } from '@/common/hooks/auth';
 import { useCreateStore } from '@/admin/hooks/store';
-import Link from 'next/link';
+import { StoreAlreadyExists } from './(components)/store-already-exists';
 
 type CurrencyOption = { code: StoreCurrency; description: string };
 
@@ -471,7 +471,7 @@ const StoreCurrencyStep: React.FC<{ stepIndex: number }> = ({ stepIndex }) => {
     selectedCurrency,
   } = useStoreSetup();
   const [animationComplete, setAnimationComplete] = React.useState(false);
-  const { createStore, isLoading, isSuccessful} = useCreateStore();
+  const { createStore, isLoading, isSuccessful } = useCreateStore();
 
   React.useEffect(() => {
     setAnimationComplete(false);
@@ -626,27 +626,14 @@ const StoreSetupHeader: React.FC = () => {
 };
 
 export default function StoreSetupWizard() {
-  const { user, isLoading } = useCurrentUser();;
+  const { user, isLoading } = useCurrentUser();
 
   if (isLoading) {
     return null;
   }
 
   if (!isLoading && user?.stores?.length) {
-    return (
-      <div className="min-h-screen bg-background text-foreground flex items-center justify-center">
-        <div className="w-full max-w-md mx-auto px-4 py-6 text-center">
-          <h1 className="text-2xl font-bold">Store Setup</h1>
-          <p className="text-muted-foreground mt-2">
-            You already have a store setup. You can manage your stores from the
-            dashboard.
-          </p>
-          <Link href="/dashboard">
-            <Button className="mt-4">Manage Stores</Button>
-          </Link>
-        </div>
-      </div>
-    );
+    return <StoreAlreadyExists />;
   }
 
   return (

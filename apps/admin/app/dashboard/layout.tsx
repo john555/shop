@@ -44,7 +44,8 @@ import {
   CommandList,
 } from '@/components/ui/command';
 import { useCurrentUser } from '@/common/hooks/auth';
-import { redirect } from 'next/navigation';
+import { SignInRequired } from '../(auth)/(components)/sign-in-required';
+import { CreateStoreRequired } from './(components)/create-store-required';
 
 // Dummy data for search results
 const dummySearchResults = {
@@ -75,6 +76,9 @@ export default function DashboardLayout({
   const [searchQuery, setSearchQuery] = useState('');
   const { setTheme } = useTheme();
   const { user, isLoading, signOut } = useCurrentUser();
+  const [isSigningOut, setIsSigningOut] = useState(false);
+  const userName = [user?.firstName, user?.lastName].filter(Boolean).join(' ');
+  const userInitials = [user?.firstName?.[0], user?.lastName?.[0]].join('');
 
   const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
 
@@ -88,28 +92,33 @@ export default function DashboardLayout({
     setIsSearchOpen(false);
   };
 
-  if (!isLoading && !user) {
-    redirect('/auth/signin');
+  const handleSignOut = () => {
+    setIsSigningOut(true)
+    signOut();
+  };
+
+  if (isSigningOut) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-900 dark:to-gray-800">
+        <p className="text-lg text-gray-600 dark:text-gray-300">Signing out...</p>
+      </div>
+    );
   }
 
   if (isLoading && !user) {
-    return <div className="p-4 text-lg text-muted-foreground">Loading...</div>;
-  }
-
-  if (!user?.stores?.length) {
     return (
-      <div className="min-h-screen bg-background text-foreground flex items-center justify-center">
-        <div className="w-full max-w-md mx-auto px-4 py-6 text-center">
-          <h1 className="text-2xl font-bold">Store Setup</h1>
-          <p className="text-muted-foreground mt-2">
-            You don&apos;t have any stores yet. Create a store to get started.
-          </p>
-          <Link href="/store-setup-wizard">
-            <Button className="mt-4">Create Store</Button>
-          </Link>
-        </div>
+      <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-900 dark:to-gray-800">
+        <p className="text-lg text-gray-600 dark:text-gray-300">Loading...</p>
       </div>
     );
+  }
+
+  if (!isLoading && !user) {
+    return <SignInRequired />;
+  }
+
+  if (!isLoading && !user?.stores?.length) {
+    return <CreateStoreRequired />;
   }
 
   return (
@@ -308,9 +317,7 @@ export default function DashboardLayout({
                 >
                   <Avatar className="h-8 w-8">
                     <AvatarImage src={user?.imageUrl ?? ''} alt="User avatar" />
-                    <AvatarFallback>
-                      {user?.firstName?.[0] ?? ''}{user?.lastName?.[0] ?? ''}
-                    </AvatarFallback>
+                    <AvatarFallback>{userInitials}</AvatarFallback>
                   </Avatar>
                 </Button>
               </DropdownMenuTrigger>
@@ -318,7 +325,7 @@ export default function DashboardLayout({
                 <DropdownMenuLabel className="font-normal">
                   <div className="flex flex-col space-y-1">
                     <p className="text-sm font-medium leading-none">
-                      {user?.firstName ?? ''} {user?.lastName ?? ''}
+                      {userName}
                     </p>
                     <p className="text-xs leading-none text-muted-foreground">
                       {user?.email}
@@ -387,7 +394,9 @@ export default function DashboardLayout({
                   </div>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={signOut}>Log out</DropdownMenuItem>
+                <DropdownMenuItem onClick={handleSignOut}>
+                  Sign out
+                </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           </div>

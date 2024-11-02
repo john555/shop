@@ -16,11 +16,11 @@
     "skipDefaultLibCheck": true,
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./*"],
       "@/types/*": ["lib/common/types/*"],
       "@/api/*": ["lib/api/*"],
       "@/admin/*": ["lib/admin/*"],
-      "@/common/*": ["lib/common/*"]
+      "@/common/*": ["lib/common/*"],
+      "@/*": ["./*"]
     }
   },
   "exclude": ["node_modules", "tmp"]

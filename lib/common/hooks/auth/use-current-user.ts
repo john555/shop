@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { gql } from '@apollo/client';
 import { client } from '@/common/apollo';
 import { User } from '@/types/api';
+import { SIGNIN_PAGE_LINK } from '@/common/constants';
 
 const ME_QUERY = gql`
   query me {
@@ -43,6 +44,11 @@ export function useCurrentUser() {
       .then((user) => {
         setUser(user);
       })
+      .catch((error) => {
+        // show a toast 
+        console.error('Error fetching user:', error);
+        
+      })
       .finally(() => {
         setIsLoading(false);
       });
@@ -53,7 +59,7 @@ export function useCurrentUser() {
       mutation: SIGNOUT_MUTATION,
     });
     setUser(null);
-    window.location.href = '/auth/signin';
+    window.location.href = SIGNIN_PAGE_LINK;
   };
 
   return { user, isLoading, signOut };

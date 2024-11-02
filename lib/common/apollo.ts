@@ -60,10 +60,11 @@ const errorLink = onError(({ graphQLErrors, operation, forward }) => {
             pendingRequests.length = 0;
             forward(operation).subscribe(observer);
           })
-          .catch(() => {
+          .catch((error) => {
             isRefreshing = false;
             pendingRequests.length = 0;
-            window.location.href = '/auth/signin';
+            // Instead of redirecting, we'll let the original operation fail
+            observer.error(error);
           });
       });
     }
