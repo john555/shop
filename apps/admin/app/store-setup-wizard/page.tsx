@@ -25,7 +25,7 @@ import {
 import { TypeAnimation } from 'react-type-animation';
 import { motion } from 'framer-motion';
 import { StoreCreateInput, StoreCurrency, StoreType } from '@/types/api';
-import { useCurrentUser } from '@/lib/common/hooks/auth';
+import { useCurrentUser } from '@/common/hooks/auth';
 import { useCreateStore } from '@/admin/hooks/store';
 import Link from 'next/link';
 

@@ -43,7 +43,7 @@ import {
   CommandItem,
   CommandList,
 } from '@/components/ui/command';
-import { useCurrentUser } from '@/lib/common/hooks/auth';
+import { useCurrentUser } from '@/common/hooks/auth';
 import { redirect } from 'next/navigation';
 
 // Dummy data for search results
@@ -309,8 +309,7 @@ export default function DashboardLayout({
                   <Avatar className="h-8 w-8">
                     <AvatarImage src={user?.imageUrl ?? ''} alt="User avatar" />
                     <AvatarFallback>
-                      {user?.firstName?.[0] ?? ''}
-                      {user?.lastName?.[0] ?? ''}
+                      {user?.firstName?.[0] ?? ''}{user?.lastName?.[0] ?? ''}
                     </AvatarFallback>
                   </Avatar>
                 </Button>

@@ -40,7 +40,7 @@ import {
 } from '@/components/ui/table';
 import { Card } from '@/components/ui/card';
 import React from 'react';
-import { Product } from '@/lib/common/types/product';
+import { Product } from '@/types/product';
 import products  from '@/utils/fixtures/products.json';
 
 const columns: ColumnDef<Product>[] = [

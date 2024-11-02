@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { gql } from '@apollo/client';
-import { client } from '@/lib/common/apollo';
+import { client } from '@/common/apollo';
 import { User } from '@/types/api';
 
 const ME_QUERY = gql`

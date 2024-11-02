@@ -24,7 +24,13 @@ import { StoreModule } from '../store/store.module';
               },
             }
           : false,
-      autoSchemaFile: join(process.cwd(), 'types/api.schema.gql'),
+      autoSchemaFile: join(
+        process.cwd(),
+        'lib',
+        'common',
+        'types',
+        'api.schema.gql'
+      ),
       sortSchema: true,
     }),
     PrismaModule,

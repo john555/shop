@@ -1,30 +1,30 @@
-"use client";
+'use client';
 
-import Link from "next/link";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
+import Link from 'next/link';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import * as z from 'zod';
 import { gql } from '@apollo/client';
-import { client } from "@/lib/common/apollo";
-import { Button } from "@/components/ui/button";
+import { client } from '@/lib/common/apollo';
+import { Button } from '@/components/ui/button';
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Logo } from "../(components)/logo";
+} from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Logo } from '../(components)/logo';
 
-// Define the validation schema using zod
 const schema = z.object({
-  email: z.string().email("Invalid email address").nonempty("Email is required"),
-  password: z.string().min(6, "Password must be at least 6 characters").nonempty("Password is required"),
+  email: z.string().email('Invalid email address').min(1, 'Email is required'),
+  password: z.string().min(6, 'Password must be at least 6 characters'),
 });
 
-// Define the SIGNIN_MUTATION
+type FormData = z.infer<typeof schema>;
+
 const SIGNIN_MUTATION = gql`
   mutation signin($input: AuthSigninInput!) {
     signin(input: $input) {
@@ -34,31 +34,33 @@ const SIGNIN_MUTATION = gql`
   }
 `;
 
-// Define the RESET_PAGE_LINK
-const RESET_PAGE_LINK = "/auth/reset";
+const RESET_PAGE_LINK = '/auth/reset';
 
 export default function SigninPage() {
-  const { register, handleSubmit, formState: { errors } } = useForm({
-    resolver: zodResolver(schema), // Use zod for validation
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<FormData>({
+    resolver: zodResolver(schema),
   });
 
-  const onSubmit = async (data) => { // Update submit handler
+  const onSubmit = async (data: FormData) => {
     try {
       await client.mutate({
-        mutation: SIGNIN_MUTATION, // Use the SIGNIN_MUTATION
-        variables: { input: data }, // Pass the input data
+        mutation: SIGNIN_MUTATION,
+        variables: { input: data },
       });
-      // Redirect to dashboard
-      window.location.href = "/dashboard"; // Redirect to /dashboard
+
+      window.location.href = '/dashboard';
     } catch (error) {
-      // Handle error (e.g., show error message)
       console.error('Error during sign-in:', error);
     }
   };
 
   return (
     <Card className="mx-auto max-w-sm">
-      <form onSubmit={handleSubmit(onSubmit)}> {/* Use handleSubmit */}
+      <form onSubmit={handleSubmit(onSubmit)}>
         <CardHeader>
           <Logo />
           <CardTitle className="text-2xl">Sign In</CardTitle>
@@ -74,30 +76,33 @@ export default function SigninPage() {
                 id="email"
                 type="email"
                 placeholder="m@example.com"
-                {...register("email")} // Register email input
+                {...register('email')}
               />
-              {errors.email && <span className="text-red-500">{errors.email.message}</span>} {/* Show error message */}
+              {errors.email && (
+                <span className="text-red-500">{errors.email.message}</span>
+              )}
             </div>
             <div className="grid gap-2">
               <div className="flex items-center">
                 <Label htmlFor="password">Password</Label>
-                <Link href={RESET_PAGE_LINK} className="ml-auto inline-block text-sm underline">
+                <Link
+                  href={RESET_PAGE_LINK}
+                  className="ml-auto inline-block text-sm underline"
+                >
                   Forgot your password?
                 </Link>
               </div>
-              <Input
-                id="password"
-                type="password"
-                {...register("password")} // Register password input
-              />
-              {errors.password && <span className="text-red-500">{errors.password.message}</span>} {/* Show error message */}
+              <Input id="password" type="password" {...register('password')} />
+              {errors.password && (
+                <span className="text-red-500">{errors.password.message}</span>
+              )}
             </div>
             <Button type="submit" className="w-full">
               Sign in
             </Button>
           </div>
           <div className="mt-4 text-center text-sm">
-            Don&apos;t have an account?{" "}
+            Don&apos;t have an account?{' '}
             <Link href="/auth/signup" className="underline">
               Sign up
             </Link>

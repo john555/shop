@@ -17,11 +17,10 @@
     "baseUrl": ".",
     "paths": {
       "@/*": ["./*"],
-      "@/types/*": ["types/*"],
+      "@/types/*": ["lib/common/types/*"],
       "@/api/*": ["lib/api/*"],
-      "@/utils/*": ["lib/common/http/*"],
       "@/admin/*": ["lib/admin/*"],
-      "@/config/*": ["config/*"]
+      "@/common/*": ["lib/common/*"]
     }
   },
   "exclude": ["node_modules", "tmp"]
