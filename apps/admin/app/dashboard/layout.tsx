@@ -420,7 +420,7 @@ export default function DashboardLayout({
                   </div>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={signOut}>Log out</DropdownMenuItem>
+                <DropdownMenuItem onClick={handleSignOut}>Log out</DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
