@@ -44,6 +44,7 @@ import {
   CommandItem,
   CommandList,
 } from '@/components/ui/command';
+import { useIsMobile } from '@/components/hooks/use-mobile';
 import { useCurrentUser } from '@/common/hooks/auth';
 import { SignInRequired } from '../(auth)/(components)/sign-in-required';
 import { CreateStoreRequired } from './(components)/create-store-required';
@@ -72,7 +73,7 @@ export default function DashboardLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const [isMobile, setIsMobile] = useState(false);
+  const isMobile = useIsMobile();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -81,15 +82,6 @@ export default function DashboardLayout({
   const [isSigningOut, setIsSigningOut] = useState(false);
   const userName = [user?.firstName, user?.lastName].filter(Boolean).join(' ');
   const userInitials = [user?.firstName?.[0], user?.lastName?.[0]].join('');
-
-  useEffect(() => {
-    const checkIsMobile = () => {
-      setIsMobile(window.innerWidth < 1024);
-    };
-    checkIsMobile();
-    window.addEventListener('resize', checkIsMobile);
-    return () => window.removeEventListener('resize', checkIsMobile);
-  }, []);
 
   const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
 
