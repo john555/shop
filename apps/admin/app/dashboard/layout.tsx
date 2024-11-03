@@ -68,6 +68,25 @@ const dummySearchResults = {
   ],
 };
 
+const navLinks = [
+  { href: '/dashboard', icon: LayoutDashboard, label: 'Overview' },
+  { href: '/dashboard/products', icon: Package, label: 'Products' },
+  {
+    href: '/dashboard/collections',
+    icon: List,
+    label: 'Collections',
+    paddingLeft: 'pl-8',
+  },
+  {
+    href: '/dashboard/inventory',
+    icon: Box,
+    label: 'Inventory',
+    paddingLeft: 'pl-8',
+  },
+  { href: '/dashboard/orders', icon: ShoppingCart, label: 'Orders' },
+  { href: '/dashboard/customers', icon: Users, label: 'Customers' },
+];
+
 export default function DashboardLayout({
   children,
 }: {
@@ -149,56 +168,19 @@ export default function DashboardLayout({
           </div>
           <div className="flex flex-col justify-between h-full overflow-y-auto">
             <nav className="flex-1 space-y-2 p-4">
-              <Button variant="ghost" className="w-full justify-start" asChild>
-                <Link href="/dashboard">
-                  <LayoutDashboard className="mr-2 h-4 w-4" />
-                  Overview
-                </Link>
-              </Button>
-              <div className="space-y-1">
+              {navLinks.map(({ href, icon: Icon, label, paddingLeft }) => (
                 <Button
+                  key={href}
                   variant="ghost"
-                  className="w-full justify-start"
+                  className={`w-full justify-start ${paddingLeft || ''}`}
                   asChild
                 >
-                  <Link href="/dashboard/products">
-                    <Package className="mr-2 h-4 w-4" />
-                    Products
+                  <Link href={href}>
+                    <Icon className="mr-2 h-4 w-4" />
+                    {label}
                   </Link>
                 </Button>
-                <Button
-                  variant="ghost"
-                  className="w-full justify-start pl-8"
-                  asChild
-                >
-                  <Link href="/dashboard/collections">
-                    <List className="mr-2 h-4 w-4" />
-                    Collections
-                  </Link>
-                </Button>
-                <Button
-                  variant="ghost"
-                  className="w-full justify-start pl-8"
-                  asChild
-                >
-                  <Link href="/dashboard/inventory">
-                    <Box className="mr-2 h-4 w-4" />
-                    Inventory
-                  </Link>
-                </Button>
-              </div>
-              <Button variant="ghost" className="w-full justify-start" asChild>
-                <Link href="/dashboard/orders">
-                  <ShoppingCart className="mr-2 h-4 w-4" />
-                  Orders
-                </Link>
-              </Button>
-              <Button variant="ghost" className="w-full justify-start" asChild>
-                <Link href="/dashboard/customers">
-                  <Users className="mr-2 h-4 w-4" />
-                  Customers
-                </Link>
-              </Button>
+              ))}
             </nav>
             <div className="p-4">
               <Button variant="ghost" className="w-full justify-start" asChild>
@@ -412,7 +394,9 @@ export default function DashboardLayout({
                   </div>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={handleSignOut}>Log out</DropdownMenuItem>
+                <DropdownMenuItem onClick={handleSignOut}>
+                  Log out
+                </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
