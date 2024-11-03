@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useTheme } from 'next-themes';
 import {
   Bell,
@@ -17,6 +17,7 @@ import {
   LayoutDashboard,
   Box,
   List,
+  Settings,
 } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
@@ -71,6 +72,7 @@ export default function DashboardLayout({
 }: {
   children: React.ReactNode;
 }) {
+  const [isMobile, setIsMobile] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -79,6 +81,15 @@ export default function DashboardLayout({
   const [isSigningOut, setIsSigningOut] = useState(false);
   const userName = [user?.firstName, user?.lastName].filter(Boolean).join(' ');
   const userInitials = [user?.firstName?.[0], user?.lastName?.[0]].join('');
+
+  useEffect(() => {
+    const checkIsMobile = () => {
+      setIsMobile(window.innerWidth < 1024);
+    };
+    checkIsMobile();
+    window.addEventListener('resize', checkIsMobile);
+    return () => window.removeEventListener('resize', checkIsMobile);
+  }, []);
 
   const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
 
@@ -93,14 +104,16 @@ export default function DashboardLayout({
   };
 
   const handleSignOut = () => {
-    setIsSigningOut(true)
+    setIsSigningOut(true);
     signOut();
   };
 
   if (isSigningOut) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-900 dark:to-gray-800">
-        <p className="text-lg text-gray-600 dark:text-gray-300">Signing out...</p>
+        <p className="text-lg text-gray-600 dark:text-gray-300">
+          Signing out...
+        </p>
       </div>
     );
   }
@@ -138,60 +151,83 @@ export default function DashboardLayout({
               onClick={toggleSidebar}
               className="lg:hidden"
             >
-              <Menu className="h-6 w-6" />
-              <span className="sr-only">Toggle sidebar</span>
+              <X className="h-6 w-6" />
+              <span className="sr-only">Close sidebar</span>
             </Button>
           </div>
-          <nav className="flex-1 space-y-2 p-4">
-            <Button variant="ghost" className="w-full justify-start" asChild>
-              <Link href="/dashboard">
-                <LayoutDashboard className="mr-2 h-4 w-4" />
-                Overview
-              </Link>
-            </Button>
-            <div className="space-y-1">
+          <div className="flex flex-col justify-between h-full overflow-y-auto">
+            <nav className="flex-1 space-y-2 p-4">
               <Button variant="ghost" className="w-full justify-start" asChild>
-                <Link href="/dashboard/products">
-                  <Package className="mr-2 h-4 w-4" />
-                  Products
+                <Link href="/dashboard">
+                  <LayoutDashboard className="mr-2 h-4 w-4" />
+                  Overview
                 </Link>
               </Button>
-              <Button
-                variant="ghost"
-                className="w-full justify-start pl-8"
-                asChild
-              >
-                <Link href="/dashboard/collections">
-                  <List className="mr-2 h-4 w-4" />
-                  Collections
+              <div className="space-y-1">
+                <Button
+                  variant="ghost"
+                  className="w-full justify-start"
+                  asChild
+                >
+                  <Link href="/dashboard/products">
+                    <Package className="mr-2 h-4 w-4" />
+                    Products
+                  </Link>
+                </Button>
+                <Button
+                  variant="ghost"
+                  className="w-full justify-start pl-8"
+                  asChild
+                >
+                  <Link href="/dashboard/collections">
+                    <List className="mr-2 h-4 w-4" />
+                    Collections
+                  </Link>
+                </Button>
+                <Button
+                  variant="ghost"
+                  className="w-full justify-start pl-8"
+                  asChild
+                >
+                  <Link href="/dashboard/inventory">
+                    <Box className="mr-2 h-4 w-4" />
+                    Inventory
+                  </Link>
+                </Button>
+              </div>
+              <Button variant="ghost" className="w-full justify-start" asChild>
+                <Link href="/dashboard/orders">
+                  <ShoppingCart className="mr-2 h-4 w-4" />
+                  Orders
                 </Link>
               </Button>
-              <Button
-                variant="ghost"
-                className="w-full justify-start pl-8"
-                asChild
-              >
-                <Link href="/dashboard/inventory">
-                  <Box className="mr-2 h-4 w-4" />
-                  Inventory
+              <Button variant="ghost" className="w-full justify-start" asChild>
+                <Link href="/dashboard/customers">
+                  <Users className="mr-2 h-4 w-4" />
+                  Customers
+                </Link>
+              </Button>
+            </nav>
+            <div className="p-4">
+              <Button variant="ghost" className="w-full justify-start" asChild>
+                <Link href="/dashboard/settings">
+                  <Settings className="mr-2 h-4 w-4" />
+                  Settings
                 </Link>
               </Button>
             </div>
-            <Button variant="ghost" className="w-full justify-start" asChild>
-              <Link href="/dashboard/orders">
-                <ShoppingCart className="mr-2 h-4 w-4" />
-                Orders
-              </Link>
-            </Button>
-            <Button variant="ghost" className="w-full justify-start" asChild>
-              <Link href="/dashboard/customers">
-                <Users className="mr-2 h-4 w-4" />
-                Customers
-              </Link>
-            </Button>
-          </nav>
+          </div>
         </div>
       </aside>
+
+      {/* Overlay */}
+      {isMobile && isSidebarOpen && (
+        <div
+          className="fixed inset-0 z-40 bg-background/80 backdrop-blur-sm"
+          onClick={toggleSidebar}
+          aria-hidden="true"
+        />
+      )}
 
       {/* Main content */}
       <div className="flex flex-1 flex-col overflow-hidden">
@@ -249,13 +285,8 @@ export default function DashboardLayout({
                               key={order.id}
                               className="flex items-center justify-between p-2"
                             >
-                              <div className="flex items-center">
-                                <ShoppingCart className="mr-2 h-4 w-4" />
-                                <span>
-                                  {order.id} - {order.customer}
-                                </span>
-                              </div>
-                              <span className="text-muted-foreground">
+                              <span>{order.customer}</span>
+                              <span className="text-sm text-muted-foreground">
                                 {order.total}
                               </span>
                             </CommandItem>
@@ -269,11 +300,8 @@ export default function DashboardLayout({
                               key={product.id}
                               className="flex items-center justify-between p-2"
                             >
-                              <div className="flex items-center">
-                                <Package className="mr-2 h-4 w-4" />
-                                <span>{product.name}</span>
-                              </div>
-                              <span className="text-muted-foreground">
+                              <span>{product.name}</span>
+                              <span className="text-sm text-muted-foreground">
                                 {product.price}
                               </span>
                             </CommandItem>
@@ -287,11 +315,8 @@ export default function DashboardLayout({
                               key={customer.id}
                               className="flex items-center justify-between p-2"
                             >
-                              <div className="flex items-center">
-                                <User className="mr-2 h-4 w-4" />
-                                <span>{customer.name}</span>
-                              </div>
-                              <span className="text-muted-foreground">
+                              <span>{customer.name}</span>
+                              <span className="text-sm text-muted-foreground">
                                 {customer.email}
                               </span>
                             </CommandItem>
@@ -313,6 +338,7 @@ export default function DashboardLayout({
               <DropdownMenuTrigger asChild>
                 <Button
                   variant="ghost"
+                  size="icon"
                   className="relative h-8 w-8 rounded-full"
                 >
                   <Avatar className="h-8 w-8">
@@ -394,16 +420,14 @@ export default function DashboardLayout({
                   </div>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={handleSignOut}>
-                  Sign out
-                </DropdownMenuItem>
+                <DropdownMenuItem onClick={signOut}>Log out</DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
         </header>
 
         {/* Page content */}
-        <main className="flex-1 overflow-x-hidden overflow-y-auto bg-background p-6">
+        <main className="flex-1 overflow-x-hidden overflow-y-auto bg-background  p-6">
           {children}
         </main>
       </div>
