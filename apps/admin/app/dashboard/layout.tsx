@@ -48,6 +48,8 @@ import { useIsMobile } from '@/components/hooks/use-mobile';
 import { useCurrentUser } from '@/common/hooks/auth';
 import { SignInRequired } from '../(auth)/(components)/sign-in-required';
 import { CreateStoreRequired } from './(components)/create-store-required';
+import { usePathname, useRouter } from 'next/navigation';
+import { DASHBOARD_SETTINGS_LINK } from '@/common/constants';
 
 // Dummy data for search results
 const dummySearchResults = {
@@ -101,6 +103,8 @@ export default function DashboardLayout({
   const [isSigningOut, setIsSigningOut] = useState(false);
   const userName = [user?.firstName, user?.lastName].filter(Boolean).join(' ');
   const userInitials = [user?.firstName?.[0], user?.lastName?.[0]].join('');
+  const router = useRouter();
+  const pathname = usePathname();
 
   const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
 
@@ -117,6 +121,15 @@ export default function DashboardLayout({
   const handleSignOut = () => {
     setIsSigningOut(true);
     signOut();
+  };
+
+  const handleClick = () => {
+    if (pathname !== DASHBOARD_SETTINGS_LINK) {
+      // Save the current page to local storage
+      localStorage.setItem('checkpoint', window.location.pathname);
+    }
+    // Navigate to the new page
+    router.push('/dashboard/settings');
   };
 
   if (isSigningOut) {
@@ -183,11 +196,13 @@ export default function DashboardLayout({
               ))}
             </nav>
             <div className="p-4">
-              <Button variant="ghost" className="w-full justify-start" asChild>
-                <Link href="/dashboard/settings">
-                  <Settings className="mr-2 h-4 w-4" />
-                  Settings
-                </Link>
+              <Button
+                variant="ghost"
+                className="w-full justify-start"
+                onClick={handleClick}
+              >
+                <Settings className="mr-2 h-4 w-4" />
+                Settings
               </Button>
             </div>
           </div>

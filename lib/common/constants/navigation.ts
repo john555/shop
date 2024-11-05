@@ -5,3 +5,4 @@ export const RESET_CONFIRMATION_PAGE_LINK = "/reset-confirmation";
 export const CREATE_STORE_PAGE_LINK = "/create-store";
 
 export const DASHBOARD_PAGE_LINK = "/dashboard";
+export const DASHBOARD_SETTINGS_LINK = "/dashboard/settings";
