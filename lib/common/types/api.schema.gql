@@ -31,6 +31,12 @@ input AuthSignupInput {
   password: String!
 }
 
+"""Position of currency symbol"""
+enum CurrencyPosition {
+  AFTER_AMOUNT
+  BEFORE_AMOUNT
+}
+
 """
 A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date-time format.
 """
@@ -80,53 +86,123 @@ type Store {
   """Currency of the Store"""
   currency: StoreCurrency!
 
-  """Currency of the Store"""
-  description: String
+  """Position of currency symbol"""
+  currencyPosition: CurrencyPosition!
+
+  """Custom currency symbol"""
+  currencySymbol: String
 
   """Email of the Store"""
   email: String!
 
+  """Facebook page of the Store"""
+  facebook: String
+
   """ID of the Store"""
   id: ID!
+
+  """Instagram handle of the Store"""
+  instagram: String
 
   """Name of the Store"""
   name: String!
 
+  """Order number prefix"""
+  orderPrefix: String
+
+  """Order number suffix"""
+  orderSuffix: String
+
   """ID of the User who owns the store"""
   ownerId: String!
+
+  """Phone number of the Store"""
+  phone: String
+
+  """Whether to show currency code"""
+  showCurrencyCode: Boolean!
 
   """Slug of the Store"""
   slug: String!
 
+  """Timezone of the Store"""
+  timeZone: String!
+
   """Type of the Store"""
   type: StoreType!
 
+  """Measurement system"""
+  unitSystem: UnitSystem!
+
   """Date the Store was last updated"""
   updatedAt: DateTime!
+
+  """Weight unit"""
+  weightUnit: WeightUnit!
+
+  """WhatsApp number of the Store"""
+  whatsApp: String
 }
 
 input StoreCreateInput {
   """Currency of the Store"""
   currency: StoreCurrency!
 
-  """Description of the Store"""
-  description: String
+  """Position of currency symbol"""
+  currencyPosition: CurrencyPosition = BEFORE_AMOUNT
 
-  """Contact email of the Store"""
-  email: String
+  """
+  Custom currency symbol. If not provided, defaults will be used based on currency.
+  """
+  currencySymbol: String
 
-  """Email of the Store"""
+  """Facebook page username/handle"""
+  facebook: String
+
+  """Instagram handle (without @)"""
+  instagram: String
+
+  """Name of the Store"""
   name: String!
+
+  """Prefix for order numbers"""
+  orderPrefix: String = "#"
+
+  """Suffix for order numbers"""
+  orderSuffix: String
+
+  """Phone number of the Store"""
+  phone: String
+
+  """Whether to show currency code"""
+  showCurrencyCode: Boolean = false
 
   """Slug of the Store"""
   slug: String!
 
+  """Timezone for the store"""
+  timeZone: String = "Africa/Nairobi"
+
   """Type of the Store"""
   type: StoreType!
+
+  """Unit system for measurements"""
+  unitSystem: UnitSystem = METRIC
+
+  """Weight unit for products"""
+  weightUnit: WeightUnit = KILOGRAM
+
+  """WhatsApp business number"""
+  whatsApp: String
 }
 
 """The currency of store"""
 enum StoreCurrency {
+  BIF
+  KES
+  RWF
+  SSP
+  TZS
   UGX
 }
 
@@ -138,23 +214,56 @@ enum StoreType {
 }
 
 input StoreUpdateInput {
-  """Description of the Store"""
-  description: String
+  """Position of currency symbol"""
+  currencyPosition: CurrencyPosition
 
-  """Contact email of the Store"""
-  email: String
+  """Custom currency symbol. Set to null to use currency defaults."""
+  currencySymbol: String
+
+  """Facebook page username/handle"""
+  facebook: String
 
   """ID of the Store"""
   id: ID!
 
-  """Email of the Store"""
+  """Instagram handle (without @)"""
+  instagram: String
+
+  """Name of the Store"""
   name: String
+
+  """Prefix for order numbers"""
+  orderPrefix: String
+
+  """Suffix for order numbers"""
+  orderSuffix: String
+
+  """Phone number of the Store"""
+  phone: String
+
+  """Whether to show currency code"""
+  showCurrencyCode: Boolean
 
   """Slug of the Store"""
   slug: String
 
-  """Type of the Store"""
-  type: StoreType
+  """Timezone for the store"""
+  timeZone: String
+
+  """Unit system for measurements"""
+  unitSystem: UnitSystem
+
+  """Weight unit for products"""
+  weightUnit: WeightUnit
+
+  """WhatsApp business number"""
+  whatsApp: String
+}
+
+"""Measurement system used by the store"""
+enum UnitSystem {
+  IMPERIAL
+  METRIC
 }
 
 """user"""
@@ -216,4 +325,12 @@ input UserUpdateInput {
 
   """Last name of the User"""
   lastName: String
+}
+
+"""Weight unit used by the store"""
+enum WeightUnit {
+  GRAM
+  KILOGRAM
+  OUNCE
+  POUND
 }

@@ -3,7 +3,6 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from '@/api/prisma/prisma.service';
 import { PaginationArgs } from '@/api/pagination/pagination.args';
 import { paginate } from '@/api/pagination/paginate';
-import { GetMyStoresArgs } from './store.dto';
 
 @Injectable()
 export class StoreService {
@@ -32,6 +31,8 @@ export class StoreService {
     return this.prismaService.store.create({
       data: {
         ...input,
+        // Don't set a default currency symbol, let the database handle null
+        currencySymbol: input.currencySymbol ?? null,
       },
     });
   }
@@ -40,11 +41,18 @@ export class StoreService {
     id: string,
     input: Prisma.StoreUncheckedUpdateInput
   ): Promise<Store> {
+    // If updating currency and currencySymbol is explicitly set to null, keep it null
+    // If currencySymbol is undefined, don't change it
+    const updateData = {
+      ...input,
+      currencySymbol: input.currencySymbol === undefined 
+        ? undefined 
+        : input.currencySymbol ?? null
+    };
+
     return this.prismaService.store.update({
       where: { id },
-      data: {
-        ...input,
-      },
+      data: updateData,
     });
   }
 }

@@ -50,6 +50,12 @@ export type AuthSignupInput = {
   password: Scalars['String']['input'];
 };
 
+/** Position of currency symbol */
+export enum CurrencyPosition {
+  AfterAmount = 'AFTER_AMOUNT',
+  BeforeAmount = 'BEFORE_AMOUNT'
+}
+
 export type Mutation = {
   __typename?: 'Mutation';
   createStore: Store;
@@ -144,41 +150,88 @@ export type Store = {
   createdAt: Scalars['DateTime']['output'];
   /** Currency of the Store */
   currency: StoreCurrency;
-  /** Currency of the Store */
-  description?: Maybe<Scalars['String']['output']>;
+  /** Position of currency symbol */
+  currencyPosition: CurrencyPosition;
+  /** Custom currency symbol */
+  currencySymbol?: Maybe<Scalars['String']['output']>;
   /** Email of the Store */
   email: Scalars['String']['output'];
+  /** Facebook page of the Store */
+  facebook?: Maybe<Scalars['String']['output']>;
   /** ID of the Store */
   id: Scalars['ID']['output'];
+  /** Instagram handle of the Store */
+  instagram?: Maybe<Scalars['String']['output']>;
   /** Name of the Store */
   name: Scalars['String']['output'];
+  /** Order number prefix */
+  orderPrefix?: Maybe<Scalars['String']['output']>;
+  /** Order number suffix */
+  orderSuffix?: Maybe<Scalars['String']['output']>;
   /** ID of the User who owns the store */
   ownerId: Scalars['String']['output'];
+  /** Phone number of the Store */
+  phone?: Maybe<Scalars['String']['output']>;
+  /** Whether to show currency code */
+  showCurrencyCode: Scalars['Boolean']['output'];
   /** Slug of the Store */
   slug: Scalars['String']['output'];
+  /** Timezone of the Store */
+  timeZone: Scalars['String']['output'];
   /** Type of the Store */
   type: StoreType;
+  /** Measurement system */
+  unitSystem: UnitSystem;
   /** Date the Store was last updated */
   updatedAt: Scalars['DateTime']['output'];
+  /** Weight unit */
+  weightUnit: WeightUnit;
+  /** WhatsApp number of the Store */
+  whatsApp?: Maybe<Scalars['String']['output']>;
 };
 
 export type StoreCreateInput = {
   /** Currency of the Store */
   currency: StoreCurrency;
-  /** Description of the Store */
-  description?: InputMaybe<Scalars['String']['input']>;
-  /** Contact email of the Store */
-  email?: InputMaybe<Scalars['String']['input']>;
-  /** Email of the Store */
+  /** Position of currency symbol */
+  currencyPosition?: InputMaybe<CurrencyPosition>;
+  /** Custom currency symbol. If not provided, defaults will be used based on currency. */
+  currencySymbol?: InputMaybe<Scalars['String']['input']>;
+  /** Facebook page username/handle */
+  facebook?: InputMaybe<Scalars['String']['input']>;
+  /** Instagram handle (without @) */
+  instagram?: InputMaybe<Scalars['String']['input']>;
+  /** Name of the Store */
   name: Scalars['String']['input'];
+  /** Prefix for order numbers */
+  orderPrefix?: InputMaybe<Scalars['String']['input']>;
+  /** Suffix for order numbers */
+  orderSuffix?: InputMaybe<Scalars['String']['input']>;
+  /** Phone number of the Store */
+  phone?: InputMaybe<Scalars['String']['input']>;
+  /** Whether to show currency code */
+  showCurrencyCode?: InputMaybe<Scalars['Boolean']['input']>;
   /** Slug of the Store */
   slug: Scalars['String']['input'];
+  /** Timezone for the store */
+  timeZone?: InputMaybe<Scalars['String']['input']>;
   /** Type of the Store */
   type: StoreType;
+  /** Unit system for measurements */
+  unitSystem?: InputMaybe<UnitSystem>;
+  /** Weight unit for products */
+  weightUnit?: InputMaybe<WeightUnit>;
+  /** WhatsApp business number */
+  whatsApp?: InputMaybe<Scalars['String']['input']>;
 };
 
 /** The currency of store */
 export enum StoreCurrency {
+  Bif = 'BIF',
+  Kes = 'KES',
+  Rwf = 'RWF',
+  Ssp = 'SSP',
+  Tzs = 'TZS',
   Ugx = 'UGX'
 }
 
@@ -190,19 +243,43 @@ export enum StoreType {
 }
 
 export type StoreUpdateInput = {
-  /** Description of the Store */
-  description?: InputMaybe<Scalars['String']['input']>;
-  /** Contact email of the Store */
-  email?: InputMaybe<Scalars['String']['input']>;
+  /** Position of currency symbol */
+  currencyPosition?: InputMaybe<CurrencyPosition>;
+  /** Custom currency symbol. Set to null to use currency defaults. */
+  currencySymbol?: InputMaybe<Scalars['String']['input']>;
+  /** Facebook page username/handle */
+  facebook?: InputMaybe<Scalars['String']['input']>;
   /** ID of the Store */
   id: Scalars['ID']['input'];
-  /** Email of the Store */
+  /** Instagram handle (without @) */
+  instagram?: InputMaybe<Scalars['String']['input']>;
+  /** Name of the Store */
   name?: InputMaybe<Scalars['String']['input']>;
+  /** Prefix for order numbers */
+  orderPrefix?: InputMaybe<Scalars['String']['input']>;
+  /** Suffix for order numbers */
+  orderSuffix?: InputMaybe<Scalars['String']['input']>;
+  /** Phone number of the Store */
+  phone?: InputMaybe<Scalars['String']['input']>;
+  /** Whether to show currency code */
+  showCurrencyCode?: InputMaybe<Scalars['Boolean']['input']>;
   /** Slug of the Store */
   slug?: InputMaybe<Scalars['String']['input']>;
-  /** Type of the Store */
-  type?: InputMaybe<StoreType>;
+  /** Timezone for the store */
+  timeZone?: InputMaybe<Scalars['String']['input']>;
+  /** Unit system for measurements */
+  unitSystem?: InputMaybe<UnitSystem>;
+  /** Weight unit for products */
+  weightUnit?: InputMaybe<WeightUnit>;
+  /** WhatsApp business number */
+  whatsApp?: InputMaybe<Scalars['String']['input']>;
 };
+
+/** Measurement system used by the store */
+export enum UnitSystem {
+  Imperial = 'IMPERIAL',
+  Metric = 'METRIC'
+}
 
 /** user */
 export type User = {
@@ -250,6 +327,14 @@ export type UserUpdateInput = {
   /** Last name of the User */
   lastName?: InputMaybe<Scalars['String']['input']>;
 };
+
+/** Weight unit used by the store */
+export enum WeightUnit {
+  Gram = 'GRAM',
+  Kilogram = 'KILOGRAM',
+  Ounce = 'OUNCE',
+  Pound = 'POUND'
+}
 
 
 
@@ -328,6 +413,7 @@ export type ResolversTypes = {
   AuthSignup: ResolverTypeWrapper<AuthSignup>;
   AuthSignupInput: AuthSignupInput;
   Boolean: ResolverTypeWrapper<Scalars['Boolean']['output']>;
+  CurrencyPosition: CurrencyPosition;
   DateTime: ResolverTypeWrapper<Scalars['DateTime']['output']>;
   ID: ResolverTypeWrapper<Scalars['ID']['output']>;
   Int: ResolverTypeWrapper<Scalars['Int']['output']>;
@@ -340,9 +426,11 @@ export type ResolversTypes = {
   StoreType: StoreType;
   StoreUpdateInput: StoreUpdateInput;
   String: ResolverTypeWrapper<Scalars['String']['output']>;
+  UnitSystem: UnitSystem;
   User: ResolverTypeWrapper<User>;
   UserCreateInput: UserCreateInput;
   UserUpdateInput: UserUpdateInput;
+  WeightUnit: WeightUnit;
 };
 
 /** Mapping between all available schema types and the resolvers parents */
@@ -410,14 +498,25 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
 export type StoreResolvers<ContextType = any, ParentType extends ResolversParentTypes['Store'] = ResolversParentTypes['Store']> = {
   createdAt?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   currency?: Resolver<ResolversTypes['StoreCurrency'], ParentType, ContextType>;
-  description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  currencyPosition?: Resolver<ResolversTypes['CurrencyPosition'], ParentType, ContextType>;
+  currencySymbol?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   email?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  facebook?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  instagram?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  orderPrefix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  orderSuffix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   ownerId?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  phone?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  showCurrencyCode?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   slug?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  timeZone?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   type?: Resolver<ResolversTypes['StoreType'], ParentType, ContextType>;
+  unitSystem?: Resolver<ResolversTypes['UnitSystem'], ParentType, ContextType>;
   updatedAt?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
+  weightUnit?: Resolver<ResolversTypes['WeightUnit'], ParentType, ContextType>;
+  whatsApp?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 

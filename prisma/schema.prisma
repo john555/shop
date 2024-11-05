@@ -31,27 +31,146 @@ model User {
 }
 
 enum StoreType {
-  PHYSICAL_GOODS
-  REAL_ESTATE
-  VEHICLES
+  PHYSICAL_GOODS // For stores selling tangible products
+  REAL_ESTATE // For real estate listings and property management
+  VEHICLES // For vehicle dealerships and automotive sales
 }
 
 enum StoreCurrency {
-  UGX
+  KES // Kenyan Shilling
+  UGX // Ugandan Shilling
+  TZS // Tanzanian Shilling
+  RWF // Rwandan Franc
+  BIF // Burundian Franc
+  SSP // South Sudanese Pound
+}
+
+enum CurrencyPosition {
+  BEFORE_AMOUNT // e.g., $100
+  AFTER_AMOUNT // e.g., 100$
+}
+
+enum UnitSystem {
+  IMPERIAL // US/UK measurement system (feet, pounds, etc.)
+  METRIC // International metric system
+}
+
+enum WeightUnit {
+  POUND // Imperial weight unit (lb)
+  OUNCE // Imperial weight unit (oz)
+  KILOGRAM // Metric weight unit (kg)
+  GRAM // Smaller metric weight unit (g)
+}
+
+enum AddressType {
+  BILLING // Address used for invoices and financial documents
+  SHIPPING // Address used for shipping products from/to
+  PICKUP // Physical location where customers can collect items
+  WAREHOUSE // Storage facility location
+  REGISTERED // Official business registration address
+}
+
+// Defines what entity owns/uses this address
+enum AddressOwnerType {
+  STORE // Store address (billing, warehouse, etc.)
+  CUSTOMER // Customer address (shipping, billing)
+  ORDER // Order-specific address (delivery location)
 }
 
 model Store {
-  id          String        @id @default(cuid())
-  name        String
-  slug        String        @unique
-  description String?
-  email       String
-  type        StoreType
-  currency    StoreCurrency
-  createdAt   DateTime      @default(now()) @db.Timestamp(6)
-  updatedAt   DateTime      @updatedAt @db.Timestamp(6)
-  ownerId     String
-  owner       User?         @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  id   String @id @default(cuid())
+  name String
+  slug String @unique
 
+  // Contact Information
+  email    String
+  phone    String? // Primary contact number
+  whatsApp String? // WhatsApp business number
+
+  // Social Media
+  facebook  String? // Facebook page username/handle
+  instagram String? // Instagram handle (without @)
+
+  type StoreType
+
+  // Store Details
+  addresses AddressOnOwner[]
+
+  // Store Defaults
+  currency StoreCurrency
+
+  // Currency Display Settings
+  currencySymbol   String? // Custom symbol (e.g., KSh, USh)
+  currencyPosition CurrencyPosition @default(BEFORE_AMOUNT)
+  showCurrencyCode Boolean          @default(false) // Whether to show currency code (e.g., UGX, KES)
+
+  // Other Store Defaults
+  unitSystem UnitSystem @default(METRIC) // Using METRIC as default
+  weightUnit WeightUnit @default(KILOGRAM) // Using KILOGRAM as default
+  timeZone   String     @default("Africa/Nairobi") // East African Time
+
+  // Order Configuration
+  orderPrefix String? @default("#")
+  orderSuffix String?
+
+  // Timestamps and Relations
+  createdAt DateTime @default(now()) @db.Timestamp(6)
+  updatedAt DateTime @updatedAt @db.Timestamp(6)
+  ownerId   String
+  owner     User?    @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+
+  // Indices for common queries
+  @@index([phone]) // For phone number lookups
+  @@index([whatsApp]) // For WhatsApp number lookups
   @@map("stores")
+}
+
+model Address {
+  id String @id @default(cuid())
+
+  // Location Details
+  country String // Full country name or ISO country code
+  state   String? // State/province/region
+  city    String? // City/town/municipality
+  line1   String? // Street address, building number
+  line2   String? // Suite, apartment, unit number
+  zipCode String? // Postal/ZIP code
+
+  // Address Usage
+  owners AddressOnOwner[] // Relation to entities using this address
+
+  // Timestamps
+  createdAt DateTime @default(now()) @db.Timestamp(6)
+  updatedAt DateTime @updatedAt @db.Timestamp(6)
+
+  @@map("addresses")
+}
+
+// Junction table to connect addresses to their owners (Store, Customer, Order, etc.)
+model AddressOnOwner {
+  id String @id @default(cuid())
+
+  // Address Connection
+  addressId String
+  address   Address @relation(fields: [addressId], references: [id], onDelete: Cascade)
+
+  // Owner Details
+  ownerType AddressOwnerType // Type of entity owning this address
+  ownerId   String // ID of the owning entity
+
+  // Address Classification
+  type      AddressType // Purpose of this address (billing, shipping, etc.)
+  isDefault Boolean     @default(false) // Whether this is the default address for its type
+
+  // Store specific relation (can add more as needed)
+  store Store? @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+
+  // Timestamps
+  createdAt DateTime @default(now()) @db.Timestamp(6)
+  updatedAt DateTime @updatedAt @db.Timestamp(6)
+
+  @@unique([ownerId, ownerType, type, isDefault]) // Only one default per type per owner
+  @@index([ownerId, ownerType]) // For quick owner lookups
+  @@index([addressId]) // For quick address lookups
+  @@map("address_owners")
 }
