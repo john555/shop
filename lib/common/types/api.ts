@@ -18,6 +18,65 @@ export type Scalars = {
   DateTime: { input: any; output: any; }
 };
 
+/** Address */
+export type Address = {
+  __typename?: 'Address';
+  city?: Maybe<Scalars['String']['output']>;
+  country: Scalars['String']['output'];
+  createdAt: Scalars['DateTime']['output'];
+  id: Scalars['ID']['output'];
+  line1?: Maybe<Scalars['String']['output']>;
+  line2?: Maybe<Scalars['String']['output']>;
+  state?: Maybe<Scalars['String']['output']>;
+  updatedAt: Scalars['DateTime']['output'];
+  zipCode?: Maybe<Scalars['String']['output']>;
+};
+
+export type AddressInput = {
+  /** City/town/municipality */
+  city?: InputMaybe<Scalars['String']['input']>;
+  /** Country name or ISO code */
+  country: Scalars['String']['input'];
+  /** Street address, building number */
+  line1?: InputMaybe<Scalars['String']['input']>;
+  /** Suite, apartment, unit number */
+  line2?: InputMaybe<Scalars['String']['input']>;
+  /** State/province/region */
+  state?: InputMaybe<Scalars['String']['input']>;
+  /** Postal/ZIP code */
+  zipCode?: InputMaybe<Scalars['String']['input']>;
+};
+
+/** Address relationship with owner */
+export type AddressOnOwner = {
+  __typename?: 'AddressOnOwner';
+  address: Address;
+  addressId: Scalars['String']['output'];
+  createdAt: Scalars['DateTime']['output'];
+  id: Scalars['ID']['output'];
+  isDefault: Scalars['Boolean']['output'];
+  ownerId: Scalars['String']['output'];
+  ownerType: AddressOwnerType;
+  type: AddressType;
+  updatedAt: Scalars['DateTime']['output'];
+};
+
+/** Type of entity that owns the address */
+export enum AddressOwnerType {
+  Customer = 'CUSTOMER',
+  Order = 'ORDER',
+  Store = 'STORE'
+}
+
+/** Type of address (billing, shipping, etc.) */
+export enum AddressType {
+  Billing = 'BILLING',
+  Pickup = 'PICKUP',
+  Registered = 'REGISTERED',
+  Shipping = 'SHIPPING',
+  Warehouse = 'WAREHOUSE'
+}
+
 /** AuthSignin */
 export type AuthSignin = {
   __typename?: 'AuthSignin';
@@ -50,7 +109,7 @@ export type AuthSignupInput = {
   password: Scalars['String']['input'];
 };
 
-/** Position of currency symbol */
+/** Position of currency symbol (BEFORE_AMOUNT, AFTER_AMOUNT) */
 export enum CurrencyPosition {
   AfterAmount = 'AFTER_AMOUNT',
   BeforeAmount = 'BEFORE_AMOUNT'
@@ -60,6 +119,8 @@ export type Mutation = {
   __typename?: 'Mutation';
   createStore: Store;
   createUser: User;
+  deleteAddress: Scalars['Boolean']['output'];
+  deleteStore: Scalars['Boolean']['output'];
   /** Refresh auth token */
   refresh: AuthSignin;
   /** Sign in */
@@ -68,6 +129,7 @@ export type Mutation = {
   signout: AuthSignout;
   /** Sign up new user */
   signup: AuthSignup;
+  updateAddress: AddressOnOwner;
   updateStore: Store;
   updateUser: User;
 };
@@ -83,6 +145,18 @@ export type MutationCreateUserArgs = {
 };
 
 
+export type MutationDeleteAddressArgs = {
+  ownerId: Scalars['ID']['input'];
+  ownerType: AddressOwnerType;
+  type: AddressType;
+};
+
+
+export type MutationDeleteStoreArgs = {
+  id: Scalars['String']['input'];
+};
+
+
 export type MutationSigninArgs = {
   input: AuthSigninInput;
 };
@@ -90,6 +164,11 @@ export type MutationSigninArgs = {
 
 export type MutationSignupArgs = {
   input: AuthSignupInput;
+};
+
+
+export type MutationUpdateAddressArgs = {
+  input: UpdateAddressInput;
 };
 
 
@@ -104,12 +183,28 @@ export type MutationUpdateUserArgs = {
 
 export type Query = {
   __typename?: 'Query';
+  getAddress?: Maybe<AddressOnOwner>;
+  getAddresses: Array<AddressOnOwner>;
   /** Get current user */
   me: User;
   myStores: Array<Store>;
   store: Store;
+  storeBySlug?: Maybe<Store>;
   user: User;
   users: Array<User>;
+};
+
+
+export type QueryGetAddressArgs = {
+  ownerId: Scalars['ID']['input'];
+  ownerType: AddressOwnerType;
+  type: AddressType;
+};
+
+
+export type QueryGetAddressesArgs = {
+  ownerId: Scalars['ID']['input'];
+  ownerType: AddressOwnerType;
 };
 
 
@@ -123,6 +218,11 @@ export type QueryMyStoresArgs = {
 
 export type QueryStoreArgs = {
   id: Scalars['ID']['input'];
+};
+
+
+export type QueryStoreBySlugArgs = {
+  slug: Scalars['String']['input'];
 };
 
 
@@ -143,89 +243,65 @@ export enum SortOrder {
   Desc = 'DESC'
 }
 
-/** store */
+/** Store model */
 export type Store = {
   __typename?: 'Store';
-  /** Date the Store was created */
+  /** Addresses associated with the store */
+  addresses?: Maybe<Array<AddressOnOwner>>;
+  /** When the store was created */
   createdAt: Scalars['DateTime']['output'];
-  /** Currency of the Store */
+  /** Primary currency of the store */
   currency: StoreCurrency;
-  /** Position of currency symbol */
+  /** Position of the currency symbol relative to the amount */
   currencyPosition: CurrencyPosition;
-  /** Custom currency symbol */
+  /** Custom symbol for the currency (e.g., KSh, USh) */
   currencySymbol?: Maybe<Scalars['String']['output']>;
-  /** Email of the Store */
+  /** Email address of the store */
   email: Scalars['String']['output'];
-  /** Facebook page of the Store */
+  /** Facebook page username/handle */
   facebook?: Maybe<Scalars['String']['output']>;
-  /** ID of the Store */
+  /** Unique identifier of the store */
   id: Scalars['ID']['output'];
-  /** Instagram handle of the Store */
+  /** Instagram handle (without @) */
   instagram?: Maybe<Scalars['String']['output']>;
-  /** Name of the Store */
+  /** Name of the store */
   name: Scalars['String']['output'];
-  /** Order number prefix */
+  /** Prefix for order numbers */
   orderPrefix?: Maybe<Scalars['String']['output']>;
-  /** Order number suffix */
+  /** Suffix for order numbers */
   orderSuffix?: Maybe<Scalars['String']['output']>;
-  /** ID of the User who owns the store */
+  /** Owner of the store */
+  owner?: Maybe<User>;
+  /** ID of the store owner */
   ownerId: Scalars['String']['output'];
-  /** Phone number of the Store */
+  /** Phone number of the store */
   phone?: Maybe<Scalars['String']['output']>;
-  /** Whether to show currency code */
+  /** Whether to show currency code alongside amounts */
   showCurrencyCode: Scalars['Boolean']['output'];
-  /** Slug of the Store */
+  /** URL-friendly slug of the store */
   slug: Scalars['String']['output'];
-  /** Timezone of the Store */
+  /** Timezone of the store (e.g., Africa/Nairobi) */
   timeZone: Scalars['String']['output'];
-  /** Type of the Store */
+  /** Type of store */
   type: StoreType;
-  /** Measurement system */
+  /** Measurement system used by the store */
   unitSystem: UnitSystem;
-  /** Date the Store was last updated */
+  /** When the store was last updated */
   updatedAt: Scalars['DateTime']['output'];
-  /** Weight unit */
+  /** Weight unit used for products */
   weightUnit: WeightUnit;
-  /** WhatsApp number of the Store */
+  /** WhatsApp business number */
   whatsApp?: Maybe<Scalars['String']['output']>;
 };
 
 export type StoreCreateInput = {
-  /** Currency of the Store */
   currency: StoreCurrency;
-  /** Position of currency symbol */
-  currencyPosition?: InputMaybe<CurrencyPosition>;
-  /** Custom currency symbol. If not provided, defaults will be used based on currency. */
-  currencySymbol?: InputMaybe<Scalars['String']['input']>;
-  /** Facebook page username/handle */
-  facebook?: InputMaybe<Scalars['String']['input']>;
-  /** Instagram handle (without @) */
-  instagram?: InputMaybe<Scalars['String']['input']>;
-  /** Name of the Store */
   name: Scalars['String']['input'];
-  /** Prefix for order numbers */
-  orderPrefix?: InputMaybe<Scalars['String']['input']>;
-  /** Suffix for order numbers */
-  orderSuffix?: InputMaybe<Scalars['String']['input']>;
-  /** Phone number of the Store */
-  phone?: InputMaybe<Scalars['String']['input']>;
-  /** Whether to show currency code */
-  showCurrencyCode?: InputMaybe<Scalars['Boolean']['input']>;
-  /** Slug of the Store */
   slug: Scalars['String']['input'];
-  /** Timezone for the store */
-  timeZone?: InputMaybe<Scalars['String']['input']>;
-  /** Type of the Store */
   type: StoreType;
-  /** Unit system for measurements */
-  unitSystem?: InputMaybe<UnitSystem>;
-  /** Weight unit for products */
-  weightUnit?: InputMaybe<WeightUnit>;
-  /** WhatsApp business number */
-  whatsApp?: InputMaybe<Scalars['String']['input']>;
 };
 
-/** The currency of store */
+/** The currency used by the store (KES, UGX, TZS, etc.) */
 export enum StoreCurrency {
   Bif = 'BIF',
   Kes = 'KES',
@@ -235,7 +311,7 @@ export enum StoreCurrency {
   Ugx = 'UGX'
 }
 
-/** The type of store */
+/** The type of store (PHYSICAL_GOODS, REAL_ESTATE, VEHICLES) */
 export enum StoreType {
   PhysicalGoods = 'PHYSICAL_GOODS',
   RealEstate = 'REAL_ESTATE',
@@ -243,43 +319,41 @@ export enum StoreType {
 }
 
 export type StoreUpdateInput = {
-  /** Position of currency symbol */
   currencyPosition?: InputMaybe<CurrencyPosition>;
-  /** Custom currency symbol. Set to null to use currency defaults. */
   currencySymbol?: InputMaybe<Scalars['String']['input']>;
-  /** Facebook page username/handle */
+  email?: InputMaybe<Scalars['String']['input']>;
   facebook?: InputMaybe<Scalars['String']['input']>;
-  /** ID of the Store */
   id: Scalars['ID']['input'];
-  /** Instagram handle (without @) */
   instagram?: InputMaybe<Scalars['String']['input']>;
-  /** Name of the Store */
   name?: InputMaybe<Scalars['String']['input']>;
-  /** Prefix for order numbers */
   orderPrefix?: InputMaybe<Scalars['String']['input']>;
-  /** Suffix for order numbers */
   orderSuffix?: InputMaybe<Scalars['String']['input']>;
-  /** Phone number of the Store */
   phone?: InputMaybe<Scalars['String']['input']>;
-  /** Whether to show currency code */
   showCurrencyCode?: InputMaybe<Scalars['Boolean']['input']>;
-  /** Slug of the Store */
-  slug?: InputMaybe<Scalars['String']['input']>;
-  /** Timezone for the store */
   timeZone?: InputMaybe<Scalars['String']['input']>;
-  /** Unit system for measurements */
   unitSystem?: InputMaybe<UnitSystem>;
-  /** Weight unit for products */
   weightUnit?: InputMaybe<WeightUnit>;
-  /** WhatsApp business number */
   whatsApp?: InputMaybe<Scalars['String']['input']>;
 };
 
-/** Measurement system used by the store */
+/** Measurement system used by the store (METRIC, IMPERIAL) */
 export enum UnitSystem {
   Imperial = 'IMPERIAL',
   Metric = 'METRIC'
 }
+
+export type UpdateAddressInput = {
+  /** Address details */
+  address: AddressInput;
+  /** Whether this is the default address of this type */
+  isDefault?: InputMaybe<Scalars['Boolean']['input']>;
+  /** ID of the entity that owns the address */
+  ownerId: Scalars['ID']['input'];
+  /** Type of entity that owns the address */
+  ownerType: AddressOwnerType;
+  /** Type of address */
+  type: AddressType;
+};
 
 /** user */
 export type User = {
@@ -328,7 +402,7 @@ export type UserUpdateInput = {
   lastName?: InputMaybe<Scalars['String']['input']>;
 };
 
-/** Weight unit used by the store */
+/** Weight unit used by the store (KILOGRAM, POUND, etc.) */
 export enum WeightUnit {
   Gram = 'GRAM',
   Kilogram = 'KILOGRAM',
@@ -407,6 +481,11 @@ export type DirectiveResolverFn<TResult = {}, TParent = {}, TContext = {}, TArgs
 
 /** Mapping between all available schema types and the resolvers types */
 export type ResolversTypes = {
+  Address: ResolverTypeWrapper<Address>;
+  AddressInput: AddressInput;
+  AddressOnOwner: ResolverTypeWrapper<AddressOnOwner>;
+  AddressOwnerType: AddressOwnerType;
+  AddressType: AddressType;
   AuthSignin: ResolverTypeWrapper<AuthSignin>;
   AuthSigninInput: AuthSigninInput;
   AuthSignout: ResolverTypeWrapper<AuthSignout>;
@@ -427,6 +506,7 @@ export type ResolversTypes = {
   StoreUpdateInput: StoreUpdateInput;
   String: ResolverTypeWrapper<Scalars['String']['output']>;
   UnitSystem: UnitSystem;
+  UpdateAddressInput: UpdateAddressInput;
   User: ResolverTypeWrapper<User>;
   UserCreateInput: UserCreateInput;
   UserUpdateInput: UserUpdateInput;
@@ -435,6 +515,9 @@ export type ResolversTypes = {
 
 /** Mapping between all available schema types and the resolvers parents */
 export type ResolversParentTypes = {
+  Address: Address;
+  AddressInput: AddressInput;
+  AddressOnOwner: AddressOnOwner;
   AuthSignin: AuthSignin;
   AuthSigninInput: AuthSigninInput;
   AuthSignout: AuthSignout;
@@ -450,9 +533,36 @@ export type ResolversParentTypes = {
   StoreCreateInput: StoreCreateInput;
   StoreUpdateInput: StoreUpdateInput;
   String: Scalars['String']['output'];
+  UpdateAddressInput: UpdateAddressInput;
   User: User;
   UserCreateInput: UserCreateInput;
   UserUpdateInput: UserUpdateInput;
+};
+
+export type AddressResolvers<ContextType = any, ParentType extends ResolversParentTypes['Address'] = ResolversParentTypes['Address']> = {
+  city?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  country?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  createdAt?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
+  id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  line1?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  line2?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  state?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  updatedAt?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
+  zipCode?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
+export type AddressOnOwnerResolvers<ContextType = any, ParentType extends ResolversParentTypes['AddressOnOwner'] = ResolversParentTypes['AddressOnOwner']> = {
+  address?: Resolver<ResolversTypes['Address'], ParentType, ContextType>;
+  addressId?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  createdAt?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
+  id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  isDefault?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  ownerId?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  ownerType?: Resolver<ResolversTypes['AddressOwnerType'], ParentType, ContextType>;
+  type?: Resolver<ResolversTypes['AddressType'], ParentType, ContextType>;
+  updatedAt?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
 export type AuthSigninResolvers<ContextType = any, ParentType extends ResolversParentTypes['AuthSignin'] = ResolversParentTypes['AuthSignin']> = {
@@ -479,23 +589,30 @@ export interface DateTimeScalarConfig extends GraphQLScalarTypeConfig<ResolversT
 export type MutationResolvers<ContextType = any, ParentType extends ResolversParentTypes['Mutation'] = ResolversParentTypes['Mutation']> = {
   createStore?: Resolver<ResolversTypes['Store'], ParentType, ContextType, RequireFields<MutationCreateStoreArgs, 'input'>>;
   createUser?: Resolver<ResolversTypes['User'], ParentType, ContextType, RequireFields<MutationCreateUserArgs, 'input'>>;
+  deleteAddress?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<MutationDeleteAddressArgs, 'ownerId' | 'ownerType' | 'type'>>;
+  deleteStore?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<MutationDeleteStoreArgs, 'id'>>;
   refresh?: Resolver<ResolversTypes['AuthSignin'], ParentType, ContextType>;
   signin?: Resolver<ResolversTypes['AuthSignin'], ParentType, ContextType, RequireFields<MutationSigninArgs, 'input'>>;
   signout?: Resolver<ResolversTypes['AuthSignout'], ParentType, ContextType>;
   signup?: Resolver<ResolversTypes['AuthSignup'], ParentType, ContextType, RequireFields<MutationSignupArgs, 'input'>>;
+  updateAddress?: Resolver<ResolversTypes['AddressOnOwner'], ParentType, ContextType, RequireFields<MutationUpdateAddressArgs, 'input'>>;
   updateStore?: Resolver<ResolversTypes['Store'], ParentType, ContextType, RequireFields<MutationUpdateStoreArgs, 'input'>>;
   updateUser?: Resolver<ResolversTypes['User'], ParentType, ContextType, RequireFields<MutationUpdateUserArgs, 'input'>>;
 };
 
 export type QueryResolvers<ContextType = any, ParentType extends ResolversParentTypes['Query'] = ResolversParentTypes['Query']> = {
+  getAddress?: Resolver<Maybe<ResolversTypes['AddressOnOwner']>, ParentType, ContextType, RequireFields<QueryGetAddressArgs, 'ownerId' | 'ownerType' | 'type'>>;
+  getAddresses?: Resolver<Array<ResolversTypes['AddressOnOwner']>, ParentType, ContextType, RequireFields<QueryGetAddressesArgs, 'ownerId' | 'ownerType'>>;
   me?: Resolver<ResolversTypes['User'], ParentType, ContextType>;
   myStores?: Resolver<Array<ResolversTypes['Store']>, ParentType, ContextType, RequireFields<QueryMyStoresArgs, 'skip' | 'take'>>;
   store?: Resolver<ResolversTypes['Store'], ParentType, ContextType, RequireFields<QueryStoreArgs, 'id'>>;
+  storeBySlug?: Resolver<Maybe<ResolversTypes['Store']>, ParentType, ContextType, RequireFields<QueryStoreBySlugArgs, 'slug'>>;
   user?: Resolver<ResolversTypes['User'], ParentType, ContextType, RequireFields<QueryUserArgs, 'id'>>;
   users?: Resolver<Array<ResolversTypes['User']>, ParentType, ContextType, RequireFields<QueryUsersArgs, 'skip' | 'take'>>;
 };
 
 export type StoreResolvers<ContextType = any, ParentType extends ResolversParentTypes['Store'] = ResolversParentTypes['Store']> = {
+  addresses?: Resolver<Maybe<Array<ResolversTypes['AddressOnOwner']>>, ParentType, ContextType>;
   createdAt?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   currency?: Resolver<ResolversTypes['StoreCurrency'], ParentType, ContextType>;
   currencyPosition?: Resolver<ResolversTypes['CurrencyPosition'], ParentType, ContextType>;
@@ -507,6 +624,7 @@ export type StoreResolvers<ContextType = any, ParentType extends ResolversParent
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   orderPrefix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   orderSuffix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  owner?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType>;
   ownerId?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   phone?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   showCurrencyCode?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
@@ -534,6 +652,8 @@ export type UserResolvers<ContextType = any, ParentType extends ResolversParentT
 };
 
 export type Resolvers<ContextType = any> = {
+  Address?: AddressResolvers<ContextType>;
+  AddressOnOwner?: AddressOnOwnerResolvers<ContextType>;
   AuthSignin?: AuthSigninResolvers<ContextType>;
   AuthSignout?: AuthSignoutResolvers<ContextType>;
   AuthSignup?: AuthSignupResolvers<ContextType>;

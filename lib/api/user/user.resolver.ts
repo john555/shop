@@ -7,6 +7,7 @@ import { PaginationArgs } from 'lib/api/pagination/pagination.args';
 import { JwtAuthGuard } from '../auth/guard/jwt-auth.guard';
 import { Store } from '../store/store.entity';
 import { StoreService } from '../store/store.service';
+import { StoreWithRelations } from '../store/store.types';
 
 @UseGuards(JwtAuthGuard)
 @Resolver(() => User)
@@ -21,7 +22,7 @@ export class UserResolver {
 
   @UseGuards(JwtAuthGuard)
   @ResolveField(() => [Store!])
-  async stores(@Parent() user: User): Promise<Store[]> {
+  async stores(@Parent() user: User): Promise<StoreWithRelations[]> {
     return this.storeService.getStoresByOwnerId(user.id);
   }
 

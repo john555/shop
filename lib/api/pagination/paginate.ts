@@ -6,11 +6,13 @@ export function paginate<T>({
   args,
   cursorColumn = 'id',
   where,
+  include,
 }: {
   modelDelegate: { findMany: (args: any) => PrismaPromise<T[]> };
   args?: PaginationArgs;
   cursorColumn?: 'id';
   where?: any;
+  include?: any;
 }) {
   return modelDelegate.findMany({
     where,
@@ -24,5 +26,6 @@ export function paginate<T>({
     orderBy: {
       [cursorColumn]: args?.sortOrder || 'desc',
     },
+    include,
   });
 }
