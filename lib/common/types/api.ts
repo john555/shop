@@ -22,7 +22,7 @@ export type Scalars = {
 export type Address = {
   __typename?: 'Address';
   city?: Maybe<Scalars['String']['output']>;
-  country: Scalars['String']['output'];
+  country?: Maybe<Scalars['String']['output']>;
   createdAt: Scalars['DateTime']['output'];
   id: Scalars['ID']['output'];
   line1?: Maybe<Scalars['String']['output']>;
@@ -541,7 +541,7 @@ export type ResolversParentTypes = {
 
 export type AddressResolvers<ContextType = any, ParentType extends ResolversParentTypes['Address'] = ResolversParentTypes['Address']> = {
   city?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  country?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  country?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   createdAt?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   line1?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;

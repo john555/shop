@@ -9,7 +9,7 @@ import {
   DrawerHeader,
   DrawerTitle,
 } from '@/components/ui/drawer';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Store, Sun, User } from 'lucide-react';
 import {
   Select,
@@ -20,6 +20,7 @@ import {
 } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
+import { useStore } from '@/admin/hooks/store/use-store';
 import { DASHBOARD_SETTINGS_LINK } from '@/common/constants';
 
 const settingsSections = [
@@ -48,7 +49,7 @@ export default function SettingsLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const [isOpen, setIsOpen] = useState(true);
+  const { store, loading } = useStore();
   const [activeSection, setActiveSection] = useState('store');
   const pathname = usePathname();
   const router = useRouter();
@@ -67,12 +68,18 @@ export default function SettingsLayout({
     }
   };
 
+  if (loading || !store) {
+    return null;
+  }
+
   return (
-    <Drawer open={isOpen} onClose={handleOnClose}>
+    <Drawer open={true} onClose={handleOnClose}>
       <DrawerContent>
         <DrawerHeader className="sr-only">
           <DrawerTitle>Settings</DrawerTitle>
-          <DrawerDescription>Update your shop and user account settings.</DrawerDescription>
+          <DrawerDescription>
+            Update your shop and user account settings.
+          </DrawerDescription>
         </DrawerHeader>
         <ScrollArea>
           <div className="h-[90vh] w-full max-w-5xl px-4 sm:px-6 lg:px-8 mx-auto pb-20">

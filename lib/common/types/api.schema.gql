@@ -5,7 +5,7 @@
 """Address"""
 type Address {
   city: String
-  country: String!
+  country: String
   createdAt: DateTime!
   id: ID!
   line1: String
