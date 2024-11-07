@@ -60,7 +60,12 @@ export function StoreDetailsCard() {
                 <div>{store?.email}</div>
               </div>
             </div>
-            <Button variant="ghost" size="icon" onClick={onEditProfile}>
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              onClick={onEditProfile}
+            >
               <Pencil className="h-4 w-4" />
             </Button>
           </div>
@@ -80,7 +85,12 @@ export function StoreDetailsCard() {
                 )}
               </div>
             </div>
-            <Button variant="ghost" size="icon" onClick={onEditAddress}>
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              onClick={onEditAddress}
+            >
               <Pencil className="h-4 w-4" />
             </Button>
           </div>
@@ -90,7 +100,12 @@ export function StoreDetailsCard() {
           <div className="space-y-2">
             <div className="flex items-center justify-between">
               <h3 className="font-medium">Contact and Social Media</h3>
-              <Button variant="ghost" size="icon" onClick={onEditSocialMedia}>
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                onClick={onEditSocialMedia}
+              >
                 <Edit2 className="h-4 w-4" />
               </Button>
             </div>

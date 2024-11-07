@@ -19,7 +19,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { addressSchema } from '../(libs)/schemas';
 import { useStore } from '@/admin/hooks/store/use-store';
 import { useEffect } from 'react';
 import { AddressOwnerType, AddressType } from '@/types/api';
@@ -37,6 +36,15 @@ const countries = [
   { value: 'US', label: 'United States' },
   { value: 'GB', label: 'United Kingdom' },
 ];
+
+export const addressSchema = z.object({
+  country: z.string().min(1, 'Country is required'),
+  state: z.string().optional(),
+  city: z.string().optional(),
+  line1: z.string().optional(),
+  line2: z.string().optional(),
+  zipCode: z.string().optional(),
+});
 
 interface EditAddressDialogProps {
   isOpen: boolean;

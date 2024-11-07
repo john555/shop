@@ -13,9 +13,14 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { storeProfileSchema } from '../(libs)/schemas';
 import { useStore } from '@/admin/hooks/store/use-store';
 import { useEffect } from 'react';
+
+export const storeProfileSchema = z.object({
+  name: z.string().min(1, 'Store name is required'),
+  phone: z.string().min(1, 'Phone number is required'),
+  email: z.string().email('Invalid email address'),
+});
 
 interface EditProfileDialogProps {
   isOpen: boolean;

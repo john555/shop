@@ -19,6 +19,7 @@ const UPDATE_STORE = gql`
       facebook
       instagram
       whatsApp
+      currency
       currencyPosition
       currencySymbol
       showCurrencyCode
@@ -59,6 +60,7 @@ const FETCH_STORE_QUERY = gql`
       facebook
       instagram
       whatsApp
+      currency
       currencyPosition
       currencySymbol
       showCurrencyCode
