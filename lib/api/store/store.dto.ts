@@ -16,6 +16,7 @@ import {
   IsEnum,
   MaxLength,
   Matches,
+  MinLength,
 } from 'class-validator';
 import { AddressOnOwner } from '../address/entities/address-owner.entity';
 import { User } from '../user/user.entity';
@@ -41,9 +42,7 @@ export class StoreCreateInput {
   @Field(() => String)
   @IsNotEmpty()
   @IsString()
-  @Matches(/^[a-z0-9-]+$/, {
-    message: 'Slug can only contain lowercase letters, numbers, and hyphens',
-  })
+  @MinLength(3)
   name!: string;
 
   @Field(() => String)
@@ -76,9 +75,7 @@ export class StoreUpdateInput {
   @Field(() => String, { nullable: true })
   @IsString()
   @IsOptional()
-  @Matches(/^[a-z0-9-]+$/, {
-    message: 'Slug can only contain lowercase letters, numbers, and hyphens',
-  })
+  @MinLength(3)
   name?: string;
 
   @Field(() => String, { nullable: true })

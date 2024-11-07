@@ -20,8 +20,8 @@ export class Address implements AddressModel {
   @Field(() => ID)
   id: string;
 
-  @Field(() => String, { nullable: true })
-  country: string | null;
+  @Field(() => String)
+  country: string;
 
   @Field(() => String, { nullable: true })
   state: string | null;

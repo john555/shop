@@ -1,39 +1,26 @@
 'use client';
 
-import { useState, useCallback, useEffect } from 'react';
+import { useCallback, useEffect } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Button } from '@/components/ui/button';
-import { StoreDetailsCard } from './(components)/store-details-card';
-import { StoreDefaultsCard } from './(components)/store-defaults-card';
-import { OrderIdCard } from './(components)/order-id-card';
-import { EditProfileDialog } from './(components)/edit-profile-dialog';
-import { EditAddressDialog } from './(components)/edit-address-dialog';
-import { EditSocialMediaDialog } from './(components)/edit-social-media-dialog';
-import { storeSettingsSchema } from './(libs)/schemas';
-import { useStoreSettings } from './(libs)/hooks';
+import { StoreDetailsCard } from './(general)/(components)/store-details-card';
+import { StoreDefaultsCard } from './(general)/(components)/store-defaults-card';
+import { OrderIdCard } from './(general)/(components)/order-id-card';
+import { storeSettingsSchema } from './(general)/(libs)/schemas';
+import { useStoreSettings } from './(general)/(libs)/hooks';
 
 export default function StoreSettingsPage() {
   const {
-    storeProfile,
-    setStoreProfile,
-    address,
-    setAddress,
     storeDefaults,
     setStoreDefaults,
     orderId,
     setOrderId,
     hasChanges,
     setHasChanges,
-    changedFields,
     setChangedFields,
   } = useStoreSettings();
-
-  const [isEditProfileDialogOpen, setIsEditProfileDialogOpen] = useState(false);
-  const [isEditAddressDialogOpen, setIsEditAddressDialogOpen] = useState(false);
-  const [isEditSocialMediaDialogOpen, setIsEditSocialMediaDialogOpen] =
-    useState(false);
 
   const methods = useForm<z.infer<typeof storeSettingsSchema>>({
     resolver: zodResolver(storeSettingsSchema),
@@ -88,19 +75,19 @@ export default function StoreSettingsPage() {
   }, [storeDefaults.unitSystem, storeDefaults.weightUnit]);
 
   const onSubmit = (data: z.infer<typeof storeSettingsSchema>) => {
-    setStoreDefaults({
-      currency: data.currency,
-      currencySymbol: data.currencySymbol,
-      currencyPosition: data.currencyPosition,
-      showCurrencyCode: data.showCurrencyCode,
-      unitSystem: data.unitSystem,
-      weightUnit: data.weightUnit,
-      timeZone: data.timeZone,
-    });
-    setOrderId({
-      prefix: data.orderIdPrefix,
-      suffix: data.orderIdSuffix || '',
-    });
+    // setStoreDefaults({
+    //   currency: data.currency,
+    //   currencySymbol: data.currencySymbol,
+    //   currencyPosition: data.currencyPosition,
+    //   showCurrencyCode: data.showCurrencyCode,
+    //   unitSystem: data.unitSystem,
+    //   weightUnit: data.weightUnit,
+    //   timeZone: data.timeZone,
+    // });
+    // setOrderId({
+    //   prefix: data.orderIdPrefix,
+    //   suffix: data.orderIdSuffix || '',
+    // });
     setChangedFields({});
     setHasChanges(false);
     // Here you would typically send the data to your backend
@@ -131,13 +118,7 @@ export default function StoreSettingsPage() {
           </div>
 
           <div className="space-y-4">
-            <StoreDetailsCard
-              storeProfile={storeProfile}
-              address={{ ...address, line2: address.line2 || '' }}
-              onEditProfile={() => setIsEditProfileDialogOpen(true)}
-              onEditAddress={() => setIsEditAddressDialogOpen(true)}
-              onEditSocialMedia={() => setIsEditSocialMediaDialogOpen(true)}
-            />
+            <StoreDetailsCard />
             <StoreDefaultsCard
               storeDefaults={storeDefaults}
               setStoreDefaults={setStoreDefaults}
@@ -152,33 +133,6 @@ export default function StoreSettingsPage() {
           </div>
         </form>
       </FormProvider>
-
-      <EditProfileDialog
-        isOpen={isEditProfileDialogOpen}
-        onOpenChange={setIsEditProfileDialogOpen}
-        storeProfile={storeProfile}
-        setStoreProfile={setStoreProfile}
-        setChangedFields={setChangedFields}
-        setHasChanges={setHasChanges}
-      />
-
-      <EditAddressDialog
-        isOpen={isEditAddressDialogOpen}
-        onOpenChange={setIsEditAddressDialogOpen}
-        address={{ ...address, line2: address.line2 || '' }}
-        setAddress={setAddress}
-        setChangedFields={setChangedFields}
-        setHasChanges={setHasChanges}
-      />
-
-      <EditSocialMediaDialog
-        isOpen={isEditSocialMediaDialogOpen}
-        onOpenChange={setIsEditSocialMediaDialogOpen}
-        storeProfile={storeProfile}
-        setStoreProfile={setStoreProfile}
-        setChangedFields={setChangedFields}
-        setHasChanges={setHasChanges}
-      />
 
       {hasChanges && (
         <div className="fixed bottom-0 left-0 right-0 bg-background border-t shadow-md p-4 flex justify-end items-center z-50">

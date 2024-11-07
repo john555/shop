@@ -8,11 +8,11 @@ export const storeProfileSchema = z.object({
 
 export const addressSchema = z.object({
   country: z.string().min(1, 'Country is required'),
-  state: z.string().min(1, 'State/Province/Region is required'),
-  city: z.string().min(1, 'City/Town/Municipality is required'),
-  line1: z.string().min(1, 'Street address is required'),
+  state: z.string().optional(),
+  city: z.string().optional(),
+  line1: z.string().optional(),
   line2: z.string().optional(),
-  zipCode: z.string().min(1, 'Postal/ZIP code is required'),
+  zipCode: z.string().optional(),
 });
 
 export const storeSettingsSchema = z.object({

@@ -1,7 +1,13 @@
 import { useEffect, useState } from 'react';
 import { gql } from '@apollo/client';
 import { client } from '@/common/apollo';
-import { Store, StoreUpdateInput } from '@/types/api';
+import {
+  AddressOwnerType,
+  AddressType,
+  Store,
+  StoreUpdateInput,
+  UpdateAddressInput,
+} from '@/types/api';
 
 const UPDATE_STORE = gql`
   mutation UpdateStore($input: StoreUpdateInput!) {
@@ -34,6 +40,7 @@ const UPDATE_STORE = gql`
           state
           line1
           line2
+          zipCode
           updatedAt
           createdAt
         }
@@ -73,9 +80,31 @@ const FETCH_STORE_QUERY = gql`
           state
           line1
           line2
+          zipCode
           updatedAt
           createdAt
         }
+      }
+    }
+  }
+`;
+
+const UPDATE_ADDRESS = gql`
+  mutation UpdateAddress($input: UpdateAddressInput!) {
+    updateAddress(input: $input) {
+      id
+      isDefault
+      type
+      ownerId
+      ownerType
+      address {
+        id
+        country
+        state
+        city
+        line1
+        line2
+        zipCode
       }
     }
   }
@@ -135,9 +164,35 @@ export function useStore() {
     }
   };
 
+  const updateStoreAddress = async (input: UpdateAddressInput) => {
+    try {
+      setUpdating(true);
+      setError(null);
+
+      const { data, errors } = await client.mutate({
+        mutation: UPDATE_ADDRESS,
+        variables: {
+          input,
+        },
+      });
+
+      if (errors) {
+        throw new Error(errors[0].message);
+      }
+
+      const updatedStore = data.updateStore;
+      setStore(updatedStore);
+      return updatedStore;
+    } catch (err) {
+      setError(err instanceof Error ? err : new Error('An error occurred'));
+    } finally {
+      setUpdating(false);
+    }
+  };
+
   useEffect(() => {
     fetchMyStores();
   }, []);
 
-  return { store, loading, updating, error, updateStore };
+  return { store, loading, updating, error, updateStore, updateStoreAddress };
 }

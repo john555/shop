@@ -12,51 +12,53 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { StoreProfile } from '../(libs)/types';
+import { useStore } from '@/admin/hooks/store/use-store';
+import { useEffect } from 'react';
 
 const socialMediaSchema = z.object({
-  whatsApp: z.string().min(1, 'WhatsApp number is required'),
-  facebook: z.string().min(1, 'Facebook page name or URL is required'),
-  instagram: z.string().min(1, 'Instagram handle is required'),
+  whatsApp: z.string(),
+  facebook: z.string(),
+  instagram: z.string(),
 });
 
 interface EditSocialMediaDialogProps {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
-  storeProfile: StoreProfile;
-  setStoreProfile: React.Dispatch<React.SetStateAction<StoreProfile>>;
-  setChangedFields: React.Dispatch<React.SetStateAction<Record<string, any>>>;
-  setHasChanges: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 export function EditSocialMediaDialog({
   isOpen,
   onOpenChange,
-  storeProfile,
-  setStoreProfile,
-  setChangedFields,
-  setHasChanges,
 }: EditSocialMediaDialogProps) {
+  const { store, updateStore } = useStore();
+
   const {
+    setValue,
     register,
     handleSubmit,
     formState: { errors },
   } = useForm<z.infer<typeof socialMediaSchema>>({
     resolver: zodResolver(socialMediaSchema),
     defaultValues: {
-      whatsApp: storeProfile.whatsApp,
-      facebook: storeProfile.facebook,
-      instagram: storeProfile.instagram,
+      whatsApp: store?.whatsApp || '',
+      facebook: store?.facebook || '',
+      instagram: store?.instagram || '',
     },
   });
 
-  const onSubmit = (data: z.infer<typeof socialMediaSchema>) => {
-    setStoreProfile((prevProfile) => ({
-      ...prevProfile,
-      ...data,
-    }));
-    setChangedFields((prev) => ({ ...prev, ...data }));
-    setHasChanges(true);
+  useEffect(() => {
+    if (store) {
+      setValue('whatsApp', store?.whatsApp || '');
+      setValue('facebook', store?.facebook || '');
+      setValue('instagram', store.instagram || '');
+    }
+  }, [setValue, store]);
+
+  const onSubmit = async (data: z.infer<typeof socialMediaSchema>) => {
+    if(!store?.id) return;
+
+    await updateStore({ id: store.id, ...data });
+
     onOpenChange(false);
   };
 
@@ -94,7 +96,7 @@ export function EditSocialMediaDialog({
                 <Input
                   id="facebook"
                   {...register('facebook')}
-                  placeholder="kampalacraftsug"
+                  placeholder=""
                 />
                 {errors.facebook && (
                   <p className="text-sm text-red-500">
@@ -111,7 +113,7 @@ export function EditSocialMediaDialog({
                 <Input
                   id="instagram"
                   {...register('instagram')}
-                  placeholder="@kampalacrafts"
+                  placeholder="@YourUsername"
                 />
                 {errors.instagram && (
                   <p className="text-sm text-red-500">

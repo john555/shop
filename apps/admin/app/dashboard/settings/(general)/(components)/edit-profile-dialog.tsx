@@ -13,42 +13,47 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { StoreProfile } from '../(libs)/types';
 import { storeProfileSchema } from '../(libs)/schemas';
+import { useStore } from '@/admin/hooks/store/use-store';
+import { useEffect } from 'react';
 
 interface EditProfileDialogProps {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
-  storeProfile: StoreProfile;
-  setStoreProfile: React.Dispatch<React.SetStateAction<StoreProfile>>;
-  setChangedFields: React.Dispatch<React.SetStateAction<Record<string, any>>>;
-  setHasChanges: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 export function EditProfileDialog({
   isOpen,
   onOpenChange,
-  storeProfile,
-  setStoreProfile,
-  setChangedFields,
-  setHasChanges,
 }: EditProfileDialogProps) {
+  const { store, updateStore } = useStore();
+
   const {
+    setValue,
     register,
     handleSubmit,
     formState: { errors },
   } = useForm<z.infer<typeof storeProfileSchema>>({
     resolver: zodResolver(storeProfileSchema),
-    defaultValues: storeProfile,
+    defaultValues: {
+      name: store?.name || '',
+      phone: store?.phone || '',
+      email: store?.email || '',
+    },
   });
 
-  const onSubmit = (data: z.infer<typeof storeProfileSchema>) => {
-    setStoreProfile((prevProfile) => ({
-      ...prevProfile,
-      ...data,
-    }));
-    setChangedFields((prev) => ({ ...prev, ...data }));
-    setHasChanges(true);
+  useEffect(() => {
+    if (store) {
+      setValue('name', store.name);
+      setValue('phone', store.phone || '');
+      setValue('email', store.email);
+    }
+  }, [setValue, store]);
+
+  const onSubmit = async (data: z.infer<typeof storeProfileSchema>) => {
+    if (!store?.id) return;
+
+    await updateStore({ id: store?.id, ...data });
     onOpenChange(false);
   };
 
