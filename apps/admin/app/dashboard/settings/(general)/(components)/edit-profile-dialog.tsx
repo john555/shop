@@ -31,7 +31,7 @@ export function EditProfileDialog({
   isOpen,
   onOpenChange,
 }: EditProfileDialogProps) {
-  const { store, updateStore } = useStore();
+  const { store, updating, updateStore } = useStore();
 
   const {
     setValue,
@@ -123,7 +123,9 @@ export function EditProfileDialog({
             >
               Cancel
             </Button>
-            <Button type="submit">Save</Button>
+            <Button type="submit" disabled={updating}>
+              {updating ? 'Saving...' : 'Save'}
+            </Button>
           </DialogFooter>
         </form>
       </DialogContent>

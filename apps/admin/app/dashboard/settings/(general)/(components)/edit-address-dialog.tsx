@@ -193,7 +193,7 @@ export function EditAddressDialog({
               Cancel
             </Button>
             <Button type="submit" disabled={updating}>
-              {updating ? 'Saving' : 'Save'}
+              {updating ? 'Saving...' : 'Save'}
             </Button>
           </DialogFooter>
         </form>

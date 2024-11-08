@@ -30,7 +30,7 @@ export function EditSocialMediaDialog({
   isOpen,
   onOpenChange,
 }: EditSocialMediaDialogProps) {
-  const { store, updateStore } = useStore();
+  const { store, updating, updateStore } = useStore();
 
   const {
     setValue,
@@ -55,7 +55,7 @@ export function EditSocialMediaDialog({
   }, [setValue, store]);
 
   const onSubmit = async (data: z.infer<typeof socialMediaSchema>) => {
-    if(!store?.id) return;
+    if (!store?.id) return;
 
     await updateStore({ id: store.id, ...data });
 
@@ -93,11 +93,7 @@ export function EditSocialMediaDialog({
 
               <div className="space-y-2">
                 <Label htmlFor="facebook">Facebook</Label>
-                <Input
-                  id="facebook"
-                  {...register('facebook')}
-                  placeholder=""
-                />
+                <Input id="facebook" {...register('facebook')} placeholder="" />
                 {errors.facebook && (
                   <p className="text-sm text-red-500">
                     {errors.facebook.message}
@@ -134,7 +130,9 @@ export function EditSocialMediaDialog({
             >
               Cancel
             </Button>
-            <Button type="submit">Save</Button>
+            <Button type="submit" disabled={updating}>
+              {updating ? 'Saving...' : 'Save'}
+            </Button>
           </DialogFooter>
         </form>
       </DialogContent>
