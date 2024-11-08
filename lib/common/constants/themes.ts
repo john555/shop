@@ -1,30 +1,31 @@
-import { Theme } from '@prisma/client';
-import { Computer, Moon, Sun } from 'lucide-react';
+
+import { Laptop, Moon, Sun } from 'lucide-react';
+import { Theme } from '../types';
 
 export interface ThemeOption {
   value: Theme;
   label: string;
-  icon: typeof Sun | typeof Moon | typeof Computer;
+  icon: typeof Sun | typeof Moon | typeof Laptop;
   description: string;
 }
 
 export const THEMES: ThemeOption[] = [
   {
-    value: Theme.LIGHT,
+    value: Theme.Light,
     label: 'Light',
     icon: Sun,
     description: 'Light theme for bright environments'
   },
   {
-    value: Theme.DARK,
+    value: Theme.Dark,
     label: 'Dark',
     icon: Moon,
     description: 'Dark theme for low-light environments'
   },
   {
-    value: Theme.SYSTEM,
+    value: Theme.System,
     label: 'System',
-    icon: Computer,
+    icon: Laptop,
     description: 'Follows your system theme preference'
   },
 ];
@@ -35,7 +36,7 @@ export const getThemeLabel = (value: Theme): string => {
 };
 
 export const getThemeIcon = (value: Theme) => {
-  return THEMES.find((theme) => theme.value === value)?.icon || Computer;
+  return THEMES.find((theme) => theme.value === value)?.icon || Laptop;
 };
 
 export const getThemeDescription = (value: Theme): string => {

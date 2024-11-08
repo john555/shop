@@ -48,7 +48,10 @@ import { useCurrentUser } from '@/common/hooks/auth';
 import { SignInRequired } from '../(auth)/(components)/sign-in-required';
 import { CreateStoreRequired } from './(components)/create-store-required';
 import { usePathname, useRouter } from 'next/navigation';
-import { DASHBOARD_SETTINGS_LINK } from '@/common/constants';
+import { DASHBOARD_SETTINGS_LINK, THEMES } from '@/common/constants';
+import { updateUser } from '@/common/actions/user';
+import { Theme } from '@/types/api';
+import { cn } from '@/lib/utils';
 
 // Dummy data for search results
 const dummySearchResults = {
@@ -94,6 +97,7 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   const isMobile = useIsMobile();
+  const [activeTheme, setActiveTheme] = useState<Theme>(Theme.System);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -108,6 +112,7 @@ export default function DashboardLayout({
   useEffect(() => {
     if (!user) return;
     setTheme(user.theme.toLocaleLowerCase());
+    setActiveTheme(user.theme);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
 
@@ -135,6 +140,14 @@ export default function DashboardLayout({
     }
     // Navigate to the new page
     router.push('/dashboard/settings');
+  };
+
+  const handleThemeChange = async (value: Theme) => {
+    if (!user) return;
+    setTheme(value.toLocaleLowerCase());
+    setActiveTheme(value);
+
+    await updateUser({ id: user.id, theme: value });
   };
 
   if (isSigningOut) {
@@ -357,60 +370,28 @@ export default function DashboardLayout({
                 <DropdownMenuItem className="flex-row items-center">
                   <span className="flex-1">Theme</span>
                   <div className="ml-4 flex items-center gap-1">
-                    <TooltipProvider>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-6 w-6 hover:bg-background/80 dark:hover:bg-muted/50"
-                            onClick={() => setTheme('light')}
-                          >
-                            <Sun className="h-4 w-4" />
-                            <span className="sr-only">Light theme</span>
-                          </Button>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          <p>Light</p>
-                        </TooltipContent>
-                      </Tooltip>
-                    </TooltipProvider>
-                    <TooltipProvider>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-6 w-6 hover:bg-background/80 dark:hover:bg-muted/50"
-                            onClick={() => setTheme('dark')}
-                          >
-                            <Moon className="h-4 w-4" />
-                            <span className="sr-only">Dark theme</span>
-                          </Button>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          <p>Dark</p>
-                        </TooltipContent>
-                      </Tooltip>
-                    </TooltipProvider>
-                    <TooltipProvider>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-6 w-6 hover:bg-background/80 dark:hover:bg-muted/50"
-                            onClick={() => setTheme('system')}
-                          >
-                            <Laptop className="h-4 w-4" />
-                            <span className="sr-only">System theme</span>
-                          </Button>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          <p>System</p>
-                        </TooltipContent>
-                      </Tooltip>
-                    </TooltipProvider>
+                    {THEMES.map((theme) => (
+                      <TooltipProvider key={theme.value}>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-6 w-6 hover:bg-background/80 dark:hover:bg-muted/50"
+                              onClick={() => handleThemeChange(theme.value)}
+                            >
+                              <theme.icon className="h-4 w-4" />
+                              <span className="sr-only">
+                                {theme.label} theme
+                              </span>
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p>{theme.description}</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                    ))}
                   </div>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
