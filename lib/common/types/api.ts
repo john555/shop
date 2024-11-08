@@ -22,7 +22,7 @@ export type Scalars = {
 export type Address = {
   __typename?: 'Address';
   city?: Maybe<Scalars['String']['output']>;
-  country?: Maybe<Scalars['String']['output']>;
+  country: Scalars['String']['output'];
   createdAt: Scalars['DateTime']['output'];
   id: Scalars['ID']['output'];
   line1?: Maybe<Scalars['String']['output']>;
@@ -115,6 +115,16 @@ export enum CurrencyPosition {
   BeforeAmount = 'BEFORE_AMOUNT'
 }
 
+/** Supported user interface languages */
+export enum Language {
+  Ar = 'AR',
+  En = 'EN',
+  Fr = 'FR',
+  Lg = 'LG',
+  Rw = 'RW',
+  Sw = 'SW'
+}
+
 export type Mutation = {
   __typename?: 'Mutation';
   createStore: Store;
@@ -130,6 +140,7 @@ export type Mutation = {
   /** Sign up new user */
   signup: AuthSignup;
   updateAddress: AddressOnOwner;
+  updatePassword: User;
   updateStore: Store;
   updateUser: User;
 };
@@ -169,6 +180,11 @@ export type MutationSignupArgs = {
 
 export type MutationUpdateAddressArgs = {
   input: UpdateAddressInput;
+};
+
+
+export type MutationUpdatePasswordArgs = {
+  input: UserPasswordUpdateInput;
 };
 
 
@@ -336,6 +352,13 @@ export type StoreUpdateInput = {
   whatsApp?: InputMaybe<Scalars['String']['input']>;
 };
 
+/** Available user interface themes */
+export enum Theme {
+  Dark = 'DARK',
+  Light = 'LIGHT',
+  System = 'SYSTEM'
+}
+
 /** Measurement system used by the store (METRIC, IMPERIAL) */
 export enum UnitSystem {
   Imperial = 'IMPERIAL',
@@ -370,10 +393,16 @@ export type User = {
   id: Scalars['ID']['output'];
   /** URL of the User image */
   imageUrl?: Maybe<Scalars['String']['output']>;
+  /** Preferred language for the user interface */
+  language: Language;
   /** Last name of the User */
   lastName?: Maybe<Scalars['String']['output']>;
   /** Stores owned by the User */
   stores: Array<Store>;
+  /** Preferred theme for the user interface */
+  theme: Theme;
+  /** Preferred timezone */
+  timeZone: Scalars['String']['output'];
   /** Date the User was last updated */
   updatedAt: Scalars['DateTime']['output'];
 };
@@ -385,10 +414,25 @@ export type UserCreateInput = {
   firstName?: InputMaybe<Scalars['String']['input']>;
   /** URL of the User image */
   imageUrl?: InputMaybe<Scalars['String']['input']>;
+  /** Preferred language for the user interface */
+  language?: InputMaybe<Language>;
   /** Last name of the User */
   lastName?: InputMaybe<Scalars['String']['input']>;
   /** Password of the User */
   password?: InputMaybe<Scalars['String']['input']>;
+  /** Preferred theme for the user interface */
+  theme?: InputMaybe<Theme>;
+  /** Preferred timezone (e.g., "Africa/Nairobi") */
+  timeZone?: InputMaybe<Scalars['String']['input']>;
+};
+
+export type UserPasswordUpdateInput = {
+  /** ID of the User */
+  id: Scalars['String']['input'];
+  /** New password of the User */
+  newPassword?: InputMaybe<Scalars['String']['input']>;
+  /** Old password of the User */
+  oldPassword?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type UserUpdateInput = {
@@ -398,8 +442,14 @@ export type UserUpdateInput = {
   id: Scalars['String']['input'];
   /** URL of the User image */
   imageUrl?: InputMaybe<Scalars['String']['input']>;
+  /** Preferred language for the user interface */
+  language?: InputMaybe<Language>;
   /** Last name of the User */
   lastName?: InputMaybe<Scalars['String']['input']>;
+  /** Preferred theme for the user interface */
+  theme?: InputMaybe<Theme>;
+  /** Preferred timezone (e.g., "Africa/Nairobi") */
+  timeZone?: InputMaybe<Scalars['String']['input']>;
 };
 
 /** Weight unit used by the store (KILOGRAM, POUND, etc.) */
@@ -496,6 +546,7 @@ export type ResolversTypes = {
   DateTime: ResolverTypeWrapper<Scalars['DateTime']['output']>;
   ID: ResolverTypeWrapper<Scalars['ID']['output']>;
   Int: ResolverTypeWrapper<Scalars['Int']['output']>;
+  Language: Language;
   Mutation: ResolverTypeWrapper<{}>;
   Query: ResolverTypeWrapper<{}>;
   SortOrder: SortOrder;
@@ -505,10 +556,12 @@ export type ResolversTypes = {
   StoreType: StoreType;
   StoreUpdateInput: StoreUpdateInput;
   String: ResolverTypeWrapper<Scalars['String']['output']>;
+  Theme: Theme;
   UnitSystem: UnitSystem;
   UpdateAddressInput: UpdateAddressInput;
   User: ResolverTypeWrapper<User>;
   UserCreateInput: UserCreateInput;
+  UserPasswordUpdateInput: UserPasswordUpdateInput;
   UserUpdateInput: UserUpdateInput;
   WeightUnit: WeightUnit;
 };
@@ -536,12 +589,13 @@ export type ResolversParentTypes = {
   UpdateAddressInput: UpdateAddressInput;
   User: User;
   UserCreateInput: UserCreateInput;
+  UserPasswordUpdateInput: UserPasswordUpdateInput;
   UserUpdateInput: UserUpdateInput;
 };
 
 export type AddressResolvers<ContextType = any, ParentType extends ResolversParentTypes['Address'] = ResolversParentTypes['Address']> = {
   city?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  country?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  country?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   createdAt?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   line1?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -596,6 +650,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   signout?: Resolver<ResolversTypes['AuthSignout'], ParentType, ContextType>;
   signup?: Resolver<ResolversTypes['AuthSignup'], ParentType, ContextType, RequireFields<MutationSignupArgs, 'input'>>;
   updateAddress?: Resolver<ResolversTypes['AddressOnOwner'], ParentType, ContextType, RequireFields<MutationUpdateAddressArgs, 'input'>>;
+  updatePassword?: Resolver<ResolversTypes['User'], ParentType, ContextType, RequireFields<MutationUpdatePasswordArgs, 'input'>>;
   updateStore?: Resolver<ResolversTypes['Store'], ParentType, ContextType, RequireFields<MutationUpdateStoreArgs, 'input'>>;
   updateUser?: Resolver<ResolversTypes['User'], ParentType, ContextType, RequireFields<MutationUpdateUserArgs, 'input'>>;
 };
@@ -645,8 +700,11 @@ export type UserResolvers<ContextType = any, ParentType extends ResolversParentT
   firstName?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   imageUrl?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  language?: Resolver<ResolversTypes['Language'], ParentType, ContextType>;
   lastName?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   stores?: Resolver<Array<ResolversTypes['Store']>, ParentType, ContextType>;
+  theme?: Resolver<ResolversTypes['Theme'], ParentType, ContextType>;
+  timeZone?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   updatedAt?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };

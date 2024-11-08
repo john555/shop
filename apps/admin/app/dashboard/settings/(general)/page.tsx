@@ -66,13 +66,14 @@ export default function StoreSettingsPage() {
     if (!store?.id) return;
     const changedFields = form.formState.dirtyFields;
     const values = form.getValues();
-    const changes = Object.keys(changedFields).reduce((acc, key: any) => {
-      // @ts-ignore-next-line
+    const changes = Object.keys(changedFields).reduce((acc, key) => {
+      // @ts-expect-error - TS doesn't know the key is a valid key
       acc[key] = values[key];
       return acc;
     }, {});
     const updatedStore = await updateStore({ id: store.id, ...changes });
     resetForm(updatedStore);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [form, store]);
 
   return (

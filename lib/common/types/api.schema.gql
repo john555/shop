@@ -104,6 +104,16 @@ A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date
 """
 scalar DateTime
 
+"""Supported user interface languages"""
+enum Language {
+  AR
+  EN
+  FR
+  LG
+  RW
+  SW
+}
+
 type Mutation {
   createStore(input: StoreCreateInput!): Store!
   createUser(input: UserCreateInput!): User!
@@ -131,6 +141,7 @@ type Mutation {
   """Sign up new user"""
   signup(input: AuthSignupInput!): AuthSignup!
   updateAddress(input: UpdateAddressInput!): AddressOnOwner!
+  updatePassword(input: UserPasswordUpdateInput!): User!
   updateStore(input: StoreUpdateInput!): Store!
   updateUser(input: UserUpdateInput!): User!
 }
@@ -282,6 +293,13 @@ input StoreUpdateInput {
   whatsApp: String
 }
 
+"""Available user interface themes"""
+enum Theme {
+  DARK
+  LIGHT
+  SYSTEM
+}
+
 """Measurement system used by the store (METRIC, IMPERIAL)"""
 enum UnitSystem {
   IMPERIAL
@@ -325,11 +343,20 @@ type User {
   """URL of the User image"""
   imageUrl: String
 
+  """Preferred language for the user interface"""
+  language: Language!
+
   """Last name of the User"""
   lastName: String
 
   """Stores owned by the User"""
   stores: [Store!]!
+
+  """Preferred theme for the user interface"""
+  theme: Theme!
+
+  """Preferred timezone"""
+  timeZone: String!
 
   """Date the User was last updated"""
   updatedAt: DateTime!
@@ -345,11 +372,31 @@ input UserCreateInput {
   """URL of the User image"""
   imageUrl: String
 
+  """Preferred language for the user interface"""
+  language: Language
+
   """Last name of the User"""
   lastName: String
 
   """Password of the User"""
   password: String
+
+  """Preferred theme for the user interface"""
+  theme: Theme
+
+  """Preferred timezone (e.g., "Africa/Nairobi")"""
+  timeZone: String
+}
+
+input UserPasswordUpdateInput {
+  """ID of the User"""
+  id: String!
+
+  """New password of the User"""
+  newPassword: String
+
+  """Old password of the User"""
+  oldPassword: String
 }
 
 input UserUpdateInput {
@@ -362,8 +409,17 @@ input UserUpdateInput {
   """URL of the User image"""
   imageUrl: String
 
+  """Preferred language for the user interface"""
+  language: Language
+
   """Last name of the User"""
   lastName: String
+
+  """Preferred theme for the user interface"""
+  theme: Theme
+
+  """Preferred timezone (e.g., "Africa/Nairobi")"""
+  timeZone: String
 }
 
 """Weight unit used by the store (KILOGRAM, POUND, etc.)"""

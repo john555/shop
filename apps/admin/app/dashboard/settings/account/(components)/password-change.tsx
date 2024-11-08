@@ -19,17 +19,17 @@ export function PasswordChange({ form }: PasswordChangeProps) {
     <>
       <FormField
         control={form.control}
-        name="currentPassword"
+        name="oldPassword"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>Current Password</FormLabel>
+            <FormLabel>Old Password</FormLabel>
             <FormControl>
               <div className="relative">
                 <Lock className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
                 <Input
                   className="pl-8"
                   type="password"
-                  placeholder="Enter current password"
+                  placeholder="Enter old password"
                   {...field}
                 />
               </div>

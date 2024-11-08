@@ -13,12 +13,14 @@ import {
 } from "@/components/ui/form"
 import { UseFormReturn } from 'react-hook-form'
 import { AccountFormValues } from '../(types)/account-types'
+import { useCurrentUser } from '@/common/hooks/auth/use-current-user'
 
 interface PersonalInformationProps {
   form: UseFormReturn<AccountFormValues>
 }
 
 export function PersonalInformation({ form }: PersonalInformationProps) {
+  const {user} = useCurrentUser();
   const [avatarUrl, setAvatarUrl] = useState<string>("/placeholder.svg?height=100&width=100")
 
   const handleAvatarChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -36,8 +38,10 @@ export function PersonalInformation({ form }: PersonalInformationProps) {
     <>
       <div className="flex items-center space-x-4">
         <Avatar className="w-20 h-20">
-          <AvatarImage src={avatarUrl} alt="User avatar" />
-          <AvatarFallback>JD</AvatarFallback>
+          <AvatarImage src={user?.imageUrl || ''} alt="User avatar" />
+          <AvatarFallback>
+            {[user?.firstName?.[0].toUpperCase(), user?.lastName?.[0].toUpperCase()].join('')}
+          </AvatarFallback>
         </Avatar>
         <div>
           <Label htmlFor="avatar-upload" className="cursor-pointer">
@@ -86,6 +90,7 @@ export function PersonalInformation({ form }: PersonalInformationProps) {
       <FormField
         control={form.control}
         name="email"
+        disabled
         render={({ field }) => (
           <FormItem>
             <FormLabel>Email</FormLabel>

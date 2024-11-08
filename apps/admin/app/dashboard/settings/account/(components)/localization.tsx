@@ -2,7 +2,9 @@ import { Globe, Languages } from 'lucide-react';
 import {
   Select,
   SelectContent,
+  SelectGroup,
   SelectItem,
+  SelectLabel,
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
@@ -15,11 +17,8 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { UseFormReturn } from 'react-hook-form';
-import {
-  AccountFormValues,
-  languages,
-  timeZones,
-} from '../(types)/account-types';
+import { AccountFormValues, timeZones } from '../(types)/account-types';
+import { LANGUAGES, TIMEZONES } from '@/common/constants';
 
 interface LocalizationProps {
   form: UseFormReturn<AccountFormValues>;
@@ -34,7 +33,7 @@ export function Localization({ form }: LocalizationProps) {
         render={({ field }) => (
           <FormItem>
             <FormLabel>Language</FormLabel>
-            <Select onValueChange={field.onChange} defaultValue={field.value}>
+            <Select onValueChange={field.onChange} value={field.value}>
               <FormControl>
                 <SelectTrigger>
                   <div className="flex items-center">
@@ -44,7 +43,7 @@ export function Localization({ form }: LocalizationProps) {
                 </SelectTrigger>
               </FormControl>
               <SelectContent>
-                {languages.map((language) => (
+                {LANGUAGES.map((language) => (
                   <SelectItem key={language.value} value={language.value}>
                     {language.label}
                   </SelectItem>
@@ -64,7 +63,7 @@ export function Localization({ form }: LocalizationProps) {
         render={({ field }) => (
           <FormItem>
             <FormLabel>Time Zone</FormLabel>
-            <Select onValueChange={field.onChange} defaultValue={field.value}>
+            <Select onValueChange={field.onChange} value={field.value}>
               <FormControl>
                 <SelectTrigger>
                   <div className="flex items-center">
@@ -74,10 +73,15 @@ export function Localization({ form }: LocalizationProps) {
                 </SelectTrigger>
               </FormControl>
               <SelectContent>
-                {timeZones.map((timeZone) => (
-                  <SelectItem key={timeZone.value} value={timeZone.value}>
-                    {timeZone.label}
-                  </SelectItem>
+                {TIMEZONES.map((timeZoneGroup) => (
+                  <SelectGroup key={timeZoneGroup.label}>
+                    <SelectLabel>{timeZoneGroup.label}</SelectLabel>
+                    {timeZoneGroup.timezones.map((timeZone) => (
+                      <SelectItem key={timeZone.value} value={timeZone.value}>
+                        {timeZone.label} ({timeZone.offset})
+                      </SelectItem>
+                    ))}
+                  </SelectGroup>
                 ))}
               </SelectContent>
             </Select>

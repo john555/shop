@@ -1,31 +1,43 @@
+import { Language } from '@/types/api';
 import { z } from 'zod';
 
 export const accountFormSchema = z
   .object({
-    firstName: z.string().min(2, {
-      message: 'First name must be at least 2 characters.',
-    }),
-    lastName: z.string().min(2, {
-      message: 'Last name must be at least 2 characters.',
-    }),
-    email: z.string().email({
-      message: 'Please enter a valid email address.',
-    }),
-    language: z.string({
-      required_error: 'Please select a language.',
-    }),
-    timeZone: z.string({
-      required_error: 'Please select a time zone.',
-    }),
-    currentPassword: z.string().min(8, {
-      message: 'Current password must be at least 8 characters.',
-    }),
-    newPassword: z.string().min(8, {
-      message: 'New password must be at least 8 characters.',
-    }),
-    confirmPassword: z.string().min(8, {
-      message: 'Confirm password must be at least 8 characters.',
-    }),
+    firstName: z
+      .string()
+      .min(2, {
+        message: 'First name must be at least 2 characters.',
+      })
+      .optional(),
+    lastName: z
+      .string()
+      .min(2, {
+        message: 'Last name must be at least 2 characters.',
+      })
+      .optional(),
+    email: z
+      .string()
+      .email({
+        message: 'Please enter a valid email address.',
+      })
+      .optional(),
+    language: z
+      .nativeEnum(Language, {
+        required_error: 'Please select a language.',
+      })
+      .optional(),
+    timeZone: z
+      .string({
+        required_error: 'Please select a time zone.',
+      })
+      .optional(),
+    oldPassword: z.string().optional(),
+    newPassword: z.string().optional(),
+    confirmPassword: z.string().optional(),
+  })
+  .refine((data) => !data.newPassword || data.oldPassword, {
+    message: 'Old password is required',
+    path: ['oldPassword'],
   })
   .refine((data) => data.newPassword === data.confirmPassword, {
     message: "Passwords don't match",
@@ -33,18 +45,6 @@ export const accountFormSchema = z
   });
 
 export type AccountFormValues = z.infer<typeof accountFormSchema>;
-
-export const languages = [
-  { value: 'en', label: 'English' },
-  { value: 'fr', label: 'French' },
-  { value: 'de', label: 'German' },
-  { value: 'es', label: 'Spanish' },
-  { value: 'pt', label: 'Portuguese' },
-  { value: 'ru', label: 'Russian' },
-  { value: 'ja', label: 'Japanese' },
-  { value: 'ko', label: 'Korean' },
-  { value: 'zh', label: 'Chinese' },
-];
 
 export const timeZones = [
   { value: 'UTC', label: '(UTC+00:00) Coordinated Universal Time' },

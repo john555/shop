@@ -13,7 +13,6 @@ import {
   Users,
   X,
   Package,
-  User,
   LayoutDashboard,
   Box,
   List,
@@ -105,6 +104,12 @@ export default function DashboardLayout({
   const userInitials = [user?.firstName?.[0], user?.lastName?.[0]].join('');
   const router = useRouter();
   const pathname = usePathname();
+
+  useEffect(() => {
+    if (!user) return;
+    setTheme(user.theme.toLocaleLowerCase());
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user]);
 
   const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
 

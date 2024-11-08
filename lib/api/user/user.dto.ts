@@ -1,6 +1,8 @@
 import { Field, InputType } from '@nestjs/graphql';
+import { Language, Theme } from '@prisma/client';
 import {
   IsEmail,
+  IsEnum,
   IsNotEmpty,
   IsOptional,
   IsString,
@@ -21,7 +23,6 @@ export class UserCreateInput {
   password?: string;
 
   @Field({ nullable: true, description: 'First name of the User' })
-  @IsEmail()
   @IsNotEmpty()
   @IsOptional()
   firstName?: string;
@@ -37,6 +38,30 @@ export class UserCreateInput {
   @IsNotEmpty()
   @IsOptional()
   imageUrl?: string;
+
+  @Field(() => Language, {
+    nullable: true,
+    description: 'Preferred language for the user interface',
+  })
+  @IsEnum(Language)
+  @IsOptional()
+  language?: Language;
+
+  @Field(() => Theme, {
+    nullable: true,
+    description: 'Preferred theme for the user interface',
+  })
+  @IsEnum(Theme)
+  @IsOptional()
+  theme?: Theme;
+
+  @Field({
+    nullable: true,
+    description: 'Preferred timezone (e.g., "Africa/Nairobi")',
+  })
+  @IsString()
+  @IsOptional()
+  timeZone?: string;
 }
 
 @InputType()
@@ -46,7 +71,7 @@ export class UserUpdateInput {
   id!: string;
 
   @Field({ nullable: true, description: 'First name of the User' })
-  @IsEmail()
+  @IsString()
   @IsOptional()
   firstName?: string;
 
@@ -59,4 +84,45 @@ export class UserUpdateInput {
   @IsString()
   @IsOptional()
   imageUrl?: string;
+
+  @Field(() => Language, {
+    nullable: true,
+    description: 'Preferred language for the user interface',
+  })
+  @IsEnum(Language)
+  @IsOptional()
+  language?: Language;
+
+  @Field(() => Theme, {
+    nullable: true,
+    description: 'Preferred theme for the user interface',
+  })
+  @IsEnum(Theme)
+  @IsOptional()
+  theme?: Theme;
+
+  @Field({
+    nullable: true,
+    description: 'Preferred timezone (e.g., "Africa/Nairobi")',
+  })
+  @IsString()
+  @IsOptional()
+  timeZone?: string;
+}
+
+@InputType()
+export class UserPasswordUpdateInput {
+  @Field({ description: 'ID of the User' })
+  @IsString()
+  id!: string;
+
+  @Field({ nullable: true, description: 'Old password of the User' })
+  @IsString()
+  @MinLength(8)
+  oldPassword: string;
+
+  @Field({ nullable: true, description: 'New password of the User' })
+  @IsString()
+  @MinLength(8)
+  newPassword: string;
 }

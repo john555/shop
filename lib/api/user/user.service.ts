@@ -1,10 +1,14 @@
 import { User } from '@prisma/client';
-import { Injectable } from '@nestjs/common';
-import { UserCreateInput, UserUpdateInput } from './user.dto';
+import { BadRequestException, Injectable } from '@nestjs/common';
+import {
+  UserCreateInput,
+  UserUpdateInput,
+  UserPasswordUpdateInput,
+} from './user.dto';
 import { PrismaService } from 'lib/api/prisma/prisma.service';
 import { PaginationArgs } from 'lib/api/pagination/pagination.args';
 import { paginate } from 'lib/api/pagination/paginate';
-import { hashPassword } from 'lib/api/utils/hashing';
+import { comparePassword, hashPassword } from 'lib/api/utils/hashing';
 
 @Injectable()
 export class UserService {
@@ -27,6 +31,9 @@ export class UserService {
         firstName: input.firstName,
         lastName: input.lastName,
         imageUrl: input.imageUrl,
+        language: input.language,
+        timeZone: input.timeZone,
+        theme: input.theme,
         passwordHash: input.password
           ? await hashPassword(input.password)
           : null,
@@ -41,6 +48,9 @@ export class UserService {
         firstName: input.firstName,
         lastName: input.lastName,
         imageUrl: input.imageUrl,
+        language: input.language,
+        timeZone: input.timeZone,
+        theme: input.theme,
       },
     });
   }
@@ -66,5 +76,25 @@ export class UserService {
       where: { id: userId },
       data: { refreshTokenHash: null },
     }));
+  }
+
+  async updatePassword(input: UserPasswordUpdateInput): Promise<User> {
+    const user = await this.getUserById(input.id);
+    if (!user?.passwordHash) {
+      throw new BadRequestException('Invalid email or password');
+    }
+
+    if (!(await comparePassword(input.oldPassword, user.passwordHash))) {
+      throw new BadRequestException('Invalid old password');
+    }
+
+    return this.prismaService.user.update({
+      where: { id: input.id },
+      data: {
+        passwordHash: input.newPassword
+          ? await hashPassword(input.newPassword)
+          : null,
+      },
+    });
   }
 }

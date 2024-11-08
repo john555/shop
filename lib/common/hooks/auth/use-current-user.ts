@@ -13,6 +13,9 @@ const ME_QUERY = gql`
       lastName
       imageUrl
       updatedAt
+      language
+      timeZone
+      theme
       stores {
         id
       }
@@ -45,9 +48,8 @@ export function useCurrentUser() {
         setUser(user);
       })
       .catch((error) => {
-        // show a toast 
+        // show a toast
         console.error('Error fetching user:', error);
-        
       })
       .finally(() => {
         setIsLoading(false);

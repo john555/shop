@@ -1,9 +1,6 @@
 // This is your Prisma schema file,
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -13,18 +10,39 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum Theme {
+  LIGHT
+  DARK
+  SYSTEM
+}
+
+enum Language {
+  EN // English
+  SW // Swahili
+  FR // French
+  AR // Arabic
+  RW // Kinyarwanda
+  LG // Luganda
+}
+
 model User {
-  id               String   @id @default(cuid())
-  email            String   @unique
-  emailVerified    Boolean  @default(false)
+  id               String  @id @default(cuid())
+  email            String  @unique
+  emailVerified    Boolean @default(false)
   firstName        String?
   lastName         String?
   imageUrl         String?
   passwordHash     String?
   refreshTokenHash String?
-  createdAt        DateTime @default(now()) @db.Timestamp(6)
-  updatedAt        DateTime @updatedAt @db.Timestamp(6)
-  stores           Store[]
+
+  // User Settings
+  language Language @default(EN)
+  timeZone String   @default("Africa/Nairobi")
+  theme    Theme    @default(SYSTEM)
+
+  createdAt DateTime @default(now()) @db.Timestamp(6)
+  updatedAt DateTime @updatedAt @db.Timestamp(6)
+  stores    Store[]
 
   @@index([email])
   @@map("users")

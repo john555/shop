@@ -10,7 +10,9 @@ import { Checkbox } from '@/components/ui/checkbox';
 import {
   Select,
   SelectContent,
+  SelectGroup,
   SelectItem,
+  SelectLabel,
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
@@ -26,7 +28,7 @@ import {
   FormDescription,
 } from '@/components/ui/form';
 import { currencyLabels } from '@/common/constants/currency';
-import { timeZones } from '@/common/constants/timezone';
+import { TIMEZONES } from '@/common/constants/timezone';
 
 export function StoreDefaultsCard() {
   const { store } = useStore();
@@ -226,12 +228,17 @@ export function StoreDefaultsCard() {
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
-                  {timeZones.map((tz) => (
-                    <SelectItem key={tz} value={tz}>
-                      {tz}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
+                {TIMEZONES.map((timeZoneGroup) => (
+                  <SelectGroup key={timeZoneGroup.label}>
+                    <SelectLabel>{timeZoneGroup.label}</SelectLabel>
+                    {timeZoneGroup.timezones.map((timeZone) => (
+                      <SelectItem key={timeZone.value} value={timeZone.value}>
+                        {timeZone.label} ({timeZone.offset})
+                      </SelectItem>
+                    ))}
+                  </SelectGroup>
+                ))}
+              </SelectContent>
               </Select>
               <FormDescription>
                 Sets the time for when orders and analytics are recorded
