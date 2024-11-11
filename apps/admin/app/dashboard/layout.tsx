@@ -52,6 +52,8 @@ import { DASHBOARD_SETTINGS_LINK, THEMES } from '@/common/constants';
 import { updateUser } from '@/common/actions/user';
 import { Theme } from '@/types/api';
 import { cn } from '@/lib/utils';
+import { ApolloProvider } from '@apollo/client';
+import { client } from '@/common/apollo';
 
 // Dummy data for search results
 const dummySearchResults = {
@@ -177,237 +179,239 @@ export default function DashboardLayout({
   }
 
   return (
-    <div className="flex h-screen bg-background text-foreground">
-      {/* Sidebar */}
-      <aside
-        className={`fixed inset-y-0 left-0 z-50 w-64 transform bg-card transition-transform duration-300 ease-in-out lg:static lg:translate-x-0 ${
-          isSidebarOpen ? 'translate-x-0' : '-translate-x-full'
-        }`}
-      >
-        <div className="flex h-full flex-col">
-          <div className="flex items-center justify-between p-4">
-            <h1 className="text-2xl font-bold">E-commerce</h1>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={toggleSidebar}
-              className="lg:hidden"
-            >
-              <X className="h-6 w-6" />
-              <span className="sr-only">Close sidebar</span>
-            </Button>
-          </div>
-          <div className="flex flex-col justify-between h-full overflow-y-auto">
-            <nav className="flex-1 space-y-2 p-4">
-              {navLinks.map(({ href, icon: Icon, label, paddingLeft }) => (
-                <Button
-                  key={href}
-                  variant="ghost"
-                  className={`w-full justify-start ${paddingLeft || ''}`}
-                  asChild
-                >
-                  <Link href={href}>
-                    <Icon className="mr-2 h-4 w-4" />
-                    {label}
-                  </Link>
-                </Button>
-              ))}
-            </nav>
-            <div className="p-4">
+    <ApolloProvider client={client}>
+      <div className="flex h-screen bg-background text-foreground">
+        {/* Sidebar */}
+        <aside
+          className={`fixed inset-y-0 left-0 z-50 w-64 transform bg-card transition-transform duration-300 ease-in-out lg:static lg:translate-x-0 ${
+            isSidebarOpen ? 'translate-x-0' : '-translate-x-full'
+          }`}
+        >
+          <div className="flex h-full flex-col">
+            <div className="flex items-center justify-between p-4">
+              <h1 className="text-2xl font-bold">E-commerce</h1>
               <Button
                 variant="ghost"
-                className="w-full justify-start"
-                onClick={handleClick}
+                size="icon"
+                onClick={toggleSidebar}
+                className="lg:hidden"
               >
-                <Settings className="mr-2 h-4 w-4" />
-                Settings
+                <X className="h-6 w-6" />
+                <span className="sr-only">Close sidebar</span>
               </Button>
             </div>
-          </div>
-        </div>
-      </aside>
-
-      {/* Overlay */}
-      {isMobile && isSidebarOpen && (
-        <div
-          className="fixed inset-0 z-40 bg-background/80 backdrop-blur-sm"
-          onClick={toggleSidebar}
-          aria-hidden="true"
-        />
-      )}
-
-      {/* Main content */}
-      <div className="flex flex-1 flex-col overflow-hidden">
-        {/* Header */}
-        <header className="relative flex items-center justify-between border-b bg-card px-4 py-3">
-          <div className="flex items-center">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={toggleSidebar}
-              className="mr-2 lg:hidden"
-            >
-              <Menu className="h-6 w-6" />
-              <span className="sr-only">Toggle sidebar</span>
-            </Button>
-            <div className="relative">
-              <div className="relative w-full md:w-[400px]">
-                <Search className="absolute left-2 top-1/2 h-4 w-4 -translate-y-1/2 transform text-muted-foreground" />
-                <Input
-                  type="text"
-                  placeholder="Search orders, products, customers..."
-                  className="w-full pl-8 pr-8"
-                  value={searchQuery}
-                  onChange={handleSearchChange}
-                />
-                {searchQuery && (
+            <div className="flex flex-col justify-between h-full overflow-y-auto">
+              <nav className="flex-1 space-y-2 p-4">
+                {navLinks.map(({ href, icon: Icon, label, paddingLeft }) => (
                   <Button
+                    key={href}
                     variant="ghost"
-                    size="sm"
-                    className="absolute right-0 top-1/2 h-full -translate-y-1/2 transform"
-                    onClick={handleSearchClose}
+                    className={`w-full justify-start ${paddingLeft || ''}`}
+                    asChild
                   >
-                    <X className="h-4 w-4" />
-                    <span className="sr-only">Clear search</span>
+                    <Link href={href}>
+                      <Icon className="mr-2 h-4 w-4" />
+                      {label}
+                    </Link>
                   </Button>
-                )}
-              </div>
-              {isSearchOpen && (
-                <div className="absolute left-0 right-0 top-full z-50 mt-2">
-                  <Command
-                    className="rounded-lg border shadow-md"
-                    style={{
-                      width: 'calc(100% + 8rem)',
-                      maxWidth: '800px',
-                      height: '40vh',
-                      maxHeight: '400px',
-                    }}
-                  >
-                    <CommandList className="h-full overflow-auto">
-                      <CommandEmpty>No results found.</CommandEmpty>
-                      {dummySearchResults.orders.length > 0 && (
-                        <CommandGroup heading="Orders" className="p-2">
-                          {dummySearchResults.orders.map((order) => (
-                            <CommandItem
-                              key={order.id}
-                              className="flex items-center justify-between p-2"
-                            >
-                              <span>{order.customer}</span>
-                              <span className="text-sm text-muted-foreground">
-                                {order.total}
-                              </span>
-                            </CommandItem>
-                          ))}
-                        </CommandGroup>
-                      )}
-                      {dummySearchResults.products.length > 0 && (
-                        <CommandGroup heading="Products" className="p-2">
-                          {dummySearchResults.products.map((product) => (
-                            <CommandItem
-                              key={product.id}
-                              className="flex items-center justify-between p-2"
-                            >
-                              <span>{product.name}</span>
-                              <span className="text-sm text-muted-foreground">
-                                {product.price}
-                              </span>
-                            </CommandItem>
-                          ))}
-                        </CommandGroup>
-                      )}
-                      {dummySearchResults.customers.length > 0 && (
-                        <CommandGroup heading="Customers" className="p-2">
-                          {dummySearchResults.customers.map((customer) => (
-                            <CommandItem
-                              key={customer.id}
-                              className="flex items-center justify-between p-2"
-                            >
-                              <span>{customer.name}</span>
-                              <span className="text-sm text-muted-foreground">
-                                {customer.email}
-                              </span>
-                            </CommandItem>
-                          ))}
-                        </CommandGroup>
-                      )}
-                    </CommandList>
-                  </Command>
-                </div>
-              )}
-            </div>
-          </div>
-          <div className="flex items-center space-x-4">
-            <Button variant="ghost" size="icon">
-              <Bell className="h-5 w-5" />
-              <span className="sr-only">Notifications</span>
-            </Button>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
+                ))}
+              </nav>
+              <div className="p-4">
                 <Button
                   variant="ghost"
-                  size="icon"
-                  className="relative h-8 w-8 rounded-full"
+                  className="w-full justify-start"
+                  onClick={handleClick}
                 >
-                  <Avatar className="h-8 w-8">
-                    <AvatarImage src={''} alt="User avatar" />
-                    <AvatarFallback>{userInitials}</AvatarFallback>
-                  </Avatar>
+                  <Settings className="mr-2 h-4 w-4" />
+                  Settings
                 </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent className="w-56" align="end" forceMount>
-                <DropdownMenuLabel className="font-normal">
-                  <div className="flex flex-col space-y-1">
-                    <p className="text-sm font-medium leading-none">
-                      {userName}
-                    </p>
-                    <p className="text-xs leading-none text-muted-foreground">
-                      {user?.email}
-                    </p>
-                  </div>
-                </DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                <DropdownMenuLabel>Preferences</DropdownMenuLabel>
-                <DropdownMenuItem className="flex-row items-center">
-                  <span className="flex-1">Theme</span>
-                  <div className="ml-4 flex items-center gap-1">
-                    {THEMES.map((theme) => (
-                      <TooltipProvider key={theme.value}>
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="h-6 w-6 hover:bg-background/80 dark:hover:bg-muted/50"
-                              onClick={() => handleThemeChange(theme.value)}
-                            >
-                              <theme.icon className="h-4 w-4" />
-                              <span className="sr-only">
-                                {theme.label} theme
-                              </span>
-                            </Button>
-                          </TooltipTrigger>
-                          <TooltipContent>
-                            <p>{theme.description}</p>
-                          </TooltipContent>
-                        </Tooltip>
-                      </TooltipProvider>
-                    ))}
-                  </div>
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={handleSignOut}>
-                  Log out
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+              </div>
+            </div>
           </div>
-        </header>
+        </aside>
 
-        {/* Page content */}
-        <main className="flex-1 overflow-x-hidden overflow-y-auto bg-background  p-6">
-          {children}
-        </main>
+        {/* Overlay */}
+        {isMobile && isSidebarOpen && (
+          <div
+            className="fixed inset-0 z-40 bg-background/80 backdrop-blur-sm"
+            onClick={toggleSidebar}
+            aria-hidden="true"
+          />
+        )}
+
+        {/* Main content */}
+        <div className="flex flex-1 flex-col overflow-hidden">
+          {/* Header */}
+          <header className="relative flex items-center justify-between border-b bg-card px-4 py-3">
+            <div className="flex items-center">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={toggleSidebar}
+                className="mr-2 lg:hidden"
+              >
+                <Menu className="h-6 w-6" />
+                <span className="sr-only">Toggle sidebar</span>
+              </Button>
+              <div className="relative">
+                <div className="relative w-full md:w-[400px]">
+                  <Search className="absolute left-2 top-1/2 h-4 w-4 -translate-y-1/2 transform text-muted-foreground" />
+                  <Input
+                    type="text"
+                    placeholder="Search orders, products, customers..."
+                    className="w-full pl-8 pr-8"
+                    value={searchQuery}
+                    onChange={handleSearchChange}
+                  />
+                  {searchQuery && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="absolute right-0 top-1/2 h-full -translate-y-1/2 transform"
+                      onClick={handleSearchClose}
+                    >
+                      <X className="h-4 w-4" />
+                      <span className="sr-only">Clear search</span>
+                    </Button>
+                  )}
+                </div>
+                {isSearchOpen && (
+                  <div className="absolute left-0 right-0 top-full z-50 mt-2">
+                    <Command
+                      className="rounded-lg border shadow-md"
+                      style={{
+                        width: 'calc(100% + 8rem)',
+                        maxWidth: '800px',
+                        height: '40vh',
+                        maxHeight: '400px',
+                      }}
+                    >
+                      <CommandList className="h-full overflow-auto">
+                        <CommandEmpty>No results found.</CommandEmpty>
+                        {dummySearchResults.orders.length > 0 && (
+                          <CommandGroup heading="Orders" className="p-2">
+                            {dummySearchResults.orders.map((order) => (
+                              <CommandItem
+                                key={order.id}
+                                className="flex items-center justify-between p-2"
+                              >
+                                <span>{order.customer}</span>
+                                <span className="text-sm text-muted-foreground">
+                                  {order.total}
+                                </span>
+                              </CommandItem>
+                            ))}
+                          </CommandGroup>
+                        )}
+                        {dummySearchResults.products.length > 0 && (
+                          <CommandGroup heading="Products" className="p-2">
+                            {dummySearchResults.products.map((product) => (
+                              <CommandItem
+                                key={product.id}
+                                className="flex items-center justify-between p-2"
+                              >
+                                <span>{product.name}</span>
+                                <span className="text-sm text-muted-foreground">
+                                  {product.price}
+                                </span>
+                              </CommandItem>
+                            ))}
+                          </CommandGroup>
+                        )}
+                        {dummySearchResults.customers.length > 0 && (
+                          <CommandGroup heading="Customers" className="p-2">
+                            {dummySearchResults.customers.map((customer) => (
+                              <CommandItem
+                                key={customer.id}
+                                className="flex items-center justify-between p-2"
+                              >
+                                <span>{customer.name}</span>
+                                <span className="text-sm text-muted-foreground">
+                                  {customer.email}
+                                </span>
+                              </CommandItem>
+                            ))}
+                          </CommandGroup>
+                        )}
+                      </CommandList>
+                    </Command>
+                  </div>
+                )}
+              </div>
+            </div>
+            <div className="flex items-center space-x-4">
+              <Button variant="ghost" size="icon">
+                <Bell className="h-5 w-5" />
+                <span className="sr-only">Notifications</span>
+              </Button>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="relative h-8 w-8 rounded-full"
+                  >
+                    <Avatar className="h-8 w-8">
+                      <AvatarImage src={''} alt="User avatar" />
+                      <AvatarFallback>{userInitials}</AvatarFallback>
+                    </Avatar>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="w-56" align="end" forceMount>
+                  <DropdownMenuLabel className="font-normal">
+                    <div className="flex flex-col space-y-1">
+                      <p className="text-sm font-medium leading-none">
+                        {userName}
+                      </p>
+                      <p className="text-xs leading-none text-muted-foreground">
+                        {user?.email}
+                      </p>
+                    </div>
+                  </DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuLabel>Preferences</DropdownMenuLabel>
+                  <DropdownMenuItem className="flex-row items-center">
+                    <span className="flex-1">Theme</span>
+                    <div className="ml-4 flex items-center gap-1">
+                      {THEMES.map((theme) => (
+                        <TooltipProvider key={theme.value}>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-6 w-6 hover:bg-background/80 dark:hover:bg-muted/50"
+                                onClick={() => handleThemeChange(theme.value)}
+                              >
+                                <theme.icon className="h-4 w-4" />
+                                <span className="sr-only">
+                                  {theme.label} theme
+                                </span>
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p>{theme.description}</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+                      ))}
+                    </div>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={handleSignOut}>
+                    Log out
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+          </header>
+
+          {/* Page content */}
+          <main className="flex-1 overflow-x-hidden overflow-y-auto bg-background  p-6">
+            {children}
+          </main>
+        </div>
       </div>
-    </div>
+    </ApolloProvider>
   );
 }

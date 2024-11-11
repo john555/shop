@@ -71,8 +71,12 @@ export default function StoreSettingsPage() {
       acc[key] = values[key];
       return acc;
     }, {});
-    const updatedStore = await updateStore({ id: store.id, ...changes });
-    resetForm(updatedStore);
+    const updatedStore = await updateStore({
+      variables: {
+        input: { id: store.id, ...changes },
+      },
+    });
+    resetForm(updatedStore?.data?.updateStore);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [form, store]);
 

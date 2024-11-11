@@ -58,7 +58,11 @@ export function EditProfileDialog({
   const onSubmit = async (data: z.infer<typeof storeProfileSchema>) => {
     if (!store?.id) return;
 
-    await updateStore({ id: store?.id, ...data });
+    await updateStore({
+      variables: {
+        input: { id: store?.id, ...data }
+      }
+    });
     onOpenChange(false);
   };
 

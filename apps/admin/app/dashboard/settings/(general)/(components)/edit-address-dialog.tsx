@@ -93,11 +93,15 @@ export function EditAddressDialog({
     if (!store?.id) return;
 
     await updateStoreAddress({
-      ownerId: store.id,
-      ownerType: AddressOwnerType.Store,
-      type: AddressType.Registered,
-      address: {
-        ...data,
+      variables: {
+        input: {
+          ownerId: store.id,
+          ownerType: AddressOwnerType.Store,
+          type: AddressType.Registered,
+          address: {
+            ...data,
+          },
+        },
       },
     });
     onOpenChange(false);

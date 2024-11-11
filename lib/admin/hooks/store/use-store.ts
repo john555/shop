@@ -1,13 +1,7 @@
 import { useEffect, useState } from 'react';
-import { gql } from '@apollo/client';
+import { gql, useMutation, useQuery } from '@apollo/client';
 import { client } from '@/common/apollo';
-import {
-  AddressOwnerType,
-  AddressType,
-  Store,
-  StoreUpdateInput,
-  UpdateAddressInput,
-} from '@/types/api';
+import { Store, StoreUpdateInput, UpdateAddressInput } from '@/types/api';
 
 const UPDATE_STORE = gql`
   mutation UpdateStore($input: StoreUpdateInput!) {
@@ -113,88 +107,24 @@ const UPDATE_ADDRESS = gql`
 `;
 
 export function useStore() {
-  const [store, setStore] = useState<Store | undefined>();
-  const [loading, setLoading] = useState(false);
-  const [updating, setUpdating] = useState(false);
-  const [error, setError] = useState<Error | null>(null);
+  const { loading, error: loadingError, data } = useQuery(FETCH_STORE_QUERY);
+  const [updateStore, { loading: updatingStore, error: updateError }] =
+    useMutation(UPDATE_STORE, {
+      refetchQueries: [FETCH_STORE_QUERY],
+    });
+  const [
+    updateStoreAddress,
+    { loading: updatingStoreAddress, error: updateAddressError },
+  ] = useMutation(UPDATE_ADDRESS, {
+    refetchQueries: [FETCH_STORE_QUERY],
+  });
 
-  const updateStore = async (input: StoreUpdateInput) => {
-    try {
-      setUpdating(true);
-      setError(null);
-
-      const { data, errors } = await client.mutate({
-        mutation: UPDATE_STORE,
-        variables: { input },
-      });
-
-      if (errors) {
-        throw new Error(errors[0].message);
-      }
-
-      const updatedStore = data.updateStore;
-      setStore((prev) => ({ ...prev, ...updatedStore }));
-      return updatedStore;
-    } catch (err) {
-      setError(err instanceof Error ? err : new Error('An error occurred'));
-      throw err;
-    } finally {
-      setUpdating(false);
-    }
+  return {
+    store: data?.myStores?.[0],
+    loading,
+    updating: updatingStore || updatingStoreAddress,
+    error: loadingError || updateError || updateAddressError,
+    updateStore,
+    updateStoreAddress,
   };
-
-  const fetchMyStores = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-
-      const { data, errors } = await client.query({
-        query: FETCH_STORE_QUERY,
-      });
-
-      if (errors) {
-        throw new Error(errors[0].message);
-      }
-
-      const fetchedStore: Store = data.myStores[0];
-      setStore(fetchedStore);
-      return fetchedStore;
-    } catch (err) {
-      setError(err instanceof Error ? err : new Error('An error occurred'));
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const updateStoreAddress = async (input: UpdateAddressInput) => {
-    try {
-      setUpdating(true);
-      setError(null);
-
-      const { data, errors } = await client.mutate({
-        mutation: UPDATE_ADDRESS,
-        variables: {
-          input,
-        },
-      });
-
-      if (errors) {
-        throw new Error(errors[0].message);
-      }
-
-      const updatedStore = data.updateStore;
-      setStore(updatedStore);
-      return updatedStore;
-    } catch (err) {
-      setError(err instanceof Error ? err : new Error('An error occurred'));
-    } finally {
-      setUpdating(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchMyStores();
-  }, []);
-
-  return { store, loading, updating, error, updateStore, updateStoreAddress };
 }
