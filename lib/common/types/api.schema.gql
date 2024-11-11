@@ -52,7 +52,9 @@ type AddressOnOwner {
 enum AddressOwnerType {
   CUSTOMER
   ORDER
+  PROPERTY
   STORE
+  VEHICLE
 }
 
 """Type of address (billing, shipping, etc.)"""
@@ -340,9 +342,6 @@ type User {
   """ID of the User"""
   id: ID!
 
-  """URL of the User image"""
-  imageUrl: String
-
   """Preferred language for the user interface"""
   language: Language!
 
@@ -368,9 +367,6 @@ input UserCreateInput {
 
   """First name of the User"""
   firstName: String
-
-  """URL of the User image"""
-  imageUrl: String
 
   """Preferred language for the user interface"""
   language: Language
@@ -405,9 +401,6 @@ input UserUpdateInput {
 
   """ID of the User"""
   id: String!
-
-  """URL of the User image"""
-  imageUrl: String
 
   """Preferred language for the user interface"""
   language: Language

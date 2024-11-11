@@ -87,7 +87,17 @@ export class StoreService {
         include,
       });
 
-      return store as StoreWithRelations;
+      if (!store) {
+        return null;
+      }
+
+      return {
+        ...store,
+        addresses: await this.addressService.findOwnerAddresses(
+          store.id,
+          AddressOwnerType.STORE
+        ),
+      };
     } catch (error) {
       this.logger.error(`Error fetching store with ID ${id}:`, error);
       throw error;
@@ -104,7 +114,17 @@ export class StoreService {
         include,
       });
 
-      return store as StoreWithRelations;
+      if (!store) {
+        return null;
+      }
+
+      return {
+        ...store,
+        addresses: await this.addressService.findOwnerAddresses(
+          store.id,
+          AddressOwnerType.STORE
+        ),
+      };
     } catch (error) {
       this.logger.error(`Error fetching store with slug ${slug}:`, error);
       throw error;
@@ -124,7 +144,15 @@ export class StoreService {
         include,
       });
 
-      return stores as StoreWithRelations[];
+      return await Promise.all(
+        stores.map(async (store) => ({
+          ...store,
+          addresses: await this.addressService.findOwnerAddresses(
+            store.id,
+            AddressOwnerType.STORE
+          ),
+        }))
+      );
     } catch (error) {
       this.logger.error(`Error fetching stores for owner ${ownerId}:`, error);
       throw error;
@@ -144,7 +172,15 @@ export class StoreService {
         include,
       });
 
-      return stores as StoreWithRelations[];
+      return (await Promise.all(
+        stores.map(async (store) => ({
+          ...store,
+          addresses: await this.addressService.findOwnerAddresses(
+            store.id,
+            AddressOwnerType.STORE
+          ),
+        }))
+      )) as StoreWithRelations[];
     } catch (error) {
       this.logger.error(`Error fetching stores of type ${type}:`, error);
       throw error;
@@ -171,7 +207,13 @@ export class StoreService {
         include,
       });
 
-      return store as StoreWithRelations;
+      return {
+        ...store,
+        addresses: await this.addressService.findOwnerAddresses(
+          store.id,
+          AddressOwnerType.STORE
+        ),
+      };
     } catch (error) {
       this.logger.error('Error creating store:', error);
       throw error;
@@ -227,7 +269,7 @@ export class StoreService {
           currencySymbol !== undefined ? { set: currencySymbol } : undefined,
         currencyPosition: input.currencyPosition
           ? { set: input.currencyPosition }
-          : undefined
+          : undefined,
       };
 
       const updatedStore = await this.prismaService.store.update({
@@ -236,7 +278,13 @@ export class StoreService {
         include,
       });
 
-      return updatedStore as StoreWithRelations;
+      return {
+        ...updatedStore,
+        addresses: await this.addressService.findOwnerAddresses(
+          updatedStore.id,
+          AddressOwnerType.STORE
+        ),
+      };
     } catch (error) {
       this.logger.error(`Error updating store ${id}:`, error);
       throw error;
@@ -277,7 +325,13 @@ export class StoreService {
         include,
       });
 
-      return updatedStore as StoreWithRelations;
+      return {
+        ...updatedStore,
+        addresses: await this.addressService.findOwnerAddresses(
+          updatedStore.id,
+          AddressOwnerType.STORE
+        ),
+      };
     } catch (error) {
       this.logger.error(
         `Error updating currency settings for store ${id}:`,
@@ -314,7 +368,13 @@ export class StoreService {
         );
       }
 
-      return updatedStore;
+      return {
+        ...updatedStore,
+        addresses: await this.addressService.findOwnerAddresses(
+          updatedStore.id,
+          AddressOwnerType.STORE
+        ),
+      };
     } catch (error) {
       this.logger.error(`Error updating address for store ${storeId}:`, error);
       throw error;

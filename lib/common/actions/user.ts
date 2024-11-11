@@ -9,7 +9,6 @@ const UPDATE_USER = gql`
       email
       firstName
       lastName
-      imageUrl
       language
       timeZone
       theme
@@ -28,7 +27,6 @@ const UPDATE_USER_PASSWORD = gql`
       email
       firstName
       lastName
-      imageUrl
       language
       timeZone
       theme

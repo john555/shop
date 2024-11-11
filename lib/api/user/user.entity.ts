@@ -36,12 +36,6 @@ export class User implements UserBase {
   })
   lastName: string | null;
 
-  @Field(() => String, { 
-    nullable: true, 
-    description: 'URL of the User image' 
-  })
-  imageUrl: string | null;
-
   @Field(() => Boolean!, { 
     description: 'Whether the User email is verified' 
   })

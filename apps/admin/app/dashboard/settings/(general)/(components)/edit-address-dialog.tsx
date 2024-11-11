@@ -90,10 +90,10 @@ export function EditAddressDialog({
   }, [address, store, setValue]);
 
   const onSubmit = async (data: z.infer<typeof addressSchema>) => {
-    if (!addressOnOwner?.ownerId || !addressOnOwner?.ownerType) return;
+    if (!store?.id) return;
 
     await updateStoreAddress({
-      ownerId: addressOnOwner.ownerId,
+      ownerId: store.id,
       ownerType: AddressOwnerType.Store,
       type: AddressType.Registered,
       address: {

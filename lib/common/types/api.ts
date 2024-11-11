@@ -65,7 +65,9 @@ export type AddressOnOwner = {
 export enum AddressOwnerType {
   Customer = 'CUSTOMER',
   Order = 'ORDER',
-  Store = 'STORE'
+  Property = 'PROPERTY',
+  Store = 'STORE',
+  Vehicle = 'VEHICLE'
 }
 
 /** Type of address (billing, shipping, etc.) */
@@ -391,8 +393,6 @@ export type User = {
   firstName?: Maybe<Scalars['String']['output']>;
   /** ID of the User */
   id: Scalars['ID']['output'];
-  /** URL of the User image */
-  imageUrl?: Maybe<Scalars['String']['output']>;
   /** Preferred language for the user interface */
   language: Language;
   /** Last name of the User */
@@ -412,8 +412,6 @@ export type UserCreateInput = {
   email: Scalars['String']['input'];
   /** First name of the User */
   firstName?: InputMaybe<Scalars['String']['input']>;
-  /** URL of the User image */
-  imageUrl?: InputMaybe<Scalars['String']['input']>;
   /** Preferred language for the user interface */
   language?: InputMaybe<Language>;
   /** Last name of the User */
@@ -440,8 +438,6 @@ export type UserUpdateInput = {
   firstName?: InputMaybe<Scalars['String']['input']>;
   /** ID of the User */
   id: Scalars['String']['input'];
-  /** URL of the User image */
-  imageUrl?: InputMaybe<Scalars['String']['input']>;
   /** Preferred language for the user interface */
   language?: InputMaybe<Language>;
   /** Last name of the User */
@@ -699,7 +695,6 @@ export type UserResolvers<ContextType = any, ParentType extends ResolversParentT
   emailVerified?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   firstName?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
-  imageUrl?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   language?: Resolver<ResolversTypes['Language'], ParentType, ContextType>;
   lastName?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   stores?: Resolver<Array<ResolversTypes['Store']>, ParentType, ContextType>;

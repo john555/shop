@@ -30,7 +30,6 @@ export class UserService {
         email: input.email,
         firstName: input.firstName,
         lastName: input.lastName,
-        imageUrl: input.imageUrl,
         language: input.language,
         timeZone: input.timeZone,
         theme: input.theme,
@@ -47,7 +46,6 @@ export class UserService {
       data: {
         firstName: input.firstName,
         lastName: input.lastName,
-        imageUrl: input.imageUrl,
         language: input.language,
         timeZone: input.timeZone,
         theme: input.theme,

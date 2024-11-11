@@ -76,9 +76,12 @@ export function StoreDetailsCard() {
                 <div className="font-medium">Business address</div>
                 {address ? (
                   <div className="text-muted-foreground">
-                    {address.line1}, {address.line2 && `${address.line2}, `}
-                    {address.city}, {address.state}, {address.country}{' '}
-                    {address.zipCode}
+                    {[
+                      address.line1,
+                      [address.line2, address.city].filter(Boolean).join(', '),
+                      address.state,
+                      [address.country, address.zipCode].filter(Boolean).join(' '),
+                    ].filter(Boolean).join(', ')}
                   </div>
                 ) : (
                   <div className="text-muted-foreground">No address</div>

@@ -24,11 +24,6 @@ export type StoreWithRelations = Store & Partial<StoreRelations>;
 
 // Define specific include types for addresses
 export type StoreInclude = {
-  addresses?: {
-    include: {
-      address: true;
-    };
-  };
   owner?: boolean;
 };
 
@@ -39,23 +34,11 @@ export const createStoreInclude = (
     owner?: boolean;
   } = {}
 ): StoreInclude => ({
-  addresses: options.addresses
-    ? {
-        include: {
-          address: true,
-        },
-      }
-    : undefined,
   owner: options.owner ?? false,
 });
 
 // Default include settings
 export const DEFAULT_STORE_INCLUDE: StoreInclude = {
-  addresses: {
-    include: {
-      address: true,
-    },
-  },
   owner: false,
 };
 

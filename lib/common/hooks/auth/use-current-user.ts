@@ -11,7 +11,6 @@ const ME_QUERY = gql`
       email
       firstName
       lastName
-      imageUrl
       updatedAt
       language
       timeZone

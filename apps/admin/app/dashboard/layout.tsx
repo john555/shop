@@ -349,7 +349,7 @@ export default function DashboardLayout({
                   className="relative h-8 w-8 rounded-full"
                 >
                   <Avatar className="h-8 w-8">
-                    <AvatarImage src={user?.imageUrl ?? ''} alt="User avatar" />
+                    <AvatarImage src={''} alt="User avatar" />
                     <AvatarFallback>{userInitials}</AvatarFallback>
                   </Avatar>
                 </Button>

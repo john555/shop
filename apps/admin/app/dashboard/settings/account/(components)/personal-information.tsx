@@ -38,7 +38,7 @@ export function PersonalInformation({ form }: PersonalInformationProps) {
     <>
       <div className="flex items-center space-x-4">
         <Avatar className="w-20 h-20">
-          <AvatarImage src={user?.imageUrl || ''} alt="User avatar" />
+          <AvatarImage src={''} alt="User avatar" />
           <AvatarFallback>
             {[user?.firstName?.[0].toUpperCase(), user?.lastName?.[0].toUpperCase()].join('')}
           </AvatarFallback>

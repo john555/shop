@@ -10,7 +10,6 @@ const CREATE_STORE_MUTATION = gql`
       id
       name
       email
-      description
       currency
       type
       slug

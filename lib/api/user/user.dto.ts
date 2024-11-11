@@ -33,11 +33,6 @@ export class UserCreateInput {
   @IsOptional()
   lastName?: string;
 
-  @Field({ nullable: true, description: 'URL of the User image' })
-  @IsString()
-  @IsNotEmpty()
-  @IsOptional()
-  imageUrl?: string;
 
   @Field(() => Language, {
     nullable: true,
@@ -79,11 +74,6 @@ export class UserUpdateInput {
   @IsString()
   @IsOptional()
   lastName?: string;
-
-  @Field({ nullable: true, description: 'URL of the User image' })
-  @IsString()
-  @IsOptional()
-  imageUrl?: string;
 
   @Field(() => Language, {
     nullable: true,
