@@ -7,6 +7,7 @@ import {
   Prisma,
   AddressType,
   AddressOwnerType,
+  User,
 } from '@prisma/client';
 import { PrismaService } from '@/api/prisma/prisma.service';
 import { PaginationArgs } from '@/api/pagination/pagination.args';
@@ -308,6 +309,18 @@ export class StoreService {
       this.logger.error(`Error updating address for store ${storeId}:`, error);
       throw error;
     }
+  }
+
+  async findStoreOwner(storeId: string): Promise<User> {
+    return this.prismaService.user.findFirstOrThrow({
+      where: {
+        stores: {
+          some: {
+            id: storeId,
+          },
+        },
+      },
+    });
   }
 
   // Validation Methods

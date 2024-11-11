@@ -29,6 +29,7 @@ import { AddressOwnerType } from '@prisma/client';
 import { DEFAULT_STORE_INCLUDE } from './store.types';
 import { AddressOnOwner } from '../address/entities/address-owner.entity';
 import { AddressService } from '../address/address.service';
+import { User } from '../user/user.entity';
 
 @Resolver(() => Store)
 export class StoreResolver {
@@ -79,9 +80,7 @@ export class StoreResolver {
   }
 
   @Query(() => Store, { nullable: true })
-  async storeBySlug(
-    @Args() args: GetStoreBySlugArgs
-  ): Promise<Store | null> {
+  async storeBySlug(@Args() args: GetStoreBySlugArgs): Promise<Store | null> {
     return this.storeService.getStoreBySlug(args.slug, DEFAULT_STORE_INCLUDE);
   }
 
@@ -179,5 +178,10 @@ export class StoreResolver {
       store.id,
       AddressOwnerType.STORE
     );
+  }
+
+  @ResolveField(() => User)
+  async owner(@Parent() store: Store): Promise<User> {
+    return this.storeService.findStoreOwner(store.id);
   }
 }

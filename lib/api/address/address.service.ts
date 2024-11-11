@@ -1,11 +1,12 @@
 import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '@/api/prisma/prisma.service';
-import { 
-  Address, 
-  AddressOnOwner, 
-  AddressOwnerType, 
-  AddressType, 
-  Prisma 
+import {
+  Address,
+  AddressOnOwner,
+  AddressOwnerType,
+  AddressType,
+  Prisma,
+  User,
 } from '@prisma/client';
 import { AddressInput } from './dto/address.dto';
 
@@ -92,7 +93,10 @@ export class AddressService {
         },
       });
     } catch (error) {
-      this.logger.error(`Error finding default address for owner ${ownerId}:`, error);
+      this.logger.error(
+        `Error finding default address for owner ${ownerId}:`,
+        error
+      );
       throw error;
     }
   }
@@ -166,7 +170,9 @@ export class AddressService {
               ownerId,
               ownerType,
               type,
-              isDefault: isDefault || await this.isFirstAddressOfType(ownerId, ownerType, type),
+              isDefault:
+                isDefault ||
+                (await this.isFirstAddressOfType(ownerId, ownerType, type)),
             },
             include: {
               address: true,
@@ -263,7 +269,10 @@ export class AddressService {
         });
       });
     } catch (error) {
-      this.logger.error(`Error setting default address for owner ${ownerId}:`, error);
+      this.logger.error(
+        `Error setting default address for owner ${ownerId}:`,
+        error
+      );
       throw error;
     }
   }
@@ -291,9 +300,9 @@ export class AddressService {
       address.city,
       address.state,
       address.zipCode,
-      address.country
+      address.country,
     ].filter(Boolean);
-    
+
     return parts.join(', ');
   }
 }
