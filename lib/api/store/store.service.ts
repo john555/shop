@@ -14,7 +14,6 @@ import { paginate } from '@/api/pagination/paginate';
 import { AddressService } from '../address/address.service';
 import { AddressInput } from '../address/dto/address.dto';
 import {
-  StoreWithRelations,
   StoreCreateData,
   StoreUpdateData,
   StoreInclude,
@@ -80,24 +79,12 @@ export class StoreService {
   async getStoreById(
     id: string,
     include: StoreInclude = DEFAULT_STORE_INCLUDE
-  ): Promise<StoreWithRelations | null> {
+  ): Promise<Store | null> {
     try {
-      const store = await this.prismaService.store.findUnique({
+      return this.prismaService.store.findUnique({
         where: { id },
         include,
       });
-
-      if (!store) {
-        return null;
-      }
-
-      return {
-        ...store,
-        addresses: await this.addressService.findOwnerAddresses(
-          store.id,
-          AddressOwnerType.STORE
-        ),
-      };
     } catch (error) {
       this.logger.error(`Error fetching store with ID ${id}:`, error);
       throw error;
@@ -107,24 +94,12 @@ export class StoreService {
   async getStoreBySlug(
     slug: string,
     include: StoreInclude = DEFAULT_STORE_INCLUDE
-  ): Promise<StoreWithRelations | null> {
+  ): Promise<Store | null> {
     try {
-      const store = await this.prismaService.store.findUnique({
+      return this.prismaService.store.findUnique({
         where: { slug },
         include,
       });
-
-      if (!store) {
-        return null;
-      }
-
-      return {
-        ...store,
-        addresses: await this.addressService.findOwnerAddresses(
-          store.id,
-          AddressOwnerType.STORE
-        ),
-      };
     } catch (error) {
       this.logger.error(`Error fetching store with slug ${slug}:`, error);
       throw error;
@@ -135,7 +110,7 @@ export class StoreService {
     ownerId: string,
     args?: PaginationArgs,
     include: StoreInclude = DEFAULT_STORE_INCLUDE
-  ): Promise<StoreWithRelations[]> {
+  ): Promise<Store[]> {
     try {
       const stores = await paginate({
         modelDelegate: this.prismaService.store,
@@ -144,15 +119,7 @@ export class StoreService {
         include,
       });
 
-      return await Promise.all(
-        stores.map(async (store) => ({
-          ...store,
-          addresses: await this.addressService.findOwnerAddresses(
-            store.id,
-            AddressOwnerType.STORE
-          ),
-        }))
-      );
+      return stores;
     } catch (error) {
       this.logger.error(`Error fetching stores for owner ${ownerId}:`, error);
       throw error;
@@ -163,7 +130,7 @@ export class StoreService {
     type: StoreType,
     args?: PaginationArgs,
     include: StoreInclude = DEFAULT_STORE_INCLUDE
-  ): Promise<StoreWithRelations[]> {
+  ): Promise<Store[]> {
     try {
       const stores = await paginate({
         modelDelegate: this.prismaService.store,
@@ -172,15 +139,7 @@ export class StoreService {
         include,
       });
 
-      return (await Promise.all(
-        stores.map(async (store) => ({
-          ...store,
-          addresses: await this.addressService.findOwnerAddresses(
-            store.id,
-            AddressOwnerType.STORE
-          ),
-        }))
-      )) as StoreWithRelations[];
+      return stores;
     } catch (error) {
       this.logger.error(`Error fetching stores of type ${type}:`, error);
       throw error;
@@ -191,9 +150,9 @@ export class StoreService {
   async create(
     input: StoreCreateData,
     include: StoreInclude = DEFAULT_STORE_INCLUDE
-  ): Promise<StoreWithRelations> {
+  ): Promise<Store> {
     try {
-      const store = await this.prismaService.store.create({
+      return this.prismaService.store.create({
         data: {
           ...input,
           currencySymbol:
@@ -206,14 +165,6 @@ export class StoreService {
         },
         include,
       });
-
-      return {
-        ...store,
-        addresses: await this.addressService.findOwnerAddresses(
-          store.id,
-          AddressOwnerType.STORE
-        ),
-      };
     } catch (error) {
       this.logger.error('Error creating store:', error);
       throw error;
@@ -251,7 +202,7 @@ export class StoreService {
     id: string,
     input: StoreUpdateData,
     include: StoreInclude = DEFAULT_STORE_INCLUDE
-  ): Promise<StoreWithRelations> {
+  ): Promise<Store> {
     try {
       const store = await this.getStoreById(id);
       if (!store) {
@@ -272,19 +223,11 @@ export class StoreService {
           : undefined,
       };
 
-      const updatedStore = await this.prismaService.store.update({
+      return this.prismaService.store.update({
         where: { id },
         data: updateData,
         include,
       });
-
-      return {
-        ...updatedStore,
-        addresses: await this.addressService.findOwnerAddresses(
-          updatedStore.id,
-          AddressOwnerType.STORE
-        ),
-      };
     } catch (error) {
       this.logger.error(`Error updating store ${id}:`, error);
       throw error;
@@ -295,7 +238,7 @@ export class StoreService {
     id: string,
     settings: StoreCurrencySettings,
     include: StoreInclude = DEFAULT_STORE_INCLUDE
-  ): Promise<StoreWithRelations> {
+  ): Promise<Store> {
     try {
       const store = await this.getStoreById(id);
       if (!store) {
@@ -319,19 +262,11 @@ export class StoreService {
             : undefined,
       };
 
-      const updatedStore = await this.prismaService.store.update({
+      return this.prismaService.store.update({
         where: { id },
         data: updateData,
         include,
       });
-
-      return {
-        ...updatedStore,
-        addresses: await this.addressService.findOwnerAddresses(
-          updatedStore.id,
-          AddressOwnerType.STORE
-        ),
-      };
     } catch (error) {
       this.logger.error(
         `Error updating currency settings for store ${id}:`,
@@ -347,7 +282,7 @@ export class StoreService {
     type: AddressType,
     addressData: AddressInput,
     include: StoreInclude = DEFAULT_STORE_INCLUDE
-  ): Promise<StoreWithRelations> {
+  ): Promise<Store> {
     try {
       const store = await this.getStoreById(storeId);
       if (!store) {
@@ -368,13 +303,7 @@ export class StoreService {
         );
       }
 
-      return {
-        ...updatedStore,
-        addresses: await this.addressService.findOwnerAddresses(
-          updatedStore.id,
-          AddressOwnerType.STORE
-        ),
-      };
+      return  updatedStore;
     } catch (error) {
       this.logger.error(`Error updating address for store ${storeId}:`, error);
       throw error;

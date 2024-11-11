@@ -1,4 +1,12 @@
-import { Args, Context, Mutation, Query, Resolver } from '@nestjs/graphql';
+import {
+  Args,
+  Context,
+  Mutation,
+  Parent,
+  Query,
+  ResolveField,
+  Resolver,
+} from '@nestjs/graphql';
 import {
   Logger,
   NotFoundException,
@@ -17,19 +25,24 @@ import {
 import { PaginationArgs } from '@/api/pagination/pagination.args';
 import { JwtAuthGuard } from '../auth/guard/jwt-auth.guard';
 import { AuthContext } from '../utils/auth';
-import { StoreCurrency, CurrencyPosition } from '@prisma/client';
-import { StoreWithRelations, DEFAULT_STORE_INCLUDE } from './store.types';
+import { AddressOwnerType } from '@prisma/client';
+import { DEFAULT_STORE_INCLUDE } from './store.types';
+import { AddressOnOwner } from '../address/entities/address-owner.entity';
+import { AddressService } from '../address/address.service';
 
 @Resolver(() => Store)
 export class StoreResolver {
   private readonly logger = new Logger(StoreResolver.name);
 
-  constructor(private readonly storeService: StoreService) {}
+  constructor(
+    private readonly storeService: StoreService,
+    private readonly addressService: AddressService
+  ) {}
 
   private async validateStoreOwnership(
     storeId: string,
     userId: string
-  ): Promise<StoreWithRelations> {
+  ): Promise<Store> {
     const store = await this.storeService.getStoreById(storeId);
 
     if (!store) {
@@ -51,7 +64,7 @@ export class StoreResolver {
   async store(
     @Args() args: StoreGetArgs,
     @Context() context: AuthContext
-  ): Promise<StoreWithRelations> {
+  ): Promise<Store> {
     await this.validateStoreOwnership(args.id, context.req.user.id);
 
     const store = await this.storeService.getStoreById(
@@ -68,7 +81,7 @@ export class StoreResolver {
   @Query(() => Store, { nullable: true })
   async storeBySlug(
     @Args() args: GetStoreBySlugArgs
-  ): Promise<StoreWithRelations | null> {
+  ): Promise<Store | null> {
     return this.storeService.getStoreBySlug(args.slug, DEFAULT_STORE_INCLUDE);
   }
 
@@ -77,7 +90,7 @@ export class StoreResolver {
   async myStores(
     @Args() args: PaginationArgs,
     @Context() context: AuthContext
-  ): Promise<StoreWithRelations[]> {
+  ): Promise<Store[]> {
     return this.storeService.getStoresByOwnerId(
       context.req.user.id,
       args,
@@ -91,7 +104,7 @@ export class StoreResolver {
   async createStore(
     @Args('input') input: StoreCreateInput,
     @Context() context: AuthContext
-  ): Promise<StoreWithRelations> {
+  ): Promise<Store> {
     try {
       // Check if user already has a store
       const myStores = await this.storeService.getStoresByOwnerId(
@@ -123,7 +136,7 @@ export class StoreResolver {
   async updateStore(
     @Args('input') input: StoreUpdateInput,
     @Context() context: AuthContext
-  ): Promise<StoreWithRelations> {
+  ): Promise<Store> {
     try {
       await this.validateStoreOwnership(input.id, context.req.user.id);
 
@@ -158,5 +171,13 @@ export class StoreResolver {
       this.logger.error(`Failed to delete store ${id}:`, error);
       throw error;
     }
+  }
+
+  @ResolveField(() => [AddressOnOwner!])
+  async addresses(@Parent() store: Store): Promise<AddressOnOwner[]> {
+    return this.addressService.findOwnerAddresses(
+      store.id,
+      AddressOwnerType.STORE
+    );
   }
 }

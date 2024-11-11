@@ -1,26 +1,9 @@
-import {
-  Store,
-  Address,
-  AddressOnOwner,
-  User,
-  Prisma,
-  StoreCurrency,
-  CurrencyPosition,
-} from '@prisma/client';
-
-// Define the shape of address with relations
-type AddressWithRelations = AddressOnOwner & {
-  address: Address;
-};
+import { User, Prisma, StoreCurrency, CurrencyPosition } from '@prisma/client';
 
 // Define all possible relations a store can have
 export type StoreRelations = {
-  addresses: AddressWithRelations[];
   owner: User;
 };
-
-// Base store type with all relations optional
-export type StoreWithRelations = Store & Partial<StoreRelations>;
 
 // Define specific include types for addresses
 export type StoreInclude = {
