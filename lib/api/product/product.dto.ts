@@ -31,6 +31,13 @@ export class ProductGetBySlugArgs {
   slug: string;
 }
 
+@ArgsType()
+export class GetMyStoreProductsArgs {
+  @Field(() => String)
+  @IsString()
+  storeId: string;
+}
+
 @InputType()
 export class ProductOptionInput {
   @Field(() => String)

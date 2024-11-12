@@ -31,6 +31,7 @@ import {
   BulkProductDeleteInput,
   ProductGetArgs,
   ProductGetBySlugArgs,
+  GetMyStoreProductsArgs,
 } from './product.dto';
 import { PaginationArgs } from '@/api/pagination/pagination.args';
 import { JwtAuthGuard } from '@/api/auth/guard/jwt-auth.guard';
@@ -79,13 +80,13 @@ export class ProductResolver {
   @UseGuards(JwtAuthGuard)
   @Query(() => [Product])
   async myStoreProducts(
-    @Args('storeId') storeId: string,
+    @Args() args: GetMyStoreProductsArgs,
     @Args() pagination: PaginationArgs,
     @Context() ctx: AuthContext,
     @Args('filters', { nullable: true }) filters?: ProductFiltersInput
   ): Promise<Product[]> {
-    await this.validateStoreAccess(storeId, ctx.req.user.id, 'view');
-    return this.productService.findByStore(storeId, pagination, filters);
+    await this.validateStoreAccess(args.storeId, ctx.req.user.id, 'view');
+    return this.productService.findByStore(args.storeId, pagination, filters);
   }
 
   @ResolveField(() => Store)

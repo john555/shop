@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -58,7 +58,7 @@ import {
 import { Label } from '@/components/ui/label';
 import { useStore } from '@/admin/hooks/store';
 import { useProduct } from '@/admin/hooks/product/use-product';
-import { Category, ProductStatus, SalesChannel } from '@/types/api';
+import { Category, Product, ProductStatus, SalesChannel } from '@/types/api';
 import { useParams, useRouter } from 'next/navigation';
 import { DASHBOARD_PAGE_LINK } from '@/common/constants';
 
@@ -125,7 +125,11 @@ export function ProductForm() {
 
   const form = useForm<ProductFormValues>({
     resolver: zodResolver(productSchema),
-    defaultValues: {
+    defaultValues: getInitialValues(product),
+  });
+
+  function getInitialValues (product: Product): ProductFormValues {
+    return {
       title: product?.title ?? undefined,
       description: product?.description ?? undefined,
       price: product?.price || 0,
@@ -140,8 +144,13 @@ export function ProductForm() {
       categoryId: product?.category?.id,
       seoTitle: product?.seoTitle ?? undefined,
       seoDescription: product?.seoDescription ?? undefined,
-    },
-  });
+    };
+  };
+
+  useEffect(() => {
+    if (!product) return;
+    form.reset(getInitialValues(product));
+  }, [product]);
 
   const onSubmit = async (data: ProductFormValues) => {
     const slug = generateSlug(data.title);
@@ -216,7 +225,10 @@ export function ProductForm() {
           </p>
         </div>
         <div className="flex items-center space-x-2">
-          <Button variant="outline" onClick={() => router.push(`${DASHBOARD_PAGE_LINK}/products`)}>
+          <Button
+            variant="outline"
+            onClick={() => router.push(`${DASHBOARD_PAGE_LINK}/products`)}
+          >
             <ArrowLeft className="mr-2 h-4 w-4" />
             Back to Products
           </Button>
