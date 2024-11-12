@@ -17,8 +17,6 @@ import { AddressInput } from '../address/dto/address.dto';
 import {
   StoreCreateData,
   StoreUpdateData,
-  StoreInclude,
-  DEFAULT_STORE_INCLUDE,
   StoreCurrencySettings,
 } from './store.types';
 
@@ -79,12 +77,10 @@ export class StoreService {
   // Query Methods
   async getStoreById(
     id: string,
-    include: StoreInclude = DEFAULT_STORE_INCLUDE
   ): Promise<Store | null> {
     try {
       return this.prismaService.store.findUnique({
         where: { id },
-        include,
       });
     } catch (error) {
       this.logger.error(`Error fetching store with ID ${id}:`, error);
@@ -94,12 +90,10 @@ export class StoreService {
 
   async getStoreBySlug(
     slug: string,
-    include: StoreInclude = DEFAULT_STORE_INCLUDE
   ): Promise<Store | null> {
     try {
       return this.prismaService.store.findUnique({
         where: { slug },
-        include,
       });
     } catch (error) {
       this.logger.error(`Error fetching store with slug ${slug}:`, error);
@@ -110,14 +104,14 @@ export class StoreService {
   async getStoresByOwnerId(
     ownerId: string,
     args?: PaginationArgs,
-    include: StoreInclude = DEFAULT_STORE_INCLUDE
+    
   ): Promise<Store[]> {
     try {
       const stores = await paginate({
         modelDelegate: this.prismaService.store,
         args,
         where: { ownerId },
-        include,
+        
       });
 
       return stores;
@@ -130,14 +124,14 @@ export class StoreService {
   async getStoresByType(
     type: StoreType,
     args?: PaginationArgs,
-    include: StoreInclude = DEFAULT_STORE_INCLUDE
+    
   ): Promise<Store[]> {
     try {
       const stores = await paginate({
         modelDelegate: this.prismaService.store,
         args,
         where: { type },
-        include,
+        
       });
 
       return stores;
@@ -150,7 +144,7 @@ export class StoreService {
   // Mutation Methods
   async create(
     input: StoreCreateData,
-    include: StoreInclude = DEFAULT_STORE_INCLUDE
+    
   ): Promise<Store> {
     try {
       return this.prismaService.store.create({
@@ -164,7 +158,7 @@ export class StoreService {
           timeZone: input.timeZone ?? 'Africa/Nairobi',
           orderPrefix: input.orderPrefix ?? '#',
         },
-        include,
+        
       });
     } catch (error) {
       this.logger.error('Error creating store:', error);
@@ -202,7 +196,7 @@ export class StoreService {
   async update(
     id: string,
     input: StoreUpdateData,
-    include: StoreInclude = DEFAULT_STORE_INCLUDE
+    
   ): Promise<Store> {
     try {
       const store = await this.getStoreById(id);
@@ -227,7 +221,7 @@ export class StoreService {
       return this.prismaService.store.update({
         where: { id },
         data: updateData,
-        include,
+        
       });
     } catch (error) {
       this.logger.error(`Error updating store ${id}:`, error);
@@ -238,7 +232,7 @@ export class StoreService {
   async updateCurrencySettings(
     id: string,
     settings: StoreCurrencySettings,
-    include: StoreInclude = DEFAULT_STORE_INCLUDE
+    
   ): Promise<Store> {
     try {
       const store = await this.getStoreById(id);
@@ -266,7 +260,7 @@ export class StoreService {
       return this.prismaService.store.update({
         where: { id },
         data: updateData,
-        include,
+        
       });
     } catch (error) {
       this.logger.error(
@@ -282,7 +276,7 @@ export class StoreService {
     storeId: string,
     type: AddressType,
     addressData: AddressInput,
-    include: StoreInclude = DEFAULT_STORE_INCLUDE
+    
   ): Promise<Store> {
     try {
       const store = await this.getStoreById(storeId);
@@ -297,7 +291,7 @@ export class StoreService {
         addressData
       );
 
-      const updatedStore = await this.getStoreById(storeId, include);
+      const updatedStore = await this.getStoreById(storeId);
       if (!updatedStore) {
         throw new NotFoundException(
           `Store with ID ${storeId} not found after address update`
@@ -311,16 +305,21 @@ export class StoreService {
     }
   }
 
-  async findStoreOwner(storeId: string): Promise<User> {
-    return this.prismaService.user.findFirstOrThrow({
-      where: {
-        stores: {
-          some: {
-            id: storeId,
+  async findStoreOwner(storeId: string): Promise<User | null> {
+    try {
+      return await this.prismaService.user.findFirst({
+        where: {
+          stores: {
+            some: {
+              id: storeId,
+            },
           },
         },
-      },
-    });
+      });
+    } catch (error) {
+      this.logger.error(`Error finding owner for store ${storeId}:`, error);
+      throw error;
+    }
   }
 
   // Validation Methods

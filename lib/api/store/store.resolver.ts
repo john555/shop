@@ -26,7 +26,6 @@ import { PaginationArgs } from '@/api/pagination/pagination.args';
 import { JwtAuthGuard } from '../auth/guard/jwt-auth.guard';
 import { AuthContext } from '../utils/auth';
 import { AddressOwnerType } from '@prisma/client';
-import { DEFAULT_STORE_INCLUDE } from './store.types';
 import { AddressOnOwner } from '../address/entities/address-owner.entity';
 import { AddressService } from '../address/address.service';
 import { User } from '../user/user.entity';
@@ -68,10 +67,7 @@ export class StoreResolver {
   ): Promise<Store> {
     await this.validateStoreOwnership(args.id, context.req.user.id);
 
-    const store = await this.storeService.getStoreById(
-      args.id,
-      DEFAULT_STORE_INCLUDE
-    );
+    const store = await this.storeService.getStoreById(args.id);
     if (!store) {
       throw new NotFoundException(`Store with ID ${args.id} not found`);
     }
@@ -81,7 +77,7 @@ export class StoreResolver {
 
   @Query(() => Store, { nullable: true })
   async storeBySlug(@Args() args: GetStoreBySlugArgs): Promise<Store | null> {
-    return this.storeService.getStoreBySlug(args.slug, DEFAULT_STORE_INCLUDE);
+    return this.storeService.getStoreBySlug(args.slug);
   }
 
   @UseGuards(JwtAuthGuard)
@@ -90,11 +86,7 @@ export class StoreResolver {
     @Args() args: PaginationArgs,
     @Context() context: AuthContext
   ): Promise<Store[]> {
-    return this.storeService.getStoresByOwnerId(
-      context.req.user.id,
-      args,
-      DEFAULT_STORE_INCLUDE
-    );
+    return this.storeService.getStoresByOwnerId(context.req.user.id, args);
   }
 
   // Mutation Methods
@@ -172,16 +164,31 @@ export class StoreResolver {
     }
   }
 
-  @ResolveField(() => [AddressOnOwner!])
-  async addresses(@Parent() store: Store): Promise<AddressOnOwner[]> {
-    return this.addressService.findOwnerAddresses(
-      store.id,
-      AddressOwnerType.STORE
-    );
-  }
-
   @ResolveField(() => User)
   async owner(@Parent() store: Store): Promise<User> {
-    return this.storeService.findStoreOwner(store.id);
+    try {
+      const owner = await this.storeService.findStoreOwner(store.id);
+      if (!owner) {
+        throw new NotFoundException(`Owner not found for store ${store.id}`);
+      }
+      return owner;
+    } catch (error) {
+      this.logger.error(`Error resolving owner for store ${store.id}:`, error);
+      throw new NotFoundException(`Owner not found for store ${store.id}`);
+    }
+  }
+
+  @ResolveField(() => [AddressOnOwner])
+  async addresses(@Parent() store: Store): Promise<AddressOnOwner[]> {
+    try {
+      const addresses = await this.addressService.findOwnerAddresses(
+        store.id,
+        AddressOwnerType.STORE
+      );
+      return addresses;
+    } catch (error) {
+      this.logger.error(`Error resolving addresses for store ${store.id}:`, error);
+      return [];
+    }
   }
 }

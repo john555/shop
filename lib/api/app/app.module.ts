@@ -7,6 +7,11 @@ import { AuthModule } from 'lib/api/auth/auth.module';
 import { UserModule } from '../user/user.module';
 import { Request, Response } from 'express';
 import { StoreModule } from '../store/store.module';
+import { MediaModule } from '../media/media.module';
+import { CategoryModule } from '../category/category.module';
+import { ProductModule } from '../product/product.module';
+import { CollectionModule } from '../collection/collection.module';
+import { TagModule } from '../tag/tag.module';
 
 @Module({
   imports: [
@@ -37,6 +42,11 @@ import { StoreModule } from '../store/store.module';
     AuthModule,
     UserModule,
     StoreModule,
+    MediaModule,
+    CategoryModule,
+    ProductModule,
+    CollectionModule,
+    TagModule,
   ],
   providers: [],
 })

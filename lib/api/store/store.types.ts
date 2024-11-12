@@ -1,30 +1,5 @@
 import { User, Prisma, StoreCurrency, CurrencyPosition } from '@prisma/client';
 
-// Define all possible relations a store can have
-export type StoreRelations = {
-  owner: User;
-};
-
-// Define specific include types for addresses
-export type StoreInclude = {
-  owner?: boolean;
-};
-
-// Helper function to create include object
-export const createStoreInclude = (
-  options: {
-    addresses?: boolean;
-    owner?: boolean;
-  } = {}
-): StoreInclude => ({
-  owner: options.owner ?? false,
-});
-
-// Default include settings
-export const DEFAULT_STORE_INCLUDE: StoreInclude = {
-  owner: false,
-};
-
 // Type for create input
 export type StoreCreateData = Omit<
   Prisma.StoreUncheckedCreateInput,

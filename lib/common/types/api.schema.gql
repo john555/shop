@@ -95,6 +95,116 @@ input AuthSignupInput {
   password: String!
 }
 
+input BulkProductDeleteInput {
+  productIds: [ID!]!
+  storeId: ID!
+}
+
+input BulkProductUpdateData {
+  categoryId: ID
+  collectionIds: [ID!]
+  salesChannels: [SalesChannel!]
+  status: ProductStatus
+  tagIds: [ID!]
+}
+
+input BulkProductUpdateInput {
+  data: BulkProductUpdateData!
+  productIds: [ID!]!
+  storeId: ID!
+}
+
+"""Category model"""
+type Category {
+  """Child categories"""
+  children: [Category!]
+
+  """When the category was created"""
+  createdAt: DateTime!
+
+  """Description of the category"""
+  description: String
+
+  """Unique identifier of the category"""
+  id: ID!
+
+  """Name of the category"""
+  name: String!
+
+  """Parent category"""
+  parent: Category
+
+  """ID of the parent category"""
+  parentId: ID
+
+  """URL-friendly slug of the category"""
+  slug: String!
+
+  """Store this category belongs to"""
+  store: Store
+
+  """ID of the store this category belongs to"""
+  storeId: ID!
+
+  """When the category was last updated"""
+  updatedAt: DateTime!
+}
+
+input CategoryCreateInput {
+  description: String
+  name: String!
+  parentId: ID
+  slug: String!
+  storeId: ID!
+}
+
+input CategoryUpdateInput {
+  description: String
+  id: ID!
+  name: String
+  parentId: ID
+}
+
+"""Collection model"""
+type Collection {
+  """When the collection was created"""
+  createdAt: DateTime!
+
+  """Collection description"""
+  description: String
+
+  """Unique identifier"""
+  id: ID!
+
+  """Collection name"""
+  name: String!
+
+  """Products in this collection"""
+  products: [Product!]!
+
+  """URL-friendly slug"""
+  slug: String!
+
+  """Store this collection belongs to"""
+  store: Store!
+
+  """When the collection was last updated"""
+  updatedAt: DateTime!
+}
+
+input CollectionCreateInput {
+  description: String
+  name: String!
+  slug: String!
+  storeId: ID!
+}
+
+input CollectionUpdateInput {
+  description: String
+  id: ID!
+  name: String
+}
+
 """Position of currency symbol (BEFORE_AMOUNT, AFTER_AMOUNT)"""
 enum CurrencyPosition {
   AFTER_AMOUNT
@@ -116,8 +226,93 @@ enum Language {
   SW
 }
 
+"""Media model"""
+type Media {
+  alt: String
+  category: Category
+  createdAt: DateTime!
+  duration: Int
+  fileName: String
+  fileSize: Int
+  height: Int
+  id: ID!
+  mimeType: String
+  modelFormat: String
+  ownerId: String!
+  ownerType: MediaOwnerType!
+  position: Int!
+  product: Product
+  productVariant: ProductVariant
+  store: Store
+  thumbnail: String
+  type: MediaType!
+  updatedAt: DateTime!
+  url: String!
+  userProfile: User
+  width: Int
+}
+
+input MediaCreateInput {
+  alt: String
+  duration: Int
+  fileName: String
+  fileSize: Int
+  height: Int
+  mimeType: String
+  modelFormat: String
+  ownerId: String!
+  ownerType: MediaOwnerType!
+  position: Int!
+  thumbnail: String
+  type: MediaType!
+  url: String!
+  width: Int
+}
+
+"""Type of entity that owns the media"""
+enum MediaOwnerType {
+  CATEGORY
+  COLLECTION
+  PRODUCT
+  PRODUCT_VARIANT
+  PROPERTY
+  STORE
+  USER_PROFILE
+  VEHICLE
+}
+
+"""Type of media (PHOTO, VIDEO, MODEL_3D)"""
+enum MediaType {
+  MODEL_3D
+  PHOTO
+  VIDEO
+}
+
+input MediaUpdateInput {
+  alt: String
+  duration: Int
+  fileName: String
+  fileSize: Int
+  height: Int
+  id: ID!
+  mimeType: String
+  modelFormat: String
+  position: Int
+  thumbnail: String
+  type: MediaType
+  url: String
+  width: Int
+}
+
 type Mutation {
+  bulkDeleteProducts(input: BulkProductDeleteInput!): Int!
+  bulkUpdateProducts(input: BulkProductUpdateInput!): Int!
+  createCategory(input: CategoryCreateInput!): Category!
+  createCollection(input: CollectionCreateInput!): Collection!
+  createMedia(input: MediaCreateInput!): Media!
+  createProduct(input: ProductCreateInput!): Product!
   createStore(input: StoreCreateInput!): Store!
+  createTag(input: TagCreateInput!): Tag!
   createUser(input: UserCreateInput!): User!
   deleteAddress(
     """ID of the entity that owns the address"""
@@ -129,10 +324,16 @@ type Mutation {
     """Type of address to fetch"""
     type: AddressType!
   ): Boolean!
+  deleteCategory(id: String!): Boolean!
+  deleteCollection(id: String!): Boolean!
+  deleteMedia(id: String!): Boolean!
+  deleteProduct(id: String!): Product!
   deleteStore(id: String!): Boolean!
+  deleteTag(id: String!): Boolean!
 
   """Refresh auth token"""
   refresh: AuthSignin!
+  reorderMedia(orderedIds: [String!]!, ownerId: String!, ownerType: MediaOwnerType!): [Media!]!
 
   """Sign in"""
   signin(input: AuthSigninInput!): AuthSignin!
@@ -143,12 +344,181 @@ type Mutation {
   """Sign up new user"""
   signup(input: AuthSignupInput!): AuthSignup!
   updateAddress(input: UpdateAddressInput!): AddressOnOwner!
+  updateCategory(input: CategoryUpdateInput!): Category!
+  updateCollection(input: CollectionUpdateInput!): Collection!
+  updateMedia(input: MediaUpdateInput!): Media!
   updatePassword(input: UserPasswordUpdateInput!): User!
+  updateProduct(input: ProductUpdateInput!): Product!
+  updateProductOptions(options: [ProductOptionInput!]!, productId: String!): Product!
+  updateProductVariants(productId: String!, variants: [ProductVariantInput!]!): Product!
   updateStore(input: StoreUpdateInput!): Store!
+  updateTag(input: TagUpdateInput!): Tag!
   updateUser(input: UserUpdateInput!): User!
 }
 
+"""Product model"""
+type Product {
+  available: Int!
+  category: Category
+  categoryId: String
+  collections: [Collection!]!
+  compareAtPrice: Float
+  createdAt: DateTime!
+  description: String
+  id: ID!
+  media: [Media!]!
+  options: [ProductOption!]!
+  price: Float!
+  salesChannels: [SalesChannel!]!
+  seoDescription: String
+  seoTitle: String
+  sku: String
+  slug: String!
+  status: ProductStatus!
+  store: Store
+  tags: [Tag!]!
+  title: String!
+  trackInventory: Boolean!
+  updatedAt: DateTime!
+  variants: [ProductVariant!]!
+}
+
+input ProductCreateInput {
+  available: Int! = 0
+  categoryId: ID
+  collectionIds: [ID!]
+  compareAtPrice: Float
+  description: String
+  price: Float!
+  salesChannels: [SalesChannel!]!
+  seoDescription: String
+  seoTitle: String
+  sku: String
+  slug: String!
+  status: ProductStatus! = DRAFT
+  storeId: ID!
+  tagIds: [ID!]
+  title: String!
+  trackInventory: Boolean! = false
+}
+
+input ProductFiltersInput {
+  categoryId: ID
+  collectionId: ID
+  inStock: Boolean
+  maxPrice: Float
+  minPrice: Float
+  salesChannels: [SalesChannel!]
+  searchQuery: String
+  status: [ProductStatus!]
+}
+
+"""Product option model (e.g., Size, Color)"""
+type ProductOption {
+  """When the option was created"""
+  createdAt: DateTime!
+
+  """Unique identifier"""
+  id: ID!
+
+  """Option name (e.g., "Size", "Color")"""
+  name: String!
+
+  """Product this option belongs to"""
+  product: Product!
+
+  """When the option was last updated"""
+  updatedAt: DateTime!
+
+  """Possible values for this option (e.g., ["S", "M", "L"])"""
+  values: [String!]!
+}
+
+input ProductOptionInput {
+  name: String!
+  values: [String!]!
+}
+
+type ProductOptionValue {
+  """Option name"""
+  name: String!
+
+  """Selected value"""
+  value: String!
+}
+
+"""Status of the product (DRAFT, ACTIVE, ARCHIVED)"""
+enum ProductStatus {
+  ACTIVE
+  ARCHIVED
+  DRAFT
+}
+
+input ProductUpdateInput {
+  available: Int
+  categoryId: ID
+  collectionIds: [ID!]
+  compareAtPrice: Float
+  description: String
+  id: ID!
+  price: Float
+  salesChannels: [SalesChannel!]
+  seoDescription: String
+  seoTitle: String
+  sku: String
+  status: ProductStatus
+  tagIds: [ID!]
+  title: String
+  trackInventory: Boolean
+}
+
+"""Product variant model"""
+type ProductVariant {
+  """Number of items in stock"""
+  available: Int!
+
+  """Original or compare-at price"""
+  compareAtPrice: Float
+
+  """When the variant was created"""
+  createdAt: DateTime!
+
+  """Unique identifier"""
+  id: ID!
+
+  """Media attached to this variant"""
+  media: [Media!]!
+
+  """Combination of option values that define this variant"""
+  optionCombination: [String!]!
+
+  """Current selling price"""
+  price: Float!
+
+  """Parent product"""
+  product: Product!
+
+  """ID of the parent product"""
+  productId: String!
+
+  """Stock keeping unit"""
+  sku: String
+
+  """When the variant was last updated"""
+  updatedAt: DateTime!
+}
+
+input ProductVariantInput {
+  available: Int! = 0
+  compareAtPrice: Float
+  optionCombination: [String!]!
+  price: Float!
+  sku: String
+}
+
 type Query {
+  categoryBySlug(slug: String!, storeId: ID!): Category
+  collection(id: ID!): Collection!
   getAddress(
     """ID of the entity that owns the address"""
     ownerId: ID!
@@ -169,11 +539,26 @@ type Query {
 
   """Get current user"""
   me: User!
+  media(id: ID!): Media
+  mediaByOwner(cursor: String, ownerId: String!, ownerType: MediaOwnerType!, skip: Int! = 0, sortOrder: SortOrder, take: Int! = 25): [Media!]!
   myStores(cursor: String, skip: Int! = 0, sortOrder: SortOrder, take: Int! = 25): [Store!]!
+  product(id: ID!): Product
+  productBySlug(slug: String!): Product
   store(id: ID!): Store!
   storeBySlug(slug: String!): Store
+  storeCategories(cursor: String, skip: Int! = 0, sortOrder: SortOrder, storeId: String!, take: Int! = 25): [Category!]!
+  storeCollections(cursor: String, skip: Int! = 0, sortOrder: SortOrder, storeId: String!, take: Int! = 25): [Collection!]!
+  storeProducts(cursor: String, filters: ProductFiltersInput, skip: Int! = 0, sortOrder: SortOrder, storeId: String!, take: Int! = 25): [Product!]!
+  storeTags(cursor: String, skip: Int! = 0, sortOrder: SortOrder, storeId: String!, take: Int! = 25): [Tag!]!
+  tag(id: ID!): Tag!
   user(id: String!): User!
   users(cursor: String, skip: Int! = 0, sortOrder: SortOrder, take: Int! = 25): [User!]!
+}
+
+"""Sales channel for the product (ONLINE, IN_STORE)"""
+enum SalesChannel {
+  IN_STORE
+  ONLINE
 }
 
 enum SortOrder {
@@ -293,6 +678,44 @@ input StoreUpdateInput {
   unitSystem: UnitSystem
   weightUnit: WeightUnit
   whatsApp: String
+}
+
+"""Tag model"""
+type Tag {
+  """When the tag was created"""
+  createdAt: DateTime!
+
+  """Unique identifier of the tag"""
+  id: ID!
+
+  """Name of the tag"""
+  name: String!
+
+  """Products associated with this tag"""
+  products: [Product!]
+
+  """URL-friendly slug of the tag"""
+  slug: String!
+
+  """Store this tag belongs to"""
+  store: Store
+
+  """ID of the store this tag belongs to"""
+  storeId: String!
+
+  """When the tag was last updated"""
+  updatedAt: DateTime!
+}
+
+input TagCreateInput {
+  name: String!
+  slug: String!
+  storeId: ID!
+}
+
+input TagUpdateInput {
+  id: ID!
+  name: String
 }
 
 """Available user interface themes"""

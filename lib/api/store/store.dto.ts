@@ -1,6 +1,5 @@
 import { ArgsType, Field, ID, InputType } from '@nestjs/graphql';
 import {
-  Prisma,
   StoreCurrency,
   StoreType,
   CurrencyPosition,
@@ -18,8 +17,6 @@ import {
   Matches,
   MinLength,
 } from 'class-validator';
-import { AddressOnOwner } from '../address/entities/address-owner.entity';
-import { User } from '../user/user.entity';
 
 @ArgsType()
 export class StoreGetArgs {
