@@ -8,6 +8,8 @@ import { PrismaService } from '@/api/prisma/prisma.service';
 import {
   Product,
   Prisma,
+  ProductStatus,
+  SalesChannel,
   MediaOwnerType,
   ProductOption,
   ProductVariant,
@@ -19,12 +21,11 @@ import {
 } from '@prisma/client';
 import { PaginationArgs } from '@/api/pagination/pagination.args';
 import { paginate } from '@/api/pagination/paginate';
+import { SlugService } from '@/api/slug/slug.service';
 import {
   ProductCreateInput,
   ProductUpdateInput,
   ProductFiltersInput,
-  ProductOptionInput,
-  ProductVariantInput,
   BulkProductUpdateData,
 } from './product.dto';
 
@@ -32,9 +33,12 @@ import {
 export class ProductService {
   private readonly logger = new Logger(ProductService.name);
 
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly slugService: SlugService
+  ) {}
 
-  // Query Methods
+  // Core CRUD Operations
   async findById(id: string): Promise<Product | null> {
     try {
       return this.prisma.product.findUnique({
@@ -169,60 +173,83 @@ export class ProductService {
     });
   }
 
-  // Create/Update/Delete Methods
+  // Create Operation
   async create(input: ProductCreateInput): Promise<Product> {
     try {
-      // Validate unique slug
-      const slugExists = await this.isSlugUnique(input.slug);
-      if (!slugExists) {
+      // Generate or validate slug
+      let slug = input.slug;
+      if (!slug) {
+        slug = await this.slugService.createUniqueSlug(input.title, (s) =>
+          this.checkSlugUnique(s)
+        );
+      } else if (!this.slugService.isValidSlug(slug)) {
         throw new BadRequestException(
-          `Product with slug '${input.slug}' already exists`
+          'Invalid slug format. Use only lowercase letters, numbers, and hyphens.'
+        );
+      } else if (!(await this.checkSlugUnique(slug))) {
+        slug = await this.slugService.createUniqueSlug(slug, (s) =>
+          this.checkSlugUnique(s)
         );
       }
 
-      // Create the product
-      let product = await this.prisma.product.create({
-        data: {
-          title: input.title,
-          description: input.description,
-          slug: input.slug,
-          status: input.status,
-          seoTitle: input.seoTitle,
-          seoDescription: input.seoDescription,
-          price: new Prisma.Decimal(input.price),
-          compareAtPrice: input.compareAtPrice
-            ? new Prisma.Decimal(input.compareAtPrice)
-            : null,
-          sku: input.sku,
-          available: input.available,
-          trackInventory: input.trackInventory,
-          salesChannels: input.salesChannels,
-          storeId: input.storeId,
-          categoryId: input.categoryId,
-        },
+      const product = await this.prisma.$transaction(async (tx) => {
+        // Create the base product
+        const newProduct = await tx.product.create({
+          data: {
+            title: input.title,
+            description: input.description,
+            slug,
+            status: input.status || ProductStatus.DRAFT,
+            seoTitle: input.seoTitle,
+            seoDescription: input.seoDescription,
+            price: new Prisma.Decimal(input.price),
+            compareAtPrice: input.compareAtPrice
+              ? new Prisma.Decimal(input.compareAtPrice)
+              : null,
+            sku: input.sku,
+            available: input.available ?? 0,
+            trackInventory: input.trackInventory ?? false,
+            salesChannels: input.salesChannels || [SalesChannel.ONLINE],
+            storeId: input.storeId,
+            categoryId: input.categoryId,
+            tags: input.tagIds?.length
+              ? { connect: input.tagIds.map((id) => ({ id })) }
+              : undefined,
+            collections: input.collectionIds?.length
+              ? { connect: input.collectionIds.map((id) => ({ id })) }
+              : undefined,
+          },
+        });
+
+        // Add options if provided
+        if (input.options?.length) {
+          await tx.productOption.createMany({
+            data: input.options.map((option) => ({
+              productId: newProduct.id,
+              name: option.name,
+              values: option.values,
+            })),
+          });
+        }
+
+        // Add variants if provided
+        if (input.variants?.length) {
+          await tx.productVariant.createMany({
+            data: input.variants.map((variant) => ({
+              productId: newProduct.id,
+              optionCombination: variant.optionCombination,
+              price: new Prisma.Decimal(variant.price),
+              compareAtPrice: variant.compareAtPrice
+                ? new Prisma.Decimal(variant.compareAtPrice)
+                : null,
+              sku: variant.sku,
+              available: variant.available ?? 0,
+            })),
+          });
+        }
+
+        return newProduct;
       });
-
-      if (input.tagIds?.length) {
-        product = await this.prisma.product.update({
-          where: { id: product.id },
-          data: {
-            tags: {
-              connect: input.tagIds.map((id) => ({ id })),
-            },
-          },
-        });
-      }
-
-      if (input.collectionIds?.length) {
-        product = await this.prisma.product.update({
-          where: { id: product.id },
-          data: {
-            collections: {
-              connect: input.collectionIds.map((id) => ({ id })),
-            },
-          },
-        });
-      }
 
       return product;
     } catch (error) {
@@ -231,6 +258,7 @@ export class ProductService {
     }
   }
 
+  // Update Operation
   async update(input: ProductUpdateInput): Promise<Product> {
     try {
       const product = await this.findById(input.id);
@@ -238,49 +266,105 @@ export class ProductService {
         throw new NotFoundException(`Product with ID ${input.id} not found`);
       }
 
-      let updated = await this.prisma.product.update({
-        where: { id: input.id },
-        data: {
-          ...input,
-          price: input.price ? new Prisma.Decimal(input.price) : undefined,
-          compareAtPrice:
-            input.compareAtPrice !== undefined
-              ? input.compareAtPrice === null
-                ? null
-                : new Prisma.Decimal(input.compareAtPrice)
-              : undefined,
-        },
+      // Handle slug update if provided
+      let slug = input.slug;
+      if (slug && slug !== product.slug) {
+        if (!this.slugService.isValidSlug(slug)) {
+          throw new BadRequestException(
+            'Invalid slug format. Use only lowercase letters, numbers, and hyphens.'
+          );
+        }
+        if (!(await this.checkSlugUnique(slug, input.id))) {
+          slug = await this.slugService.createUniqueSlug(slug, (s) =>
+            this.checkSlugUnique(s, input.id)
+          );
+        }
+      }
+
+      const updateData: Prisma.ProductUpdateInput = {
+        title: input.title,
+        description: input.description,
+        slug,
+        status: input.status,
+        seoTitle: input.seoTitle,
+        seoDescription: input.seoDescription,
+        price: input.price ? new Prisma.Decimal(input.price) : undefined,
+        compareAtPrice:
+          input.compareAtPrice !== undefined
+            ? input.compareAtPrice === null
+              ? null
+              : new Prisma.Decimal(input.compareAtPrice)
+            : undefined,
+        sku: input.sku,
+        available: input.available,
+        trackInventory: input.trackInventory,
+        salesChannels: input.salesChannels,
+        category:
+          input.categoryId !== undefined
+            ? input.categoryId === null
+              ? { disconnect: true }
+              : { connect: { id: input.categoryId } }
+            : undefined,
+        tags: input.tagIds
+          ? { set: input.tagIds.map((id) => ({ id })) }
+          : undefined,
+        collections: input.collectionIds
+          ? { set: input.collectionIds.map((id) => ({ id })) }
+          : undefined,
+      };
+
+      return this.prisma.$transaction(async (tx) => {
+        const updatedProduct = await tx.product.update({
+          where: { id: input.id },
+          data: updateData,
+        });
+
+        // Update options if provided
+        if (input.options !== undefined) {
+          await tx.productOption.deleteMany({
+            where: { productId: input.id },
+          });
+          if (input.options.length > 0) {
+            await tx.productOption.createMany({
+              data: input.options.map((option) => ({
+                productId: input.id,
+                name: option.name,
+                values: option.values,
+              })),
+            });
+          }
+        }
+
+        // Update variants if provided
+        if (input.variants !== undefined) {
+          await tx.productVariant.deleteMany({
+            where: { productId: input.id },
+          });
+          if (input.variants.length > 0) {
+            await tx.productVariant.createMany({
+              data: input.variants.map((variant) => ({
+                productId: input.id,
+                optionCombination: variant.optionCombination,
+                price: new Prisma.Decimal(variant.price),
+                compareAtPrice: variant.compareAtPrice
+                  ? new Prisma.Decimal(variant.compareAtPrice)
+                  : null,
+                sku: variant.sku,
+                available: variant.available ?? 0,
+              })),
+            });
+          }
+        }
+
+        return updatedProduct;
       });
-
-      if (input.tagIds) {
-        updated = await this.prisma.product.update({
-          where: { id: input.id },
-          data: {
-            tags: {
-              set: input.tagIds.map((id) => ({ id })),
-            },
-          },
-        });
-      }
-
-      if (input.collectionIds) {
-        updated = await this.prisma.product.update({
-          where: { id: input.id },
-          data: {
-            collections: {
-              set: input.collectionIds.map((id) => ({ id })),
-            },
-          },
-        });
-      }
-
-      return updated;
     } catch (error) {
       this.logger.error(`Failed to update product ${input.id}:`, error);
       throw error;
     }
   }
 
+  // Delete Operation
   async delete(id: string): Promise<Product> {
     try {
       const product = await this.findById(id);
@@ -288,15 +372,19 @@ export class ProductService {
         throw new NotFoundException(`Product with ID ${id} not found`);
       }
 
-      await this.prisma.media.deleteMany({
-        where: {
-          ownerId: id,
-          ownerType: MediaOwnerType.PRODUCT,
-        },
-      });
+      return await this.prisma.$transaction(async (tx) => {
+        // Delete related media
+        await tx.media.deleteMany({
+          where: {
+            ownerId: id,
+            ownerType: MediaOwnerType.PRODUCT,
+          },
+        });
 
-      return this.prisma.product.delete({
-        where: { id },
+        // Delete the product
+        return tx.product.delete({
+          where: { id },
+        });
       });
     } catch (error) {
       this.logger.error(`Failed to delete product ${id}:`, error);
@@ -311,17 +399,52 @@ export class ProductService {
     data: BulkProductUpdateData
   ): Promise<number> {
     try {
+      // For relationship updates, we need to use regular update
+      if (data.categoryId !== undefined) {
+        await this.prisma.product.updateMany({
+          where: {
+            id: { in: productIds },
+            storeId,
+          },
+          data: {
+            status: data.status,
+            salesChannels: data.salesChannels,
+            trackInventory: data.trackInventory,
+            updatedAt: new Date(),
+          },
+        });
+  
+        // Handle category relationship separately for each product
+        await Promise.all(
+          productIds.map((id) =>
+            this.prisma.product.update({
+              where: { id },
+              data: {
+                category: data.categoryId === null
+                  ? { disconnect: true }
+                  : { connect: { id: data.categoryId } },
+              },
+            })
+          )
+        );
+  
+        return productIds.length;
+      }
+  
+      // If no relationship updates, use updateMany
       const result = await this.prisma.product.updateMany({
         where: {
           id: { in: productIds },
           storeId,
         },
         data: {
-          ...data,
+          status: data.status,
+          salesChannels: data.salesChannels,
+          trackInventory: data.trackInventory,
           updatedAt: new Date(),
         },
       });
-
+  
       return result.count;
     } catch (error) {
       this.logger.error('Failed to bulk update products:', error);
@@ -331,95 +454,36 @@ export class ProductService {
 
   async bulkDelete(storeId: string, productIds: string[]): Promise<number> {
     try {
-      await this.prisma.media.deleteMany({
-        where: {
-          ownerId: { in: productIds },
-          ownerType: MediaOwnerType.PRODUCT,
-        },
-      });
+      return await this.prisma.$transaction(async (tx) => {
+        // Delete related media
+        await tx.media.deleteMany({
+          where: {
+            ownerId: { in: productIds },
+            ownerType: MediaOwnerType.PRODUCT,
+          },
+        });
 
-      const result = await this.prisma.product.deleteMany({
-        where: {
-          id: { in: productIds },
-          storeId,
-        },
-      });
+        // Delete products
+        const result = await tx.product.deleteMany({
+          where: {
+            id: { in: productIds },
+            storeId,
+          },
+        });
 
-      return result.count;
+        return result.count;
+      });
     } catch (error) {
       this.logger.error('Failed to bulk delete products:', error);
       throw error;
     }
   }
 
-  // Options and Variants Management
-  async updateProductOptions(
-    productId: string,
-    options: ProductOptionInput[]
-  ): Promise<Product> {
-    try {
-      const product = await this.findById(productId);
-      if (!product) {
-        throw new NotFoundException(`Product with ID ${productId} not found`);
-      }
-
-      await this.prisma.productOption.deleteMany({ where: { productId } });
-      await this.prisma.productOption.createMany({
-        data: options.map((option) => ({
-          productId,
-          name: option.name,
-          values: option.values,
-        })),
-      });
-
-      return this.findById(productId) as Promise<Product>;
-    } catch (error) {
-      this.logger.error(
-        `Failed to update options for product ${productId}:`,
-        error
-      );
-      throw error;
-    }
-  }
-
-  async updateProductVariants(
-    productId: string,
-    variants: ProductVariantInput[]
-  ): Promise<Product> {
-    try {
-      const product = await this.findById(productId);
-      if (!product) {
-        throw new NotFoundException(`Product with ID ${productId} not found`);
-      }
-
-      await this.prisma.productVariant.deleteMany({ where: { productId } });
-      for (const variant of variants) {
-        await this.prisma.productVariant.create({
-          data: {
-            productId,
-            optionCombination: variant.optionCombination,
-            price: new Prisma.Decimal(variant.price),
-            compareAtPrice: variant.compareAtPrice
-              ? new Prisma.Decimal(variant.compareAtPrice)
-              : null,
-            sku: variant.sku,
-            available: variant.available ?? 0,
-          },
-        });
-      }
-
-      return this.findById(productId) as Promise<Product>;
-    } catch (error) {
-      this.logger.error(
-        `Failed to update variants for product ${productId}:`,
-        error
-      );
-      throw error;
-    }
-  }
-
-  // Validation Methods
-  async isSlugUnique(slug: string, excludeId?: string): Promise<boolean> {
+  // Helper Methods
+  private async checkSlugUnique(
+    slug: string,
+    excludeId?: string
+  ): Promise<boolean> {
     try {
       const product = await this.prisma.product.findFirst({
         where: {
@@ -429,7 +493,7 @@ export class ProductService {
       });
       return !product;
     } catch (error) {
-      this.logger.error(`Error validating slug uniqueness for ${slug}:`, error);
+      this.logger.error(`Error checking slug uniqueness for ${slug}:`, error);
       throw error;
     }
   }

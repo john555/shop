@@ -12,6 +12,7 @@ import { CategoryModule } from '../category/category.module';
 import { ProductModule } from '../product/product.module';
 import { CollectionModule } from '../collection/collection.module';
 import { TagModule } from '../tag/tag.module';
+import { SlugModule } from '../slug/slug.module';
 
 @Module({
   imports: [
@@ -39,6 +40,7 @@ import { TagModule } from '../tag/tag.module';
       sortSchema: true,
     }),
     PrismaModule,
+    SlugModule,
     AuthModule,
     UserModule,
     StoreModule,

@@ -112,22 +112,14 @@ export type AuthSignupInput = {
 };
 
 export type BulkProductDeleteInput = {
-  productIds: Array<Scalars['ID']['input']>;
-  storeId: Scalars['ID']['input'];
-};
-
-export type BulkProductUpdateData = {
-  categoryId?: InputMaybe<Scalars['ID']['input']>;
-  collectionIds?: InputMaybe<Array<Scalars['ID']['input']>>;
-  salesChannels?: InputMaybe<Array<SalesChannel>>;
-  status?: InputMaybe<ProductStatus>;
-  tagIds?: InputMaybe<Array<Scalars['ID']['input']>>;
+  productIds: Array<Scalars['String']['input']>;
+  storeId: Scalars['String']['input'];
 };
 
 export type BulkProductUpdateInput = {
-  data: BulkProductUpdateData;
-  productIds: Array<Scalars['ID']['input']>;
-  storeId: Scalars['ID']['input'];
+  data: ProductBulkUpdateData;
+  productIds: Array<Scalars['String']['input']>;
+  storeId: Scalars['String']['input'];
 };
 
 /** Category model */
@@ -316,7 +308,7 @@ export type Mutation = {
   deleteCategory: Scalars['Boolean']['output'];
   deleteCollection: Scalars['Boolean']['output'];
   deleteMedia: Scalars['Boolean']['output'];
-  deleteProduct: Product;
+  deleteProduct: Scalars['Boolean']['output'];
   deleteStore: Scalars['Boolean']['output'];
   deleteTag: Scalars['Boolean']['output'];
   /** Refresh auth token */
@@ -334,8 +326,6 @@ export type Mutation = {
   updateMedia: Media;
   updatePassword: User;
   updateProduct: Product;
-  updateProductOptions: Product;
-  updateProductVariants: Product;
   updateStore: Store;
   updateTag: Tag;
   updateUser: User;
@@ -471,18 +461,6 @@ export type MutationUpdateProductArgs = {
 };
 
 
-export type MutationUpdateProductOptionsArgs = {
-  options: Array<ProductOptionInput>;
-  productId: Scalars['String']['input'];
-};
-
-
-export type MutationUpdateProductVariantsArgs = {
-  productId: Scalars['String']['input'];
-  variants: Array<ProductVariantInput>;
-};
-
-
 export type MutationUpdateStoreArgs = {
   input: StoreUpdateInput;
 };
@@ -525,32 +503,39 @@ export type Product = {
   variants: Array<ProductVariant>;
 };
 
+export type ProductBulkUpdateData = {
+  categoryId?: InputMaybe<Scalars['String']['input']>;
+  salesChannels?: InputMaybe<Array<SalesChannel>>;
+  status?: InputMaybe<ProductStatus>;
+  trackInventory?: InputMaybe<Scalars['Boolean']['input']>;
+};
+
 export type ProductCreateInput = {
-  available?: Scalars['Int']['input'];
-  categoryId?: InputMaybe<Scalars['ID']['input']>;
-  collectionIds?: InputMaybe<Array<Scalars['ID']['input']>>;
+  available?: InputMaybe<Scalars['Int']['input']>;
+  categoryId?: InputMaybe<Scalars['String']['input']>;
+  collectionIds?: InputMaybe<Array<Scalars['String']['input']>>;
   compareAtPrice?: InputMaybe<Scalars['Float']['input']>;
   description?: InputMaybe<Scalars['String']['input']>;
+  options?: InputMaybe<Array<ProductOptionInput>>;
   price: Scalars['Float']['input'];
-  salesChannels: Array<SalesChannel>;
+  salesChannels?: InputMaybe<Array<SalesChannel>>;
   seoDescription?: InputMaybe<Scalars['String']['input']>;
   seoTitle?: InputMaybe<Scalars['String']['input']>;
   sku?: InputMaybe<Scalars['String']['input']>;
-  slug: Scalars['String']['input'];
-  status?: ProductStatus;
-  storeId: Scalars['ID']['input'];
-  tagIds?: InputMaybe<Array<Scalars['ID']['input']>>;
+  slug?: InputMaybe<Scalars['String']['input']>;
+  status?: InputMaybe<ProductStatus>;
+  storeId: Scalars['String']['input'];
+  tagIds?: InputMaybe<Array<Scalars['String']['input']>>;
   title: Scalars['String']['input'];
-  trackInventory?: Scalars['Boolean']['input'];
+  trackInventory?: InputMaybe<Scalars['Boolean']['input']>;
+  variants?: InputMaybe<Array<ProductVariantInput>>;
 };
 
 export type ProductFiltersInput = {
-  categoryId?: InputMaybe<Scalars['ID']['input']>;
-  collectionId?: InputMaybe<Scalars['ID']['input']>;
+  categoryId?: InputMaybe<Scalars['String']['input']>;
   inStock?: InputMaybe<Scalars['Boolean']['input']>;
   maxPrice?: InputMaybe<Scalars['Float']['input']>;
   minPrice?: InputMaybe<Scalars['Float']['input']>;
-  salesChannels?: InputMaybe<Array<SalesChannel>>;
   searchQuery?: InputMaybe<Scalars['String']['input']>;
   status?: InputMaybe<Array<ProductStatus>>;
 };
@@ -594,20 +579,23 @@ export enum ProductStatus {
 
 export type ProductUpdateInput = {
   available?: InputMaybe<Scalars['Int']['input']>;
-  categoryId?: InputMaybe<Scalars['ID']['input']>;
-  collectionIds?: InputMaybe<Array<Scalars['ID']['input']>>;
+  categoryId?: InputMaybe<Scalars['String']['input']>;
+  collectionIds?: InputMaybe<Array<Scalars['String']['input']>>;
   compareAtPrice?: InputMaybe<Scalars['Float']['input']>;
   description?: InputMaybe<Scalars['String']['input']>;
-  id: Scalars['ID']['input'];
+  id: Scalars['String']['input'];
+  options?: InputMaybe<Array<ProductOptionInput>>;
   price?: InputMaybe<Scalars['Float']['input']>;
   salesChannels?: InputMaybe<Array<SalesChannel>>;
   seoDescription?: InputMaybe<Scalars['String']['input']>;
   seoTitle?: InputMaybe<Scalars['String']['input']>;
   sku?: InputMaybe<Scalars['String']['input']>;
+  slug?: InputMaybe<Scalars['String']['input']>;
   status?: InputMaybe<ProductStatus>;
-  tagIds?: InputMaybe<Array<Scalars['ID']['input']>>;
+  tagIds?: InputMaybe<Array<Scalars['String']['input']>>;
   title?: InputMaybe<Scalars['String']['input']>;
   trackInventory?: InputMaybe<Scalars['Boolean']['input']>;
+  variants?: InputMaybe<Array<ProductVariantInput>>;
 };
 
 /** Product variant model */
@@ -638,7 +626,7 @@ export type ProductVariant = {
 };
 
 export type ProductVariantInput = {
-  available?: Scalars['Int']['input'];
+  available?: InputMaybe<Scalars['Int']['input']>;
   compareAtPrice?: InputMaybe<Scalars['Float']['input']>;
   optionCombination: Array<Scalars['String']['input']>;
   price: Scalars['Float']['input'];
@@ -655,6 +643,7 @@ export type Query = {
   me: User;
   media?: Maybe<Media>;
   mediaByOwner: Array<Media>;
+  myStoreProducts: Array<Product>;
   myStores: Array<Store>;
   product?: Maybe<Product>;
   productBySlug?: Maybe<Product>;
@@ -662,7 +651,6 @@ export type Query = {
   storeBySlug?: Maybe<Store>;
   storeCategories: Array<Category>;
   storeCollections: Array<Collection>;
-  storeProducts: Array<Product>;
   storeTags: Array<Tag>;
   tag: Tag;
   user: User;
@@ -709,6 +697,16 @@ export type QueryMediaByOwnerArgs = {
 };
 
 
+export type QueryMyStoreProductsArgs = {
+  cursor?: InputMaybe<Scalars['String']['input']>;
+  filters?: InputMaybe<ProductFiltersInput>;
+  skip?: Scalars['Int']['input'];
+  sortOrder?: InputMaybe<SortOrder>;
+  storeId: Scalars['String']['input'];
+  take?: Scalars['Int']['input'];
+};
+
+
 export type QueryMyStoresArgs = {
   cursor?: InputMaybe<Scalars['String']['input']>;
   skip?: Scalars['Int']['input'];
@@ -718,7 +716,7 @@ export type QueryMyStoresArgs = {
 
 
 export type QueryProductArgs = {
-  id: Scalars['ID']['input'];
+  id: Scalars['String']['input'];
 };
 
 
@@ -748,16 +746,6 @@ export type QueryStoreCategoriesArgs = {
 
 export type QueryStoreCollectionsArgs = {
   cursor?: InputMaybe<Scalars['String']['input']>;
-  skip?: Scalars['Int']['input'];
-  sortOrder?: InputMaybe<SortOrder>;
-  storeId: Scalars['String']['input'];
-  take?: Scalars['Int']['input'];
-};
-
-
-export type QueryStoreProductsArgs = {
-  cursor?: InputMaybe<Scalars['String']['input']>;
-  filters?: InputMaybe<ProductFiltersInput>;
   skip?: Scalars['Int']['input'];
   sortOrder?: InputMaybe<SortOrder>;
   storeId: Scalars['String']['input'];
@@ -807,6 +795,8 @@ export type Store = {
   __typename?: 'Store';
   /** Addresses associated with the store */
   addresses?: Maybe<Array<AddressOnOwner>>;
+  categories: Array<Category>;
+  collections: Array<Collection>;
   /** When the store was created */
   createdAt: Scalars['DateTime']['output'];
   /** Primary currency of the store */
@@ -835,10 +825,12 @@ export type Store = {
   ownerId: Scalars['String']['output'];
   /** Phone number of the store */
   phone?: Maybe<Scalars['String']['output']>;
+  products: Array<Product>;
   /** Whether to show currency code alongside amounts */
   showCurrencyCode: Scalars['Boolean']['output'];
   /** URL-friendly slug of the store */
   slug: Scalars['String']['output'];
+  tags: Array<Tag>;
   /** Timezone of the store (e.g., Africa/Nairobi) */
   timeZone: Scalars['String']['output'];
   /** Type of store */
@@ -1112,7 +1104,6 @@ export type ResolversTypes = {
   AuthSignupInput: AuthSignupInput;
   Boolean: ResolverTypeWrapper<Scalars['Boolean']['output']>;
   BulkProductDeleteInput: BulkProductDeleteInput;
-  BulkProductUpdateData: BulkProductUpdateData;
   BulkProductUpdateInput: BulkProductUpdateInput;
   Category: ResolverTypeWrapper<Category>;
   CategoryCreateInput: CategoryCreateInput;
@@ -1133,6 +1124,7 @@ export type ResolversTypes = {
   MediaUpdateInput: MediaUpdateInput;
   Mutation: ResolverTypeWrapper<{}>;
   Product: ResolverTypeWrapper<Product>;
+  ProductBulkUpdateData: ProductBulkUpdateData;
   ProductCreateInput: ProductCreateInput;
   ProductFiltersInput: ProductFiltersInput;
   ProductOption: ResolverTypeWrapper<ProductOption>;
@@ -1176,7 +1168,6 @@ export type ResolversParentTypes = {
   AuthSignupInput: AuthSignupInput;
   Boolean: Scalars['Boolean']['output'];
   BulkProductDeleteInput: BulkProductDeleteInput;
-  BulkProductUpdateData: BulkProductUpdateData;
   BulkProductUpdateInput: BulkProductUpdateInput;
   Category: Category;
   CategoryCreateInput: CategoryCreateInput;
@@ -1193,6 +1184,7 @@ export type ResolversParentTypes = {
   MediaUpdateInput: MediaUpdateInput;
   Mutation: {};
   Product: Product;
+  ProductBulkUpdateData: ProductBulkUpdateData;
   ProductCreateInput: ProductCreateInput;
   ProductFiltersInput: ProductFiltersInput;
   ProductOption: ProductOption;
@@ -1330,7 +1322,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   deleteCategory?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<MutationDeleteCategoryArgs, 'id'>>;
   deleteCollection?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<MutationDeleteCollectionArgs, 'id'>>;
   deleteMedia?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<MutationDeleteMediaArgs, 'id'>>;
-  deleteProduct?: Resolver<ResolversTypes['Product'], ParentType, ContextType, RequireFields<MutationDeleteProductArgs, 'id'>>;
+  deleteProduct?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<MutationDeleteProductArgs, 'id'>>;
   deleteStore?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<MutationDeleteStoreArgs, 'id'>>;
   deleteTag?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<MutationDeleteTagArgs, 'id'>>;
   refresh?: Resolver<ResolversTypes['AuthSignin'], ParentType, ContextType>;
@@ -1344,8 +1336,6 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   updateMedia?: Resolver<ResolversTypes['Media'], ParentType, ContextType, RequireFields<MutationUpdateMediaArgs, 'input'>>;
   updatePassword?: Resolver<ResolversTypes['User'], ParentType, ContextType, RequireFields<MutationUpdatePasswordArgs, 'input'>>;
   updateProduct?: Resolver<ResolversTypes['Product'], ParentType, ContextType, RequireFields<MutationUpdateProductArgs, 'input'>>;
-  updateProductOptions?: Resolver<ResolversTypes['Product'], ParentType, ContextType, RequireFields<MutationUpdateProductOptionsArgs, 'options' | 'productId'>>;
-  updateProductVariants?: Resolver<ResolversTypes['Product'], ParentType, ContextType, RequireFields<MutationUpdateProductVariantsArgs, 'productId' | 'variants'>>;
   updateStore?: Resolver<ResolversTypes['Store'], ParentType, ContextType, RequireFields<MutationUpdateStoreArgs, 'input'>>;
   updateTag?: Resolver<ResolversTypes['Tag'], ParentType, ContextType, RequireFields<MutationUpdateTagArgs, 'input'>>;
   updateUser?: Resolver<ResolversTypes['User'], ParentType, ContextType, RequireFields<MutationUpdateUserArgs, 'input'>>;
@@ -1417,6 +1407,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   me?: Resolver<ResolversTypes['User'], ParentType, ContextType>;
   media?: Resolver<Maybe<ResolversTypes['Media']>, ParentType, ContextType, RequireFields<QueryMediaArgs, 'id'>>;
   mediaByOwner?: Resolver<Array<ResolversTypes['Media']>, ParentType, ContextType, RequireFields<QueryMediaByOwnerArgs, 'ownerId' | 'ownerType' | 'skip' | 'take'>>;
+  myStoreProducts?: Resolver<Array<ResolversTypes['Product']>, ParentType, ContextType, RequireFields<QueryMyStoreProductsArgs, 'skip' | 'storeId' | 'take'>>;
   myStores?: Resolver<Array<ResolversTypes['Store']>, ParentType, ContextType, RequireFields<QueryMyStoresArgs, 'skip' | 'take'>>;
   product?: Resolver<Maybe<ResolversTypes['Product']>, ParentType, ContextType, RequireFields<QueryProductArgs, 'id'>>;
   productBySlug?: Resolver<Maybe<ResolversTypes['Product']>, ParentType, ContextType, RequireFields<QueryProductBySlugArgs, 'slug'>>;
@@ -1424,7 +1415,6 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   storeBySlug?: Resolver<Maybe<ResolversTypes['Store']>, ParentType, ContextType, RequireFields<QueryStoreBySlugArgs, 'slug'>>;
   storeCategories?: Resolver<Array<ResolversTypes['Category']>, ParentType, ContextType, RequireFields<QueryStoreCategoriesArgs, 'skip' | 'storeId' | 'take'>>;
   storeCollections?: Resolver<Array<ResolversTypes['Collection']>, ParentType, ContextType, RequireFields<QueryStoreCollectionsArgs, 'skip' | 'storeId' | 'take'>>;
-  storeProducts?: Resolver<Array<ResolversTypes['Product']>, ParentType, ContextType, RequireFields<QueryStoreProductsArgs, 'skip' | 'storeId' | 'take'>>;
   storeTags?: Resolver<Array<ResolversTypes['Tag']>, ParentType, ContextType, RequireFields<QueryStoreTagsArgs, 'skip' | 'storeId' | 'take'>>;
   tag?: Resolver<ResolversTypes['Tag'], ParentType, ContextType, RequireFields<QueryTagArgs, 'id'>>;
   user?: Resolver<ResolversTypes['User'], ParentType, ContextType, RequireFields<QueryUserArgs, 'id'>>;
@@ -1433,6 +1423,8 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
 
 export type StoreResolvers<ContextType = any, ParentType extends ResolversParentTypes['Store'] = ResolversParentTypes['Store']> = {
   addresses?: Resolver<Maybe<Array<ResolversTypes['AddressOnOwner']>>, ParentType, ContextType>;
+  categories?: Resolver<Array<ResolversTypes['Category']>, ParentType, ContextType>;
+  collections?: Resolver<Array<ResolversTypes['Collection']>, ParentType, ContextType>;
   createdAt?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   currency?: Resolver<ResolversTypes['StoreCurrency'], ParentType, ContextType>;
   currencyPosition?: Resolver<ResolversTypes['CurrencyPosition'], ParentType, ContextType>;
@@ -1447,8 +1439,10 @@ export type StoreResolvers<ContextType = any, ParentType extends ResolversParent
   owner?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType>;
   ownerId?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   phone?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  products?: Resolver<Array<ResolversTypes['Product']>, ParentType, ContextType>;
   showCurrencyCode?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   slug?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  tags?: Resolver<Array<ResolversTypes['Tag']>, ParentType, ContextType>;
   timeZone?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   type?: Resolver<ResolversTypes['StoreType'], ParentType, ContextType>;
   unitSystem?: Resolver<ResolversTypes['UnitSystem'], ParentType, ContextType>;

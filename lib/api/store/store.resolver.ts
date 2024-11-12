@@ -29,6 +29,10 @@ import { AddressOwnerType } from '@prisma/client';
 import { AddressOnOwner } from '../address/entities/address-owner.entity';
 import { AddressService } from '../address/address.service';
 import { User } from '../user/user.entity';
+import { Category } from '../category/category.entity';
+import { Collection } from '../collection/collection.entity';
+import { Tag } from '../tag/tag.entity';
+import { Product } from '../product/entities/product.entity';
 
 @Resolver(() => Store)
 export class StoreResolver {
@@ -164,31 +168,47 @@ export class StoreResolver {
     }
   }
 
+  // Field Resolvers
   @ResolveField(() => User)
   async owner(@Parent() store: Store): Promise<User> {
-    try {
-      const owner = await this.storeService.findStoreOwner(store.id);
-      if (!owner) {
-        throw new NotFoundException(`Owner not found for store ${store.id}`);
-      }
-      return owner;
-    } catch (error) {
-      this.logger.error(`Error resolving owner for store ${store.id}:`, error);
-      throw new NotFoundException(`Owner not found for store ${store.id}`);
-    }
+    return this.storeService.findOwner(store.id);
   }
 
   @ResolveField(() => [AddressOnOwner])
   async addresses(@Parent() store: Store): Promise<AddressOnOwner[]> {
-    try {
-      const addresses = await this.addressService.findOwnerAddresses(
-        store.id,
-        AddressOwnerType.STORE
-      );
-      return addresses;
-    } catch (error) {
-      this.logger.error(`Error resolving addresses for store ${store.id}:`, error);
-      return [];
-    }
+    return this.addressService.findOwnerAddresses(
+      store.id,
+      AddressOwnerType.STORE
+    );
+  }
+
+  @ResolveField(() => [Product])
+  async products(@Parent() store: Store): Promise<Product[]> {
+    return this.storeService.findProducts(store.id);
+  }
+
+  // @ResolveField(() => [PropertyListing])
+  // async propertyListings(@Parent() store: Store): Promise<PropertyListing[]> {
+  //   return this.storeService.findPropertyListings(store.id);
+  // }
+
+  // @ResolveField(() => [VehicleListing])
+  // async vehicleListings(@Parent() store: Store): Promise<VehicleListing[]> {
+  //   return this.storeService.findVehicleListings(store.id);
+  // }
+
+  @ResolveField(() => [Category])
+  async categories(@Parent() store: Store): Promise<Category[]> {
+    return this.storeService.findCategories(store.id);
+  }
+
+  @ResolveField(() => [Collection])
+  async collections(@Parent() store: Store): Promise<Collection[]> {
+    return this.storeService.findCollections(store.id);
+  }
+
+  @ResolveField(() => [Tag])
+  async tags(@Parent() store: Store): Promise<Tag[]> {
+    return this.storeService.findTags(store.id);
   }
 }

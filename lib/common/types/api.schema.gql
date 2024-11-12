@@ -96,22 +96,14 @@ input AuthSignupInput {
 }
 
 input BulkProductDeleteInput {
-  productIds: [ID!]!
-  storeId: ID!
-}
-
-input BulkProductUpdateData {
-  categoryId: ID
-  collectionIds: [ID!]
-  salesChannels: [SalesChannel!]
-  status: ProductStatus
-  tagIds: [ID!]
+  productIds: [String!]!
+  storeId: String!
 }
 
 input BulkProductUpdateInput {
-  data: BulkProductUpdateData!
-  productIds: [ID!]!
-  storeId: ID!
+  data: ProductBulkUpdateData!
+  productIds: [String!]!
+  storeId: String!
 }
 
 """Category model"""
@@ -327,7 +319,7 @@ type Mutation {
   deleteCategory(id: String!): Boolean!
   deleteCollection(id: String!): Boolean!
   deleteMedia(id: String!): Boolean!
-  deleteProduct(id: String!): Product!
+  deleteProduct(id: String!): Boolean!
   deleteStore(id: String!): Boolean!
   deleteTag(id: String!): Boolean!
 
@@ -349,8 +341,6 @@ type Mutation {
   updateMedia(input: MediaUpdateInput!): Media!
   updatePassword(input: UserPasswordUpdateInput!): User!
   updateProduct(input: ProductUpdateInput!): Product!
-  updateProductOptions(options: [ProductOptionInput!]!, productId: String!): Product!
-  updateProductVariants(productId: String!, variants: [ProductVariantInput!]!): Product!
   updateStore(input: StoreUpdateInput!): Store!
   updateTag(input: TagUpdateInput!): Tag!
   updateUser(input: UserUpdateInput!): User!
@@ -383,32 +373,39 @@ type Product {
   variants: [ProductVariant!]!
 }
 
+input ProductBulkUpdateData {
+  categoryId: String
+  salesChannels: [SalesChannel!]
+  status: ProductStatus
+  trackInventory: Boolean
+}
+
 input ProductCreateInput {
-  available: Int! = 0
-  categoryId: ID
-  collectionIds: [ID!]
+  available: Int
+  categoryId: String
+  collectionIds: [String!]
   compareAtPrice: Float
   description: String
+  options: [ProductOptionInput!]
   price: Float!
-  salesChannels: [SalesChannel!]!
+  salesChannels: [SalesChannel!]
   seoDescription: String
   seoTitle: String
   sku: String
-  slug: String!
-  status: ProductStatus! = DRAFT
-  storeId: ID!
-  tagIds: [ID!]
+  slug: String
+  status: ProductStatus
+  storeId: String!
+  tagIds: [String!]
   title: String!
-  trackInventory: Boolean! = false
+  trackInventory: Boolean
+  variants: [ProductVariantInput!]
 }
 
 input ProductFiltersInput {
-  categoryId: ID
-  collectionId: ID
+  categoryId: String
   inStock: Boolean
   maxPrice: Float
   minPrice: Float
-  salesChannels: [SalesChannel!]
   searchQuery: String
   status: [ProductStatus!]
 }
@@ -456,20 +453,23 @@ enum ProductStatus {
 
 input ProductUpdateInput {
   available: Int
-  categoryId: ID
-  collectionIds: [ID!]
+  categoryId: String
+  collectionIds: [String!]
   compareAtPrice: Float
   description: String
-  id: ID!
+  id: String!
+  options: [ProductOptionInput!]
   price: Float
   salesChannels: [SalesChannel!]
   seoDescription: String
   seoTitle: String
   sku: String
+  slug: String
   status: ProductStatus
-  tagIds: [ID!]
+  tagIds: [String!]
   title: String
   trackInventory: Boolean
+  variants: [ProductVariantInput!]
 }
 
 """Product variant model"""
@@ -509,7 +509,7 @@ type ProductVariant {
 }
 
 input ProductVariantInput {
-  available: Int! = 0
+  available: Int
   compareAtPrice: Float
   optionCombination: [String!]!
   price: Float!
@@ -541,14 +541,14 @@ type Query {
   me: User!
   media(id: ID!): Media
   mediaByOwner(cursor: String, ownerId: String!, ownerType: MediaOwnerType!, skip: Int! = 0, sortOrder: SortOrder, take: Int! = 25): [Media!]!
+  myStoreProducts(cursor: String, filters: ProductFiltersInput, skip: Int! = 0, sortOrder: SortOrder, storeId: String!, take: Int! = 25): [Product!]!
   myStores(cursor: String, skip: Int! = 0, sortOrder: SortOrder, take: Int! = 25): [Store!]!
-  product(id: ID!): Product
+  product(id: String!): Product
   productBySlug(slug: String!): Product
   store(id: ID!): Store!
   storeBySlug(slug: String!): Store
   storeCategories(cursor: String, skip: Int! = 0, sortOrder: SortOrder, storeId: String!, take: Int! = 25): [Category!]!
   storeCollections(cursor: String, skip: Int! = 0, sortOrder: SortOrder, storeId: String!, take: Int! = 25): [Collection!]!
-  storeProducts(cursor: String, filters: ProductFiltersInput, skip: Int! = 0, sortOrder: SortOrder, storeId: String!, take: Int! = 25): [Product!]!
   storeTags(cursor: String, skip: Int! = 0, sortOrder: SortOrder, storeId: String!, take: Int! = 25): [Tag!]!
   tag(id: ID!): Tag!
   user(id: String!): User!
@@ -570,6 +570,8 @@ enum SortOrder {
 type Store {
   """Addresses associated with the store"""
   addresses: [AddressOnOwner!]
+  categories: [Category!]!
+  collections: [Collection!]!
 
   """When the store was created"""
   createdAt: DateTime!
@@ -612,12 +614,14 @@ type Store {
 
   """Phone number of the store"""
   phone: String
+  products: [Product!]!
 
   """Whether to show currency code alongside amounts"""
   showCurrencyCode: Boolean!
 
   """URL-friendly slug of the store"""
   slug: String!
+  tags: [Tag!]!
 
   """Timezone of the store (e.g., Africa/Nairobi)"""
   timeZone: String!

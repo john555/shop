@@ -1,7 +1,4 @@
-import { useEffect, useState } from 'react';
 import { gql, useMutation, useQuery } from '@apollo/client';
-import { client } from '@/common/apollo';
-import { Store, StoreUpdateInput, UpdateAddressInput } from '@/types/api';
 
 const UPDATE_STORE = gql`
   mutation UpdateStore($input: StoreUpdateInput!) {
@@ -63,6 +60,14 @@ const FETCH_STORE_QUERY = gql`
       weightUnit
       orderPrefix
       orderSuffix
+      categories{
+        id
+        name
+        slug
+        description
+        updatedAt
+        createdAt
+      }
       addresses {
         id
         type

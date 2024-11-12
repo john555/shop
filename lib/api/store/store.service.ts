@@ -8,6 +8,12 @@ import {
   AddressType,
   AddressOwnerType,
   User,
+  Product,
+  VehicleListing,
+  PropertyListing,
+  Category,
+  Collection,
+  Tag,
 } from '@prisma/client';
 import { PrismaService } from '@/api/prisma/prisma.service';
 import { PaginationArgs } from '@/api/pagination/pagination.args';
@@ -37,6 +43,64 @@ export class StoreService {
     private readonly prismaService: PrismaService,
     private readonly addressService: AddressService
   ) {}
+
+  async findById(id: string): Promise<Store | null> {
+    return this.prismaService.store.findUnique({
+      where: { id }
+    });
+  }
+
+  async findOwner(storeId: string): Promise<User> {
+    const owner = await this.prismaService.user.findFirst({
+      where: {
+        stores: {
+          some: { id: storeId }
+        }
+      }
+    });
+
+    if (!owner) {
+      throw new NotFoundException(`Owner not found for store ${storeId}`);
+    }
+
+    return owner;
+  }
+
+  async findProducts(storeId: string): Promise<Product[]> {
+    return this.prismaService.product.findMany({
+      where: { storeId }
+    });
+  }
+
+  async findPropertyListings(storeId: string): Promise<PropertyListing[]> {
+    return this.prismaService.propertyListing.findMany({
+      where: { storeId }
+    });
+  }
+
+  async findVehicleListings(storeId: string): Promise<VehicleListing[]> {
+    return this.prismaService.vehicleListing.findMany({
+      where: { storeId }
+    });
+  }
+
+  async findCategories(storeId: string): Promise<Category[]> {
+    return this.prismaService.category.findMany({
+      where: { storeId }
+    });
+  }
+
+  async findCollections(storeId: string): Promise<Collection[]> {
+    return this.prismaService.collection.findMany({
+      where: { storeId }
+    });
+  }
+
+  async findTags(storeId: string): Promise<Tag[]> {
+    return this.prismaService.tag.findMany({
+      where: { storeId }
+    });
+  }
 
   // Currency Helper Methods
   getDefaultCurrencySymbol(currency: StoreCurrency): string {

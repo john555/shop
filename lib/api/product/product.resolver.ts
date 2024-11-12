@@ -1,14 +1,21 @@
 import {
-  Resolver,
-  Query,
-  Mutation,
   Args,
-  ResolveField,
-  Parent,
   Context,
   Int,
+  Mutation,
+  Parent,
+  Query,
+  ResolveField,
+  Resolver,
 } from '@nestjs/graphql';
-import { UseGuards, NotFoundException, UnauthorizedException } from '@nestjs/common';
+import {
+  ForbiddenException,
+  Logger,
+  NotFoundException,
+  UseGuards,
+} from '@nestjs/common';
+import { Product } from './entities/product.entity';
+import { ProductService } from './product.service';
 import { Store } from '../store/store.entity';
 import { Category } from '../category/category.entity';
 import { Collection } from '../collection/collection.entity';
@@ -16,185 +23,71 @@ import { Tag } from '../tag/tag.entity';
 import { Media } from '../media/media.entity';
 import { ProductOption } from './entities/product-option.entity';
 import { ProductVariant } from './entities/product-variant.entity';
-import { ProductService } from './product.service';
-import { StoreService } from '../store/store.service';
-import { JwtAuthGuard } from '../auth/guard/jwt-auth.guard';
-import { 
+import {
   ProductCreateInput,
   ProductUpdateInput,
   ProductFiltersInput,
-  ProductOptionInput,
-  ProductVariantInput,
   BulkProductUpdateInput,
   BulkProductDeleteInput,
-  GetProductBySlugArgs,
-  ProductGetArgs
+  ProductGetArgs,
+  ProductGetBySlugArgs,
 } from './product.dto';
 import { PaginationArgs } from '@/api/pagination/pagination.args';
-import { AuthContext } from '../utils/auth';
-import { Product } from './entities/product.entity';
+import { JwtAuthGuard } from '@/api/auth/guard/jwt-auth.guard';
+import { AuthContext } from '@/api/utils/auth';
+import { StoreService } from '../store/store.service';
 
 @Resolver(() => Product)
 export class ProductResolver {
+  private readonly logger = new Logger(ProductResolver.name);
+
   constructor(
     private readonly productService: ProductService,
-    private readonly storeService: StoreService,
+    private readonly storeService: StoreService
   ) {}
+
+  private async validateStoreAccess(
+    storeId: string,
+    userId: string,
+    operation: string
+  ): Promise<void> {
+    const store = await this.storeService.getStoreById(storeId);
+
+    if (!store) {
+      throw new NotFoundException(`Store with ID ${storeId} not found`);
+    }
+
+    if (store.ownerId !== userId) {
+      throw new ForbiddenException(
+        `You don't have permission to ${operation} products in this store`
+      );
+    }
+  }
 
   // Queries
   @Query(() => Product, { nullable: true })
-  async product(
-    @Args() args: ProductGetArgs
-  ): Promise<Product | null> {
+  async product(@Args() args: ProductGetArgs): Promise<Product | null> {
     return this.productService.findById(args.id);
   }
 
   @Query(() => Product, { nullable: true })
-  async productBySlug(
-    @Args() args: GetProductBySlugArgs
-  ): Promise<Product | null> {
+  async productBySlug(@Args() args: ProductGetBySlugArgs): Promise<Product | null> {
     return this.productService.findBySlug(args.slug);
   }
 
+  // Field Resolvers
+  @UseGuards(JwtAuthGuard)
   @Query(() => [Product])
-  async storeProducts(
+  async myStoreProducts(
     @Args('storeId') storeId: string,
     @Args() pagination: PaginationArgs,
+    @Context() ctx: AuthContext,
     @Args('filters', { nullable: true }) filters?: ProductFiltersInput
   ): Promise<Product[]> {
+    await this.validateStoreAccess(storeId, ctx.req.user.id, 'view');
     return this.productService.findByStore(storeId, pagination, filters);
   }
 
-  // Mutations
-  @UseGuards(JwtAuthGuard)
-  @Mutation(() => Product)
-  async createProduct(
-    @Args('input') input: ProductCreateInput,
-    @Context() context: AuthContext
-  ): Promise<Product> {
-    // Validate store ownership
-    const store = await this.storeService.getStoreById(input.storeId);
-    if (!store || store.ownerId !== context.req.user.id) {
-      throw new UnauthorizedException(
-        'You do not have permission to create products for this store'
-      );
-    }
-
-    return this.productService.create(input);
-  }
-
-  @UseGuards(JwtAuthGuard)
-  @Mutation(() => Product)
-  async updateProduct(
-    @Args('input') input: ProductUpdateInput,
-    @Context() context: AuthContext
-  ): Promise<Product> {
-    // Validate product and store ownership
-    const product = await this.productService.findById(input.id);
-    if (!product) {
-      throw new NotFoundException(`Product with ID ${input.id} not found`);
-    }
-
-    const store = await this.productService.findProductStore(input.id);
-    if (!store || store.ownerId !== context.req.user.id) {
-      throw new UnauthorizedException(
-        'You do not have permission to update this product'
-      );
-    }
-
-    return this.productService.update(input);
-  }
-
-  @UseGuards(JwtAuthGuard)
-  @Mutation(() => Product)
-  async deleteProduct(
-    @Args('id') id: string,
-    @Context() context: AuthContext
-  ): Promise<Product> {
-    // Validate product and store ownership
-    const store = await this.productService.findProductStore(id);
-    if (!store || store.ownerId !== context.req.user.id) {
-      throw new UnauthorizedException(
-        'You do not have permission to delete this product'
-      );
-    }
-
-    return this.productService.delete(id);
-  }
-
-  @UseGuards(JwtAuthGuard)
-  @Mutation(() => Int)
-  async bulkUpdateProducts(
-    @Args('input') input: BulkProductUpdateInput,
-    @Context() context: AuthContext
-  ): Promise<number> {
-    // Validate store ownership
-    const store = await this.storeService.getStoreById(input.storeId);
-    if (!store || store.ownerId !== context.req.user.id) {
-      throw new UnauthorizedException(
-        'You do not have permission to update products for this store'
-      );
-    }
-
-    return this.productService.bulkUpdate(
-      input.storeId,
-      input.productIds,
-      input.data
-    );
-  }
-
-  @UseGuards(JwtAuthGuard)
-  @Mutation(() => Int)
-  async bulkDeleteProducts(
-    @Args('input') input: BulkProductDeleteInput,
-    @Context() context: AuthContext
-  ): Promise<number> {
-    // Validate store ownership
-    const store = await this.storeService.getStoreById(input.storeId);
-    if (!store || store.ownerId !== context.req.user.id) {
-      throw new UnauthorizedException(
-        'You do not have permission to delete products from this store'
-      );
-    }
-
-    return this.productService.bulkDelete(input.storeId, input.productIds);
-  }
-
-  @UseGuards(JwtAuthGuard)
-  @Mutation(() => Product)
-  async updateProductOptions(
-    @Args('productId') productId: string,
-    @Args('options', { type: () => [ProductOptionInput] }) options: ProductOptionInput[],
-    @Context() context: AuthContext
-  ): Promise<Product> {
-    const store = await this.productService.findProductStore(productId);
-    if (!store || store.ownerId !== context.req.user.id) {
-      throw new UnauthorizedException(
-        'You do not have permission to update this product'
-      );
-    }
-
-    return this.productService.updateProductOptions(productId, options);
-  }
-
-  @UseGuards(JwtAuthGuard)
-  @Mutation(() => Product)
-  async updateProductVariants(
-    @Args('productId') productId: string,
-    @Args('variants', { type: () => [ProductVariantInput] }) variants: ProductVariantInput[],
-    @Context() context: AuthContext
-  ): Promise<Product> {
-    const store = await this.productService.findProductStore(productId);
-    if (!store || store.ownerId !== context.req.user.id) {
-      throw new UnauthorizedException(
-        'You do not have permission to update this product'
-      );
-    }
-
-    return this.productService.updateProductVariants(productId, variants);
-  }
-
-  // Field Resolvers
   @ResolveField(() => Store)
   async store(@Parent() product: Product): Promise<Store | null> {
     return this.productService.findProductStore(product.id);
@@ -228,5 +121,104 @@ export class ProductResolver {
   @ResolveField(() => [Media])
   async media(@Parent() product: Product): Promise<Media[]> {
     return this.productService.findProductMedia(product.id);
+  }
+
+  // Mutations
+  @UseGuards(JwtAuthGuard)
+  @Mutation(() => Product)
+  async createProduct(
+    @Args('input') input: ProductCreateInput,
+    @Context() ctx: AuthContext
+  ): Promise<Product> {
+    await this.validateStoreAccess(input.storeId, ctx.req.user.id, 'create');
+
+    try {
+      return await this.productService.create(input);
+    } catch (error) {
+      this.logger.error('Failed to create product:', error);
+      throw error;
+    }
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Mutation(() => Product)
+  async updateProduct(
+    @Args('input') input: ProductUpdateInput,
+    @Context() ctx: AuthContext
+  ): Promise<Product> {
+    const product = await this.productService.findById(input.id);
+    if (!product) {
+      throw new NotFoundException(`Product with ID ${input.id} not found`);
+    }
+
+    await this.validateStoreAccess(product.storeId, ctx.req.user.id, 'update');
+
+    try {
+      return await this.productService.update(input);
+    } catch (error) {
+      this.logger.error(`Failed to update product ${input.id}:`, error);
+      throw error;
+    }
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Mutation(() => Boolean)
+  async deleteProduct(
+    @Args('id') id: string,
+    @Context() ctx: AuthContext
+  ): Promise<boolean> {
+    const product = await this.productService.findById(id);
+    if (!product) {
+      throw new NotFoundException(`Product with ID ${id} not found`);
+    }
+
+    await this.validateStoreAccess(product.storeId, ctx.req.user.id, 'delete');
+
+    try {
+      await this.productService.delete(id);
+      return true;
+    } catch (error) {
+      this.logger.error(`Failed to delete product ${id}:`, error);
+      throw error;
+    }
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Mutation(() => Int)
+  async bulkUpdateProducts(
+    @Args('input') input: BulkProductUpdateInput,
+    @Context() ctx: AuthContext
+  ): Promise<number> {
+    await this.validateStoreAccess(input.storeId, ctx.req.user.id, 'update');
+
+    try {
+      return await this.productService.bulkUpdate(
+        input.storeId,
+        input.productIds,
+        input.data
+      );
+    } catch (error) {
+      this.logger.error('Failed to bulk update products:', error);
+      throw error;
+    }
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Mutation(() => Int)
+  async bulkDeleteProducts(
+    @Args('input') input: BulkProductDeleteInput,
+    @Context() ctx: AuthContext
+  ): Promise<number> {
+    await this.validateStoreAccess(input.storeId, ctx.req.user.id, 'delete');
+
+    try {
+      return await this.productService.bulkDelete(
+        input.storeId,
+        input.productIds
+      );
+    } catch (error) {
+      this.logger.error('Failed to bulk delete products:', error);
+      throw error;
+    }
   }
 }
