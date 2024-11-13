@@ -4,17 +4,7 @@ import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import {
-  Upload,
-  X,
-  Tag,
-  Box,
-  ChevronRight,
-  ArrowLeft,
-  Hash,
-  Search,
-  Plus,
-} from 'lucide-react';
+import { Upload, X, Tag, Box, ArrowLeft, Hash, Plus } from 'lucide-react';
 import Image from 'next/image';
 
 import { Button } from '@/components/ui/button';
@@ -39,7 +29,6 @@ import {
 } from '@/components/ui/form';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   Popover,
@@ -47,20 +36,19 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover';
 import { Checkbox } from '@/components/ui/checkbox';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-  DialogFooter,
-} from '@/components/ui/dialog';
-import { Label } from '@/components/ui/label';
 import { useStore } from '@/admin/hooks/store';
 import { useProduct } from '@/admin/hooks/product/use-product';
 import { Category, Product, ProductStatus, SalesChannel } from '@/types/api';
 import { useParams, useRouter } from 'next/navigation';
 import { DASHBOARD_PAGE_LINK } from '@/common/constants';
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from '@/components/ui/command';
 
 function generateSlug(title: string): string {
   return title
@@ -119,16 +107,28 @@ export function ProductForm() {
   const [images, setImages] = useState<string[]>([]);
   const [openCollections, setOpenCollections] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  const [newCollectionName, setNewCollectionName] = useState('');
-  const [isNewCollectionDialogOpen, setIsNewCollectionDialogOpen] =
-    useState(false);
+
+  const isEditMode = !!id;
 
   const form = useForm<ProductFormValues>({
     resolver: zodResolver(productSchema),
     defaultValues: getInitialValues(product),
   });
 
-  function getInitialValues (product: Product): ProductFormValues {
+  const { isDirty, isValid } = form.formState;
+  const selectedCollections: string[] = form.watch('collectionIds');
+
+  const haveCollectionsChanged = (
+    currentCollections: string[],
+    initialCollections: string[] = []
+  ) => {
+    if (currentCollections.length !== initialCollections.length) return true;
+    return currentCollections.some(
+      (id) => !initialCollections.includes(id)
+    );
+  };
+
+  function getInitialValues(product: Product): ProductFormValues {
     return {
       title: product?.title ?? undefined,
       description: product?.description ?? undefined,
@@ -145,7 +145,7 @@ export function ProductForm() {
       seoTitle: product?.seoTitle ?? undefined,
       seoDescription: product?.seoDescription ?? undefined,
     };
-  };
+  }
 
   useEffect(() => {
     if (!product) return;
@@ -188,23 +188,6 @@ export function ProductForm() {
     collection.label.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const handleCreateNewCollection = () => {
-    if (newCollectionName.trim() !== '') {
-      const newCollection = {
-        id: `${collections.length + 1}`,
-        value: generateSlug(newCollectionName),
-        label: newCollectionName.trim(),
-      };
-      collections.push(newCollection);
-      form.setValue('collectionIds', [
-        ...form.getValues('collectionIds'),
-        newCollection.id,
-      ]);
-      setNewCollectionName('');
-      setIsNewCollectionDialogOpen(false);
-    }
-  };
-
   if (loading) {
     return <div>Loading...</div>;
   }
@@ -213,15 +196,22 @@ export function ProductForm() {
     return <div>Error: {error.message}</div>;
   }
 
+  const isSubmitDisabled = isEditMode
+    ? !isValid ||
+      (!isDirty &&
+        !haveCollectionsChanged(selectedCollections, product?.collections?.map((c) => c.id)))
+    : !isValid;
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div className="space-y-1">
           <h2 className="text-2xl font-semibold tracking-tight">
-            {product ? 'Edit' : 'Create New'} Product
+            {isEditMode ? 'Edit Product' : 'Create New Product'}
           </h2>
           <p className="text-sm text-muted-foreground">
-            Add a new product to your store
+            {isEditMode
+              ? 'Update the details of your product'
+              : 'Add a new product to your store'}
           </p>
         </div>
         <div className="flex items-center space-x-2">
@@ -232,10 +222,13 @@ export function ProductForm() {
             <ArrowLeft className="mr-2 h-4 w-4" />
             Back to Products
           </Button>
-          <Button type="submit" form="create-product-form" disabled={loading}>
+          <Button type="submit" form="create-product-form" 
+            disabled={isSubmitDisabled}>
             {loading
               ? 'Saving...'
-              : (product ? 'Update' : 'Create') + ' Product'}
+              : isEditMode
+              ? 'Update Product'
+              : 'Create Product'}
           </Button>
         </div>
       </div>
@@ -623,16 +616,13 @@ export function ProductForm() {
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            <SelectItem value="DRAFT">
+                            <SelectItem value={ProductStatus.Draft}>
                               <Badge variant="secondary">Draft</Badge>
                             </SelectItem>
-                            <SelectItem value="ACTIVE">
+                            <SelectItem value={ProductStatus.Active}>
                               <Badge className="bg-green-500 hover:bg-green-600">
                                 Active
                               </Badge>
-                            </SelectItem>
-                            <SelectItem value="ARCHIVED">
-                              <Badge variant="destructive">Archived</Badge>
                             </SelectItem>
                           </SelectContent>
                         </Select>
@@ -649,38 +639,34 @@ export function ProductForm() {
                         <FormControl>
                           <div className="flex gap-4">
                             <label className="flex items-center space-x-2">
-                              <input
-                                type="checkbox"
+                              <Switch
                                 checked={field.value.includes(
                                   SalesChannel.Online
                                 )}
-                                onChange={(e) => {
-                                  const newValue = e.target.checked
+                                onCheckedChange={(checked) => {
+                                  const newValue = checked
                                     ? [...field.value, SalesChannel.Online]
                                     : field.value.filter(
                                         (v) => v !== SalesChannel.Online
                                       );
                                   field.onChange(newValue);
                                 }}
-                                className="form-checkbox h-5 w-5 text-primary"
                               />
                               <span>Online</span>
                             </label>
                             <label className="flex items-center space-x-2">
-                              <input
-                                type="checkbox"
+                              <Switch
                                 checked={field.value.includes(
                                   SalesChannel.InStore
                                 )}
-                                onChange={(e) => {
-                                  const newValue = e.target.checked
+                                onCheckedChange={(checked) => {
+                                  const newValue = checked
                                     ? [...field.value, SalesChannel.InStore]
                                     : field.value.filter(
                                         (v) => v !== SalesChannel.InStore
                                       );
                                   field.onChange(newValue);
                                 }}
-                                className="form-checkbox h-5 w-5 text-primary"
                               />
                               <span>In Store</span>
                             </label>
@@ -720,108 +706,43 @@ export function ProductForm() {
                                       field.value.length > 1 ? 's' : ''
                                     } selected`
                                   : 'Select collections'}
-                                <ChevronRight className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                                <Plus className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                               </Button>
                             </PopoverTrigger>
                             <PopoverContent className="w-[300px] p-0">
-                              <div className="p-2">
-                                <div className="relative">
-                                  <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-                                  <Input
-                                    placeholder="Search collections..."
-                                    className="pl-8"
-                                    value={searchQuery}
-                                    onChange={(e) =>
-                                      setSearchQuery(e.target.value)
-                                    }
-                                  />
-                                </div>
-                              </div>
-                              <ScrollArea className="h-[300px]">
-                                {filteredCollections.map((collection) => (
-                                  <div
-                                    key={collection.id}
-                                    className="flex items-center space-x-2 p-2 cursor-pointer"
-                                    onClick={() => {
-                                      const newValue = field.value.includes(
-                                        collection.id
-                                      )
-                                        ? field.value.filter(
-                                            (value) => value !== collection.id
+                              <Command>
+                                <CommandInput placeholder="Search collections..." />
+                                <CommandList>
+                                  <CommandEmpty>No product found.</CommandEmpty>
+                                  <CommandGroup>
+                                    {filteredCollections.map((collection) => (
+                                      <CommandItem
+                                        key={collection.id}
+                                        onSelect={() => {
+                                          const newValue = field.value.includes(
+                                            collection.id
                                           )
-                                        : [...field.value, collection.id];
-                                      field.onChange(newValue);
-                                    }}
-                                  >
-                                    <Checkbox
-                                      checked={field.value.includes(
-                                        collection.id
-                                      )}
-                                      onCheckedChange={() => {
-                                        /**/
-                                      }}
-                                    />
-                                    <label>{collection.label}</label>
-                                  </div>
-                                ))}
-                                {filteredCollections.length === 0 && (
-                                  <div className="p-2 text-center text-sm text-muted-foreground">
-                                    No collections found
-                                  </div>
-                                )}
-                              </ScrollArea>
-                              <Separator />
-                              <div className="p-2">
-                                <Dialog
-                                  open={isNewCollectionDialogOpen}
-                                  onOpenChange={setIsNewCollectionDialogOpen}
-                                >
-                                  <DialogTrigger asChild>
-                                    <Button
-                                      variant="outline"
-                                      className="w-full"
-                                    >
-                                      <Plus className="mr-2 h-4 w-4" />
-                                      Create New Collection
-                                    </Button>
-                                  </DialogTrigger>
-                                  <DialogContent>
-                                    <DialogHeader>
-                                      <DialogTitle>
-                                        Create New Collection
-                                      </DialogTitle>
-                                    </DialogHeader>
-                                    <div className="grid gap-4 py-4">
-                                      <div className="grid grid-cols-4 items-center gap-4">
-                                        <Label
-                                          htmlFor="name"
-                                          className="text-right"
-                                        >
-                                          Name
-                                        </Label>
-                                        <Input
-                                          id="name"
-                                          value={
-                                            newCollectionName || searchQuery
-                                          }
-                                          onChange={(e) =>
-                                            setNewCollectionName(e.target.value)
-                                          }
-                                          className="col-span-3"
-                                        />
-                                      </div>
-                                    </div>
-                                    <DialogFooter>
-                                      <Button
-                                        type="submit"
-                                        onClick={handleCreateNewCollection}
+                                            ? field.value.filter(
+                                                (value) =>
+                                                  value !== collection.id
+                                              )
+                                            : [...field.value, collection.id];
+                                          field.onChange(newValue);
+                                        }}
                                       >
-                                        Create Collection
-                                      </Button>
-                                    </DialogFooter>
-                                  </DialogContent>
-                                </Dialog>
-                              </div>
+                                        <div className="flex items-center justify-between w-full">
+                                          {collection.label}
+                                          <Checkbox
+                                            checked={field.value.includes(
+                                              collection.id
+                                            )}
+                                          />
+                                        </div>
+                                      </CommandItem>
+                                    ))}
+                                  </CommandGroup>
+                                </CommandList>
+                              </Command>
                             </PopoverContent>
                           </Popover>
                         </FormControl>
