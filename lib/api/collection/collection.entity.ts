@@ -32,6 +32,15 @@ export class Collection implements Partial<CollectionModel> {
   @Field(() => Date, { description: 'When the collection was last updated' })
   updatedAt: Date;
 
+  @Field(() => Boolean, { description: 'Is the collection active' })
+  isActive: boolean;
+
+  @Field(() => String, { description: 'SEO title', nullable: true })
+  seoTitle: string | null;
+
+  @Field(() => String, { description: 'SEO description', nullable: true })
+  seoDescription: string | null;
+
   // Internal fields (not exposed in GraphQL)
   storeId: string;
 }

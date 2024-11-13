@@ -1,5 +1,5 @@
 import { ArgsType, Field, ID, InputType } from '@nestjs/graphql';
-import { IsNotEmpty, IsOptional, IsString, MaxLength, Matches } from 'class-validator';
+import { IsNotEmpty, IsOptional, IsString, MaxLength, Matches, IsBoolean, IsArray } from 'class-validator';
 
 @ArgsType()
 export class CollectionGetArgs {
@@ -34,6 +34,26 @@ export class CollectionCreateInput {
   @IsString()
   @IsNotEmpty()
   storeId!: string;
+
+  @Field(() => Boolean, { defaultValue: true })
+  @IsBoolean()
+  @IsOptional()
+  isActive?: boolean;
+
+  @Field(() => String, { nullable: true })
+  @IsString()
+  @IsOptional()
+  seoTitle?: string;
+
+  @Field(() => String, { nullable: true })
+  @IsString()
+  @IsOptional()
+  seoDescription?: string;
+
+  @Field(() => [ID], { nullable: true })
+  @IsArray()
+  @IsOptional()
+  productIds?: string[];
 }
 
 @InputType()
@@ -52,6 +72,26 @@ export class CollectionUpdateInput {
   @IsString()
   @IsOptional()
   description?: string;
+
+  @Field(() => Boolean, { nullable: true })
+  @IsBoolean()
+  @IsOptional()
+  isActive?: boolean;
+
+  @Field(() => String, { nullable: true })
+  @IsString()
+  @IsOptional()
+  seoTitle?: string;
+
+  @Field(() => String, { nullable: true })
+  @IsString()
+  @IsOptional()
+  seoDescription?: string;
+
+  @Field(() => [ID], { nullable: true })
+  @IsArray()
+  @IsOptional()
+  productIds?: string[];
 
   // Slug is read-only after creation
   slug?: never;

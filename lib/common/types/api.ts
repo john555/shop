@@ -173,10 +173,16 @@ export type Collection = {
   description?: Maybe<Scalars['String']['output']>;
   /** Unique identifier */
   id: Scalars['ID']['output'];
+  /** Is the collection active */
+  isActive: Scalars['Boolean']['output'];
   /** Collection name */
   name: Scalars['String']['output'];
   /** Products in this collection */
   products: Array<Product>;
+  /** SEO description */
+  seoDescription?: Maybe<Scalars['String']['output']>;
+  /** SEO title */
+  seoTitle?: Maybe<Scalars['String']['output']>;
   /** URL-friendly slug */
   slug: Scalars['String']['output'];
   /** Store this collection belongs to */
@@ -187,7 +193,11 @@ export type Collection = {
 
 export type CollectionCreateInput = {
   description?: InputMaybe<Scalars['String']['input']>;
+  isActive?: Scalars['Boolean']['input'];
   name: Scalars['String']['input'];
+  productIds?: InputMaybe<Array<Scalars['ID']['input']>>;
+  seoDescription?: InputMaybe<Scalars['String']['input']>;
+  seoTitle?: InputMaybe<Scalars['String']['input']>;
   slug: Scalars['String']['input'];
   storeId: Scalars['ID']['input'];
 };
@@ -195,7 +205,11 @@ export type CollectionCreateInput = {
 export type CollectionUpdateInput = {
   description?: InputMaybe<Scalars['String']['input']>;
   id: Scalars['ID']['input'];
+  isActive?: InputMaybe<Scalars['Boolean']['input']>;
   name?: InputMaybe<Scalars['String']['input']>;
+  productIds?: InputMaybe<Array<Scalars['ID']['input']>>;
+  seoDescription?: InputMaybe<Scalars['String']['input']>;
+  seoTitle?: InputMaybe<Scalars['String']['input']>;
 };
 
 /** Position of currency symbol (BEFORE_AMOUNT, AFTER_AMOUNT) */
@@ -1270,8 +1284,11 @@ export type CollectionResolvers<ContextType = any, ParentType extends ResolversP
   createdAt?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  isActive?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   products?: Resolver<Array<ResolversTypes['Product']>, ParentType, ContextType>;
+  seoDescription?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  seoTitle?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   slug?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   store?: Resolver<ResolversTypes['Store'], ParentType, ContextType>;
   updatedAt?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;

@@ -18,7 +18,8 @@ export class CollectionService {
   async getCollectionById(id: string): Promise<CollectionWithRelations | null> {
     try {
       const collection = await this.prismaService.collection.findUnique({
-        where: { id }
+        where: { id },
+        include: { products: true }
       });
 
       if (!collection) {
@@ -40,7 +41,8 @@ export class CollectionService {
       const collections = await paginate({
         modelDelegate: this.prismaService.collection,
         args,
-        where: { storeId }
+        where: { storeId },
+        include: { products: true }
       });
 
       return collections;
@@ -50,10 +52,15 @@ export class CollectionService {
     }
   }
 
-  async create(data: Prisma.CollectionUncheckedCreateInput): Promise<CollectionWithRelations> {
+  async create(data: Prisma.CollectionUncheckedCreateInput & { productIds?: string[] }): Promise<CollectionWithRelations> {
     try {
+      const { productIds, ...collectionData } = data;
       const collection = await this.prismaService.collection.create({
-        data
+        data: {
+          ...collectionData,
+          products: productIds ? { connect: productIds.map(id => ({ id })) } : undefined,
+        },
+        include: { products: true }
       });
 
       return collection;
@@ -65,9 +72,10 @@ export class CollectionService {
 
   async update(
     id: string,
-    data: Prisma.CollectionUncheckedUpdateInput
+    data: Prisma.CollectionUncheckedUpdateInput & { productIds?: string[] }
   ): Promise<CollectionWithRelations> {
     try {
+      const { productIds, ...collectionData } = data;
       const collection = await this.getCollectionById(id);
       if (!collection) {
         throw new NotFoundException(`Collection with ID ${id} not found`);
@@ -75,7 +83,11 @@ export class CollectionService {
 
       const updatedCollection = await this.prismaService.collection.update({
         where: { id },
-        data
+        data: {
+          ...collectionData,
+          products: productIds ? { set: productIds.map(id => ({ id })) } : undefined,
+        },
+        include: { products: true }
       });
 
       return updatedCollection;
@@ -149,7 +161,8 @@ export class CollectionService {
           products: {
             connect: productIds.map(id => ({ id }))
           }
-        }
+        },
+        include: { products: true }
       });
 
       return updatedCollection;
@@ -175,7 +188,8 @@ export class CollectionService {
           products: {
             disconnect: productIds.map(id => ({ id }))
           }
-        }
+        },
+        include: { products: true }
       });
 
       return updatedCollection;
@@ -236,7 +250,8 @@ export class CollectionService {
               id: productId
             }
           }
-        }
+        },
+        include: { products: true }
       });
 
       return collections;

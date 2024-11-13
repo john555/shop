@@ -235,8 +235,8 @@ model Store {
   tags             Tag[]
 
   // Timestamps
-  createdAt      DateTime         @default(now()) @db.Timestamp(6)
-  updatedAt      DateTime         @updatedAt @db.Timestamp(6)
+  createdAt DateTime @default(now()) @db.Timestamp(6)
+  updatedAt DateTime @updatedAt @db.Timestamp(6)
 
   @@index([phone])
   @@index([whatsApp])
@@ -365,15 +365,15 @@ model PropertyListing {
   longitude Float?
 
   // Relations
-  store   Store   @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  store   Store  @relation(fields: [storeId], references: [id], onDelete: Cascade)
   storeId String
 
   // Distribution
   salesChannels SalesChannel[]
 
   // Timestamps
-  createdAt      DateTime         @default(now()) @db.Timestamp(6)
-  updatedAt      DateTime         @updatedAt @db.Timestamp(6)
+  createdAt DateTime @default(now()) @db.Timestamp(6)
+  updatedAt DateTime @updatedAt @db.Timestamp(6)
 
   @@index([storeId])
   @@map("property_listings")
@@ -428,15 +428,15 @@ model VehicleListing {
   longitude Float?
 
   // Relations
-  store   Store   @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  store   Store  @relation(fields: [storeId], references: [id], onDelete: Cascade)
   storeId String
 
   // Distribution
   salesChannels SalesChannel[]
 
   // Timestamps
-  createdAt      DateTime         @default(now()) @db.Timestamp(6)
-  updatedAt      DateTime         @updatedAt @db.Timestamp(6)
+  createdAt DateTime @default(now()) @db.Timestamp(6)
+  updatedAt DateTime @updatedAt @db.Timestamp(6)
 
   @@index([storeId])
   @@map("vehicle_listings")
@@ -468,10 +468,13 @@ model Category {
 }
 
 model Collection {
-  id          String  @id @default(cuid())
-  name        String
-  slug        String  @unique
-  description String? @db.Text
+  id             String  @id @default(cuid())
+  name           String
+  slug           String  @unique
+  description    String? @db.Text
+  isActive       Boolean @default(true)
+  seoTitle       String?
+  seoDescription String? @db.Text
 
   // Relations
   store    Store     @relation(fields: [storeId], references: [id], onDelete: Cascade)
@@ -528,7 +531,6 @@ model Media {
   // Polymorphic relation
   ownerType MediaOwnerType
   ownerId   String
-
 
   // Timestamps
   createdAt DateTime @default(now()) @db.Timestamp(6)

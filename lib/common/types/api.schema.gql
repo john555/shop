@@ -168,11 +168,20 @@ type Collection {
   """Unique identifier"""
   id: ID!
 
+  """Is the collection active"""
+  isActive: Boolean!
+
   """Collection name"""
   name: String!
 
   """Products in this collection"""
   products: [Product!]!
+
+  """SEO description"""
+  seoDescription: String
+
+  """SEO title"""
+  seoTitle: String
 
   """URL-friendly slug"""
   slug: String!
@@ -186,7 +195,11 @@ type Collection {
 
 input CollectionCreateInput {
   description: String
+  isActive: Boolean! = true
   name: String!
+  productIds: [ID!]
+  seoDescription: String
+  seoTitle: String
   slug: String!
   storeId: ID!
 }
@@ -194,7 +207,11 @@ input CollectionCreateInput {
 input CollectionUpdateInput {
   description: String
   id: ID!
+  isActive: Boolean
   name: String
+  productIds: [ID!]
+  seoDescription: String
+  seoTitle: String
 }
 
 """Position of currency symbol (BEFORE_AMOUNT, AFTER_AMOUNT)"""
