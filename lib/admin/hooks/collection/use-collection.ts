@@ -1,5 +1,10 @@
 import { gql, useMutation, useQuery } from '@apollo/client';
-import { Collection } from '@/types/api';
+import {
+  Collection,
+  CollectionCreateInput,
+  CollectionUpdateInput,
+} from '@/types/api';
+import { useState } from 'react';
 
 const PRODUCT_FRAGMENT = gql`
   fragment ProductFields on Product {
@@ -25,7 +30,7 @@ const COLLECTION_FRAGMENT = gql`
     name
     slug
     description
-    storeId
+    isActive
     createdAt
     updatedAt
     products {
@@ -68,19 +73,6 @@ const DELETE_COLLECTION = gql`
   }
 `;
 
-export interface CollectionCreateInput {
-  name: string;
-  slug: string;
-  description?: string | null;
-  storeId: string;
-}
-
-export interface CollectionUpdateInput {
-  id: string;
-  name?: string;
-  description?: string | null;
-}
-
 export function useCollection(initialId?: string) {
   // Query for fetching a single collection
   const {
@@ -94,25 +86,21 @@ export function useCollection(initialId?: string) {
   });
 
   // Mutations for CRUD operations
-  const [createCollection, { loading: creating, error: createError }] = useMutation(
-    CREATE_COLLECTION,
-  );
+  const [createCollection, { loading: creating, error: createError }] =
+    useMutation(CREATE_COLLECTION);
 
-  const [updateCollection, { loading: updating, error: updateError }] = useMutation(
-    UPDATE_COLLECTION,
-    {
+  const [updateCollection, { loading: updating, error: updateError }] =
+    useMutation(UPDATE_COLLECTION, {
       refetchQueries: [
         {
           query: GET_COLLECTION,
           variables: { id: initialId },
         },
       ],
-    }
-  );
+    });
 
-  const [deleteCollection, { loading: deleting, error: deleteError }] = useMutation(
-    DELETE_COLLECTION
-  );
+  const [deleteCollection, { loading: deleting, error: deleteError }] =
+    useMutation(DELETE_COLLECTION);
 
   // Handler for creating a new collection
   const handleCreate = async (input: CollectionCreateInput) => {
@@ -120,10 +108,10 @@ export function useCollection(initialId?: string) {
       const { data } = await createCollection({
         variables: { input },
       });
-      
+
       // Refetch the collection with the new ID
       await refetchCollection({ id: data.createCollection.id });
-      
+
       return data.createCollection;
     } catch (error) {
       console.error('Error creating collection:', error);
@@ -161,9 +149,9 @@ export function useCollection(initialId?: string) {
     collection: data?.collection as Collection | undefined,
     loading: fetchingCollection || creating || updating || deleting,
     error: fetchError || createError || updateError || deleteError,
-    create: handleCreate,
-    update: handleUpdate,
-    delete: handleDelete,
-    refetch: refetchCollection,
+    createCollection: handleCreate,
+    updateCollection: handleUpdate,
+    deleteCollection: handleDelete,
+    refetchCollection: refetchCollection,
   };
 }

@@ -49,6 +49,7 @@ import {
   CommandItem,
   CommandList,
 } from '@/components/ui/command';
+import { useCollections } from '@/admin/hooks/collection';
 
 function generateSlug(title: string): string {
   return title
@@ -85,17 +86,6 @@ const productSchema = z.object({
 
 type ProductFormValues = z.infer<typeof productSchema>;
 
-const collections = [
-  { id: '1', value: 'summer', label: 'Summer Collection' },
-  { id: '2', value: 'winter', label: 'Winter Collection' },
-  { id: '3', value: 'spring', label: 'Spring Collection' },
-  { id: '4', value: 'autumn', label: 'Autumn Collection' },
-  { id: '5', value: 'holiday', label: 'Holiday Special' },
-  { id: '6', value: 'sale', label: 'Sale Items' },
-  { id: '7', value: 'new', label: 'New Arrivals' },
-  { id: '8', value: 'bestsellers', label: 'Bestsellers' },
-];
-
 export function ProductForm() {
   const router = useRouter();
   const { id } = useParams();
@@ -103,7 +93,7 @@ export function ProductForm() {
   const { product, loading, error, createProduct, updateProduct } = useProduct(
     id?.toString()
   );
-
+  const { collections } = useCollections({ storeId: store?.id });
   const [images, setImages] = useState<string[]>([]);
   const [openCollections, setOpenCollections] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -123,9 +113,7 @@ export function ProductForm() {
     initialCollections: string[] = []
   ) => {
     if (currentCollections.length !== initialCollections.length) return true;
-    return currentCollections.some(
-      (id) => !initialCollections.includes(id)
-    );
+    return currentCollections.some((id) => !initialCollections.includes(id));
   };
 
   function getInitialValues(product: Product): ProductFormValues {
@@ -185,7 +173,7 @@ export function ProductForm() {
   };
 
   const filteredCollections = collections.filter((collection) =>
-    collection.label.toLowerCase().includes(searchQuery.toLowerCase())
+    collection.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   if (loading) {
@@ -199,7 +187,10 @@ export function ProductForm() {
   const isSubmitDisabled = isEditMode
     ? !isValid ||
       (!isDirty &&
-        !haveCollectionsChanged(selectedCollections, product?.collections?.map((c) => c.id)))
+        !haveCollectionsChanged(
+          selectedCollections,
+          product?.collections?.map((c) => c.id)
+        ))
     : !isValid;
   return (
     <div className="space-y-6">
@@ -222,8 +213,11 @@ export function ProductForm() {
             <ArrowLeft className="mr-2 h-4 w-4" />
             Back to Products
           </Button>
-          <Button type="submit" form="create-product-form" 
-            disabled={isSubmitDisabled}>
+          <Button
+            type="submit"
+            form="create-product-form"
+            disabled={isSubmitDisabled}
+          >
             {loading
               ? 'Saving...'
               : isEditMode
@@ -731,7 +725,7 @@ export function ProductForm() {
                                         }}
                                       >
                                         <div className="flex items-center justify-between w-full">
-                                          {collection.label}
+                                          {collection.name}
                                           <Checkbox
                                             checked={field.value.includes(
                                               collection.id
@@ -757,7 +751,7 @@ export function ProductForm() {
                                 variant="secondary"
                                 className="text-xs"
                               >
-                                {collection ? collection.label : collectionId}
+                                {collection ? collection.name : collectionId}
                                 <Button
                                   variant="ghost"
                                   size="sm"

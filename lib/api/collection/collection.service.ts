@@ -3,6 +3,7 @@ import { PrismaService } from '@/api/prisma/prisma.service';
 import { Collection, Product, Prisma, Store } from '@prisma/client';
 import { PaginationArgs } from '@/api/pagination/pagination.args';
 import { paginate } from '@/api/pagination/paginate';
+import { CollectionBulkUpdateData } from './collection.dto';
 
 type CollectionWithRelations = Collection & {
   store?: Store;
@@ -19,7 +20,7 @@ export class CollectionService {
     try {
       const collection = await this.prismaService.collection.findUnique({
         where: { id },
-        include: { products: true }
+        include: { products: true },
       });
 
       if (!collection) {
@@ -42,25 +43,32 @@ export class CollectionService {
         modelDelegate: this.prismaService.collection,
         args,
         where: { storeId },
-        include: { products: true }
+        include: { products: true },
       });
 
       return collections;
     } catch (error) {
-      this.logger.error(`Error fetching collections for store ${storeId}:`, error);
+      this.logger.error(
+        `Error fetching collections for store ${storeId}:`,
+        error
+      );
       throw error;
     }
   }
 
-  async create(data: Prisma.CollectionUncheckedCreateInput & { productIds?: string[] }): Promise<CollectionWithRelations> {
+  async create(
+    data: Prisma.CollectionUncheckedCreateInput & { productIds?: string[] }
+  ): Promise<CollectionWithRelations> {
     try {
       const { productIds, ...collectionData } = data;
       const collection = await this.prismaService.collection.create({
         data: {
           ...collectionData,
-          products: productIds ? { connect: productIds.map(id => ({ id })) } : undefined,
+          products: productIds
+            ? { connect: productIds.map((id) => ({ id })) }
+            : undefined,
         },
-        include: { products: true }
+        include: { products: true },
       });
 
       return collection;
@@ -85,9 +93,11 @@ export class CollectionService {
         where: { id },
         data: {
           ...collectionData,
-          products: productIds ? { set: productIds.map(id => ({ id })) } : undefined,
+          products: productIds
+            ? { set: productIds.map((id) => ({ id })) }
+            : undefined,
         },
-        include: { products: true }
+        include: { products: true },
       });
 
       return updatedCollection;
@@ -105,22 +115,24 @@ export class CollectionService {
       }
 
       // Use transaction to handle related data if needed
-      const deletedCollection = await this.prismaService.$transaction(async (prisma) => {
-        // Remove all product associations first
-        await prisma.collection.update({
-          where: { id },
-          data: {
-            products: {
-              set: [] // Remove all product connections
-            }
-          }
-        });
+      const deletedCollection = await this.prismaService.$transaction(
+        async (prisma) => {
+          // Remove all product associations first
+          await prisma.collection.update({
+            where: { id },
+            data: {
+              products: {
+                set: [], // Remove all product connections
+              },
+            },
+          });
 
-        // Then delete the collection
-        return prisma.collection.delete({
-          where: { id }
-        });
-      });
+          // Then delete the collection
+          return prisma.collection.delete({
+            where: { id },
+          });
+        }
+      );
 
       return deletedCollection;
     } catch (error) {
@@ -129,7 +141,11 @@ export class CollectionService {
     }
   }
 
-  async isSlugUnique(slug: string, storeId: string, excludeId?: string): Promise<boolean> {
+  async isSlugUnique(
+    slug: string,
+    storeId: string,
+    excludeId?: string
+  ): Promise<boolean> {
     try {
       const existingCollection = await this.prismaService.collection.findFirst({
         where: {
@@ -152,22 +168,27 @@ export class CollectionService {
     try {
       const collection = await this.getCollectionById(collectionId);
       if (!collection) {
-        throw new NotFoundException(`Collection with ID ${collectionId} not found`);
+        throw new NotFoundException(
+          `Collection with ID ${collectionId} not found`
+        );
       }
 
       const updatedCollection = await this.prismaService.collection.update({
         where: { id: collectionId },
         data: {
           products: {
-            connect: productIds.map(id => ({ id }))
-          }
+            connect: productIds.map((id) => ({ id })),
+          },
         },
-        include: { products: true }
+        include: { products: true },
       });
 
       return updatedCollection;
     } catch (error) {
-      this.logger.error(`Error adding products to collection ${collectionId}:`, error);
+      this.logger.error(
+        `Error adding products to collection ${collectionId}:`,
+        error
+      );
       throw error;
     }
   }
@@ -179,22 +200,27 @@ export class CollectionService {
     try {
       const collection = await this.getCollectionById(collectionId);
       if (!collection) {
-        throw new NotFoundException(`Collection with ID ${collectionId} not found`);
+        throw new NotFoundException(
+          `Collection with ID ${collectionId} not found`
+        );
       }
 
       const updatedCollection = await this.prismaService.collection.update({
         where: { id: collectionId },
         data: {
           products: {
-            disconnect: productIds.map(id => ({ id }))
-          }
+            disconnect: productIds.map((id) => ({ id })),
+          },
         },
-        include: { products: true }
+        include: { products: true },
       });
 
       return updatedCollection;
     } catch (error) {
-      this.logger.error(`Error removing products from collection ${collectionId}:`, error);
+      this.logger.error(
+        `Error removing products from collection ${collectionId}:`,
+        error
+      );
       throw error;
     }
   }
@@ -205,19 +231,24 @@ export class CollectionService {
         where: {
           collections: {
             some: {
-              id: collectionId
-            }
-          }
-        }
+              id: collectionId,
+            },
+          },
+        },
       });
 
       if (!store) {
-        throw new NotFoundException(`Store for collection ${collectionId} not found`);
+        throw new NotFoundException(
+          `Store for collection ${collectionId} not found`
+        );
       }
 
       return store;
     } catch (error) {
-      this.logger.error(`Error finding store for collection ${collectionId}:`, error);
+      this.logger.error(
+        `Error finding store for collection ${collectionId}:`,
+        error
+      );
       throw error;
     }
   }
@@ -228,36 +259,133 @@ export class CollectionService {
         where: {
           collections: {
             some: {
-              id: collectionId
-            }
-          }
-        }
+              id: collectionId,
+            },
+          },
+        },
       });
 
       return products;
     } catch (error) {
-      this.logger.error(`Error finding products for collection ${collectionId}:`, error);
+      this.logger.error(
+        `Error finding products for collection ${collectionId}:`,
+        error
+      );
       throw error;
     }
   }
 
-  async getCollectionsForProduct(productId: string): Promise<CollectionWithRelations[]> {
+  async getCollectionsForProduct(
+    productId: string
+  ): Promise<CollectionWithRelations[]> {
     try {
       const collections = await this.prismaService.collection.findMany({
         where: {
           products: {
             some: {
-              id: productId
-            }
-          }
+              id: productId,
+            },
+          },
         },
-        include: { products: true }
+        include: { products: true },
       });
 
       return collections;
     } catch (error) {
-      this.logger.error(`Error finding collections for product ${productId}:`, error);
+      this.logger.error(
+        `Error finding collections for product ${productId}:`,
+        error
+      );
       throw error;
     }
+  }
+
+  async bulkDelete(collectionIds: string[]): Promise<number> {
+    try {
+      // Use transaction to ensure data consistency
+      const result = await this.prismaService.$transaction(async (prisma) => {
+        // First, get all collections to be deleted
+        const collections = await prisma.collection.findMany({
+          where: {
+            id: { in: collectionIds }
+          },
+          include: {
+            products: true
+          }
+        });
+
+        // Disconnect products from each collection
+        await Promise.all(
+          collections.map(collection =>
+            prisma.collection.update({
+              where: { id: collection.id },
+              data: {
+                products: {
+                  disconnect: collection.products.map(product => ({ id: product.id }))
+                }
+              }
+            })
+          )
+        );
+
+        // Then delete the collections
+        const deleteResult = await prisma.collection.deleteMany({
+          where: {
+            id: {
+              in: collectionIds
+            }
+          }
+        });
+
+        return deleteResult.count;
+      });
+
+      return result;
+    } catch (error) {
+      this.logger.error(`Error bulk deleting collections:`, error);
+      throw error;
+    }
+  }
+
+  async bulkUpdate(
+    collectionIds: string[],
+    data: CollectionBulkUpdateData
+  ): Promise<number> {
+    try {
+      const updateData: Prisma.CollectionUpdateManyMutationInput = {
+        ...(data.isActive !== undefined && { isActive: data.isActive }),
+        ...(data.description !== undefined && { description: data.description }),
+        updatedAt: new Date()
+      };
+
+      const result = await this.prismaService.collection.updateMany({
+        where: {
+          id: {
+            in: collectionIds
+          }
+        },
+        data: updateData
+      });
+
+      return result.count;
+    } catch (error) {
+      this.logger.error(`Error bulk updating collections:`, error);
+      throw error;
+    }
+  }
+
+  async validateCollectionsOwnership(
+    collectionIds: string[],
+    storeId: string
+  ): Promise<boolean> {
+    const collections = await this.prismaService.collection.findMany({
+      where: {
+        id: { in: collectionIds },
+        storeId
+      },
+      select: { id: true }
+    });
+
+    return collections.length === collectionIds.length;
   }
 }

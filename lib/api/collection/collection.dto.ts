@@ -1,5 +1,6 @@
 import { ArgsType, Field, ID, InputType } from '@nestjs/graphql';
-import { IsNotEmpty, IsOptional, IsString, MaxLength, Matches, IsBoolean, IsArray } from 'class-validator';
+import { Type } from 'class-transformer';
+import { IsNotEmpty, IsOptional, IsString, MaxLength, Matches, IsBoolean, IsArray, ValidateNested } from 'class-validator';
 
 @ArgsType()
 export class CollectionGetArgs {
@@ -95,4 +96,46 @@ export class CollectionUpdateInput {
 
   // Slug is read-only after creation
   slug?: never;
+}
+@InputType()
+export class BulkCollectionDeleteInput {
+  @Field(() => [String])
+  @IsString({ each: true })
+  @IsNotEmpty({ each: true })
+  collectionIds!: string[];
+
+  @Field(() => String)
+  @IsString()
+  @IsNotEmpty()
+  storeId!: string;
+}
+
+@InputType()
+export class CollectionBulkUpdateData {
+  @Field(() => Boolean, { nullable: true })
+  @IsOptional()
+  isActive?: boolean;
+
+  @Field(() => String, { nullable: true })
+  @IsString()
+  @IsOptional()
+  description?: string;
+}
+
+@InputType()
+export class BulkCollectionUpdateInput {
+  @Field(() => [String])
+  @IsString({ each: true })
+  @IsNotEmpty({ each: true })
+  collectionIds!: string[];
+
+  @Field(() => String)
+  @IsString()
+  @IsNotEmpty()
+  storeId!: string;
+
+  @Field(() => CollectionBulkUpdateData)
+  @ValidateNested()
+  @Type(() => CollectionBulkUpdateData)
+  data!: CollectionBulkUpdateData;
 }
