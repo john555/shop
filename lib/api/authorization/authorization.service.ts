@@ -1,10 +1,11 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { PrismaService } from '@/api/prisma/prisma.service';
 
 @Injectable()
 export class AuthorizationService {
   constructor(private readonly prisma: PrismaService) {}
 
+  // Individual resource checks
   async canAccessStore(userId: string, storeId: string): Promise<boolean> {
     const store = await this.prisma.store.findUnique({
       where: { id: storeId },
@@ -41,5 +42,131 @@ export class AuthorizationService {
       select: { store: { select: { ownerId: true } } },
     });
     return collection?.store?.ownerId === userId;
+  }
+
+  // Bulk authorization methods
+  async validateBulkStoreAccess(
+    userId: string,
+    storeIds: string[]
+  ): Promise<void> {
+    const stores = await this.prisma.store.findMany({
+      where: { id: { in: storeIds } },
+      select: { id: true, ownerId: true },
+    });
+
+    // Check if all stores were found
+    if (stores.length !== storeIds.length) {
+      const foundIds = new Set(stores.map((store) => store.id));
+      const missingIds = storeIds.filter((id) => !foundIds.has(id));
+      throw new UnauthorizedException(
+        `Stores not found: ${missingIds.join(', ')}`
+      );
+    }
+
+    // Check if user has access to all stores
+    const unauthorizedIds = stores
+      .filter((store) => store.ownerId !== userId)
+      .map((store) => store.id);
+
+    if (unauthorizedIds.length > 0) {
+      throw new UnauthorizedException(
+        `Not authorized to access stores: ${unauthorizedIds.join(', ')}`
+      );
+    }
+  }
+
+  async validateBulkProductAccess(
+    userId: string,
+    productIds: string[]
+  ): Promise<void> {
+    const products = await this.prisma.product.findMany({
+      where: { id: { in: productIds } },
+      select: {
+        id: true,
+        store: { select: { ownerId: true } },
+      },
+    });
+
+    // Check if all products were found
+    if (products.length !== productIds.length) {
+      const foundIds = new Set(products.map((product) => product.id));
+      const missingIds = productIds.filter((id) => !foundIds.has(id));
+      throw new UnauthorizedException(
+        `Products not found: ${missingIds.join(', ')}`
+      );
+    }
+
+    // Check if user has access to all products
+    const unauthorizedIds = products
+      .filter((product) => product.store.ownerId !== userId)
+      .map((product) => product.id);
+
+    if (unauthorizedIds.length > 0) {
+      throw new UnauthorizedException(
+        `Not authorized to access products: ${unauthorizedIds.join(', ')}`
+      );
+    }
+  }
+
+  async validateBulkCategoryAccess(
+    userId: string,
+    categoryIds: string[]
+  ): Promise<void> {
+    const categories = await this.prisma.category.findMany({
+      where: { id: { in: categoryIds } },
+      select: {
+        id: true,
+        store: { select: { ownerId: true } },
+      },
+    });
+
+    if (categories.length !== categoryIds.length) {
+      const foundIds = new Set(categories.map((category) => category.id));
+      const missingIds = categoryIds.filter((id) => !foundIds.has(id));
+      throw new UnauthorizedException(
+        `Categories not found: ${missingIds.join(', ')}`
+      );
+    }
+
+    const unauthorizedIds = categories
+      .filter((category) => category.store.ownerId !== userId)
+      .map((category) => category.id);
+
+    if (unauthorizedIds.length > 0) {
+      throw new UnauthorizedException(
+        `Not authorized to access categories: ${unauthorizedIds.join(', ')}`
+      );
+    }
+  }
+
+  async validateBulkCollectionAccess(
+    userId: string,
+    collectionIds: string[]
+  ): Promise<void> {
+    const collections = await this.prisma.collection.findMany({
+      where: { id: { in: collectionIds } },
+      select: {
+        id: true,
+        store: { select: { ownerId: true } },
+      },
+    });
+
+    if (collections.length !== collectionIds.length) {
+      const foundIds = new Set(collections.map((collection) => collection.id));
+      const missingIds = collectionIds.filter((id) => !foundIds.has(id));
+      throw new UnauthorizedException(
+        `Collections not found: ${missingIds.join(', ')}`
+      );
+    }
+
+    const unauthorizedIds = collections
+      .filter((collection) => collection.store.ownerId !== userId)
+      .map((collection) => collection.id);
+
+    if (unauthorizedIds.length > 0) {
+      throw new UnauthorizedException(
+        `Not authorized to access collections: ${unauthorizedIds.join(', ')}`
+      );
+    }
   }
 }

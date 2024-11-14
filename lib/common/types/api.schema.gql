@@ -341,7 +341,6 @@ type Mutation {
   createProduct(input: ProductCreateInput!): Product!
   createStore(input: StoreCreateInput!): Store!
   createTag(input: TagCreateInput!): Tag!
-  createUser(input: UserCreateInput!): User!
   deleteAddress(
     """ID of the entity that owns the address"""
     ownerId: ID!
@@ -356,7 +355,6 @@ type Mutation {
   deleteCollection(id: String!): Boolean!
   deleteMedia(id: String!): Boolean!
   deleteProduct(id: String!): Boolean!
-  deleteStore(id: String!): Boolean!
   deleteTag(id: String!): Boolean!
 
   """Refresh auth token"""
@@ -581,15 +579,12 @@ type Query {
   myStoreProducts(cursor: String, filters: ProductFiltersInput, skip: Int! = 0, sortOrder: SortOrder, storeId: String!, take: Int! = 25): [Product!]!
   myStores(cursor: String, skip: Int! = 0, sortOrder: SortOrder, take: Int! = 25): [Store!]!
   product(id: String!): Product
-  productBySlug(slug: String!): Product
   store(id: ID!): Store!
-  storeBySlug(slug: String!): Store
   storeCategories(cursor: String, skip: Int! = 0, sortOrder: SortOrder, storeId: String!, take: Int! = 25): [Category!]!
   storeCollections(cursor: String, skip: Int! = 0, sortOrder: SortOrder, storeId: String!, take: Int! = 25): [Collection!]!
   storeTags(cursor: String, skip: Int! = 0, sortOrder: SortOrder, storeId: String!, take: Int! = 25): [Tag!]!
   tag(id: ID!): Tag!
   user(id: String!): User!
-  users(cursor: String, skip: Int! = 0, sortOrder: SortOrder, take: Int! = 25): [User!]!
 }
 
 """Sales channel for the product (ONLINE, IN_STORE)"""
@@ -823,29 +818,6 @@ type User {
 
   """Date the User was last updated"""
   updatedAt: DateTime!
-}
-
-input UserCreateInput {
-  """Email of the User"""
-  email: String!
-
-  """First name of the User"""
-  firstName: String
-
-  """Preferred language for the user interface"""
-  language: Language
-
-  """Last name of the User"""
-  lastName: String
-
-  """Password of the User"""
-  password: String
-
-  """Preferred theme for the user interface"""
-  theme: Theme
-
-  """Preferred timezone (e.g., "Africa/Nairobi")"""
-  timeZone: String
 }
 
 input UserPasswordUpdateInput {

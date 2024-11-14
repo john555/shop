@@ -7,26 +7,15 @@ import {
   ResolveField,
   Resolver,
 } from '@nestjs/graphql';
-import {
-  BadRequestException,
-  Logger,
-  NotFoundException,
-  Res,
-  UseGuards,
-} from '@nestjs/common';
+import { BadRequestException, Logger, NotFoundException } from '@nestjs/common';
 import { User } from './user.entity';
 import { UserService } from './user.service';
-import {
-  UserCreateInput,
-  UserUpdateInput,
-  UserPasswordUpdateInput,
-} from './user.dto';
-import { PaginationArgs } from 'lib/api/pagination/pagination.args';
-import { JwtAuthGuard } from '../authentication/guard/jwt-auth.guard';
+import { UserUpdateInput, UserPasswordUpdateInput } from './user.dto';
 import { Store } from '../store/store.entity';
 import { StoreService } from '../store/store.service';
+import { Auth } from '../authorization/decorators/auth.decorator';
 
-@UseGuards(JwtAuthGuard)
+@Auth()
 @Resolver(() => User)
 export class UserResolver {
   constructor(
@@ -34,13 +23,11 @@ export class UserResolver {
     private readonly storeService: StoreService
   ) {}
 
-  @UseGuards(JwtAuthGuard)
   @Query(() => User, { description: 'Get current user' })
   async me(@Context() context: any) {
     return this.userService.getUserById(context.req.user.id);
   }
 
-  @UseGuards(JwtAuthGuard)
   @ResolveField(() => [Store!])
   async stores(@Parent() user: User): Promise<Store[]> {
     return this.storeService.getStoresByOwnerId(user.id);
@@ -53,16 +40,6 @@ export class UserResolver {
       throw new NotFoundException('User not found');
     }
     return user;
-  }
-
-  @Query(() => [User!])
-  async users(@Args() args: PaginationArgs): Promise<User[]> {
-    return this.userService.getUsers(args);
-  }
-
-  @Mutation(() => User)
-  async createUser(@Args('input') input: UserCreateInput): Promise<User> {
-    return this.userService.create(input);
   }
 
   @Mutation(() => User)

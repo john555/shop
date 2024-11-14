@@ -10,7 +10,6 @@ import {
 import {
   Logger,
   NotFoundException,
-  UnauthorizedException,
   UseGuards,
   BadRequestException,
 } from '@nestjs/common';
@@ -33,6 +32,7 @@ import { Category } from '../category/category.entity';
 import { Collection } from '../collection/collection.entity';
 import { Tag } from '../tag/tag.entity';
 import { Product } from '../product/entities/product.entity';
+import { Auth, AuthStore } from '../authorization/decorators/auth.decorator';
 
 @Resolver(() => Store)
 export class StoreResolver {
@@ -43,34 +43,10 @@ export class StoreResolver {
     private readonly addressService: AddressService
   ) {}
 
-  private async validateStoreOwnership(
-    storeId: string,
-    userId: string
-  ): Promise<Store> {
-    const store = await this.storeService.getStoreById(storeId);
-
-    if (!store) {
-      throw new NotFoundException(`Store with ID ${storeId} not found`);
-    }
-
-    if (store.ownerId !== userId) {
-      throw new UnauthorizedException(
-        'You do not have permission to access this store'
-      );
-    }
-
-    return store;
-  }
-
   // Query Methods
-  @UseGuards(JwtAuthGuard)
+  @AuthStore()
   @Query(() => Store)
-  async store(
-    @Args() args: StoreGetArgs,
-    @Context() context: AuthContext
-  ): Promise<Store> {
-    await this.validateStoreOwnership(args.id, context.req.user.id);
-
+  async store(@Args() args: StoreGetArgs): Promise<Store> {
     const store = await this.storeService.getStoreById(args.id);
     if (!store) {
       throw new NotFoundException(`Store with ID ${args.id} not found`);
@@ -79,12 +55,7 @@ export class StoreResolver {
     return store;
   }
 
-  @Query(() => Store, { nullable: true })
-  async storeBySlug(@Args() args: GetStoreBySlugArgs): Promise<Store | null> {
-    return this.storeService.getStoreBySlug(args.slug);
-  }
-
-  @UseGuards(JwtAuthGuard)
+  @Auth()
   @Query(() => [Store])
   async myStores(
     @Args() args: PaginationArgs,
@@ -94,7 +65,7 @@ export class StoreResolver {
   }
 
   // Mutation Methods
-  @UseGuards(JwtAuthGuard)
+  @Auth()
   @Mutation(() => Store)
   async createStore(
     @Args('input') input: StoreCreateInput,
@@ -126,15 +97,10 @@ export class StoreResolver {
     }
   }
 
-  @UseGuards(JwtAuthGuard)
+  @AuthStore()
   @Mutation(() => Store)
-  async updateStore(
-    @Args('input') input: StoreUpdateInput,
-    @Context() context: AuthContext
-  ): Promise<Store> {
+  async updateStore(@Args('input') input: StoreUpdateInput): Promise<Store> {
     try {
-      await this.validateStoreOwnership(input.id, context.req.user.id);
-
       if (input.slug) {
         const isSlugUnique = await this.storeService.isSlugUnique(
           input.slug,
@@ -148,22 +114,6 @@ export class StoreResolver {
       return await this.storeService.update(input.id, input);
     } catch (error) {
       this.logger.error(`Failed to update store ${input.id}:`, error);
-      throw error;
-    }
-  }
-
-  @UseGuards(JwtAuthGuard)
-  @Mutation(() => Boolean)
-  async deleteStore(
-    @Args('id') id: string,
-    @Context() context: AuthContext
-  ): Promise<boolean> {
-    try {
-      await this.validateStoreOwnership(id, context.req.user.id);
-      await this.storeService.delete(id);
-      return true;
-    } catch (error) {
-      this.logger.error(`Failed to delete store ${id}:`, error);
       throw error;
     }
   }

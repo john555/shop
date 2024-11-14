@@ -8,7 +8,7 @@ import { GqlExecutionContext } from '@nestjs/graphql';
 import { AuthorizationService } from '../authorization.service';
 
 @Injectable()
-export class StoreOwnerGuard implements CanActivate {
+export class BulkCollectionOwnerGuard implements CanActivate {
   constructor(private readonly authService: AuthorizationService) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
@@ -20,28 +20,17 @@ export class StoreOwnerGuard implements CanActivate {
       throw new UnauthorizedException('User not authenticated');
     }
 
-    // Extract storeId from args
-    const storeId = this.getStoreId(ctx);
-    if (!storeId) {
-      throw new UnauthorizedException('Store ID not provided');
+    const collectionIds = this.getCollectionIds(ctx);
+    if (!collectionIds?.length) {
+      throw new UnauthorizedException('Collection IDs not provided');
     }
 
-    const hasAccess = await this.authService.canAccessStore(userId, storeId);
-    if (!hasAccess) {
-      throw new UnauthorizedException('Not authorized to access this store');
-    }
-
+    await this.authService.validateBulkCollectionAccess(userId, collectionIds);
     return true;
   }
 
-  private getStoreId(ctx: GqlExecutionContext): string | undefined {
+  private getCollectionIds(ctx: GqlExecutionContext): string[] {
     const args = ctx.getArgs();
-    return (
-      args.id ||
-      args.input?.id ||
-      args.storeId ||
-      args.input?.storeId ||
-      undefined
-    );
+    return args.collectionIds || args.input?.collectionIds || [];
   }
 }

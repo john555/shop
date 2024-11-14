@@ -30,6 +30,8 @@ import { AuthContext } from '../utils/auth';
 import { Store } from '../store/store.entity';
 import { Product } from '../product/entities/product.entity';
 import {
+  AuthBulkCollections,
+  AuthBulkProducts,
   AuthCollection,
   AuthStore,
 } from '../authorization/decorators/auth.decorator';
@@ -115,9 +117,7 @@ export class CollectionResolver {
 
   @AuthCollection()
   @Mutation(() => Boolean)
-  async deleteCollection(
-    @Args('id') id: string,
-  ): Promise<boolean> {
+  async deleteCollection(@Args('id') id: string): Promise<boolean> {
     try {
       await this.collectionService.delete(id);
       return true;
@@ -130,7 +130,7 @@ export class CollectionResolver {
   @AuthStore()
   @Mutation(() => Int)
   async bulkDeleteCollections(
-    @Args('input') input: BulkCollectionDeleteInput,
+    @Args('input') input: BulkCollectionDeleteInput
   ): Promise<number> {
     try {
       // Validate that all collections belong to the store
@@ -153,11 +153,10 @@ export class CollectionResolver {
     }
   }
 
-  @AuthStore()
+  @AuthBulkCollections()
   @Mutation(() => Int)
   async bulkUpdateCollections(
-    @Args('input') input: BulkCollectionUpdateInput,
-    @Context() context: AuthContext
+    @Args('input') input: BulkCollectionUpdateInput
   ): Promise<number> {
     try {
       // Validate that all collections belong to the store
@@ -181,7 +180,7 @@ export class CollectionResolver {
   }
 
   @AuthCollection()
-  // TODO: Bulk Auth products
+  @AuthBulkProducts()
   @Mutation(() => Collection)
   async addProductsToCollection(
     @Args('collectionId') collectionId: string,
@@ -200,6 +199,7 @@ export class CollectionResolver {
   }
 
   @AuthCollection()
+  @AuthBulkProducts()
   @Mutation(() => Collection)
   async removeProductsFromCollection(
     @Args('collectionId') collectionId: string,

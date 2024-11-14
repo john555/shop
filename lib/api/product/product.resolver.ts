@@ -36,48 +36,27 @@ import {
 import { PaginationArgs } from '@/api/pagination/pagination.args';
 import { JwtAuthGuard } from '@/api/authentication/guard/jwt-auth.guard';
 import { AuthContext } from '@/api/utils/auth';
-import { StoreService } from '../store/store.service';
+import {
+  AuthBulkProducts,
+  AuthProduct,
+  AuthStore,
+} from '../authorization/decorators/auth.decorator';
 
 @Resolver(() => Product)
 export class ProductResolver {
   private readonly logger = new Logger(ProductResolver.name);
 
-  constructor(
-    private readonly productService: ProductService,
-    private readonly storeService: StoreService
-  ) {}
-
-  private async validateStoreAccess(
-    storeId: string,
-    userId: string,
-    operation: string
-  ): Promise<void> {
-    const store = await this.storeService.getStoreById(storeId);
-
-    if (!store) {
-      throw new NotFoundException(`Store with ID ${storeId} not found`);
-    }
-
-    if (store.ownerId !== userId) {
-      throw new ForbiddenException(
-        `You don't have permission to ${operation} products in this store`
-      );
-    }
-  }
+  constructor(private readonly productService: ProductService) {}
 
   // Queries
+  @AuthProduct()
   @Query(() => Product, { nullable: true })
   async product(@Args() args: ProductGetArgs): Promise<Product | null> {
     return this.productService.findById(args.id);
   }
 
-  @Query(() => Product, { nullable: true })
-  async productBySlug(@Args() args: ProductGetBySlugArgs): Promise<Product | null> {
-    return this.productService.findBySlug(args.slug);
-  }
-
   // Field Resolvers
-  @UseGuards(JwtAuthGuard)
+  @AuthStore()
   @Query(() => [Product])
   async myStoreProducts(
     @Args() args: GetMyStoreProductsArgs,
@@ -85,7 +64,6 @@ export class ProductResolver {
     @Context() ctx: AuthContext,
     @Args('filters', { nullable: true }) filters?: ProductFiltersInput
   ): Promise<Product[]> {
-    await this.validateStoreAccess(args.storeId, ctx.req.user.id, 'view');
     return this.productService.findByStore(args.storeId, pagination, filters);
   }
 
@@ -125,14 +103,12 @@ export class ProductResolver {
   }
 
   // Mutations
-  @UseGuards(JwtAuthGuard)
+  @AuthStore()
   @Mutation(() => Product)
   async createProduct(
     @Args('input') input: ProductCreateInput,
     @Context() ctx: AuthContext
   ): Promise<Product> {
-    await this.validateStoreAccess(input.storeId, ctx.req.user.id, 'create');
-
     try {
       return await this.productService.create(input);
     } catch (error) {
@@ -141,7 +117,7 @@ export class ProductResolver {
     }
   }
 
-  @UseGuards(JwtAuthGuard)
+  @AuthProduct()
   @Mutation(() => Product)
   async updateProduct(
     @Args('input') input: ProductUpdateInput,
@@ -152,8 +128,6 @@ export class ProductResolver {
       throw new NotFoundException(`Product with ID ${input.id} not found`);
     }
 
-    await this.validateStoreAccess(product.storeId, ctx.req.user.id, 'update');
-
     try {
       return await this.productService.update(input);
     } catch (error) {
@@ -162,7 +136,7 @@ export class ProductResolver {
     }
   }
 
-  @UseGuards(JwtAuthGuard)
+  @AuthProduct()
   @Mutation(() => Boolean)
   async deleteProduct(
     @Args('id') id: string,
@@ -173,8 +147,6 @@ export class ProductResolver {
       throw new NotFoundException(`Product with ID ${id} not found`);
     }
 
-    await this.validateStoreAccess(product.storeId, ctx.req.user.id, 'delete');
-
     try {
       await this.productService.delete(id);
       return true;
@@ -184,13 +156,12 @@ export class ProductResolver {
     }
   }
 
-  @UseGuards(JwtAuthGuard)
+  @AuthBulkProducts()
   @Mutation(() => Int)
   async bulkUpdateProducts(
     @Args('input') input: BulkProductUpdateInput,
     @Context() ctx: AuthContext
   ): Promise<number> {
-    await this.validateStoreAccess(input.storeId, ctx.req.user.id, 'update');
 
     try {
       return await this.productService.bulkUpdate(
@@ -204,14 +175,12 @@ export class ProductResolver {
     }
   }
 
-  @UseGuards(JwtAuthGuard)
+  @AuthBulkProducts()
   @Mutation(() => Int)
   async bulkDeleteProducts(
     @Args('input') input: BulkProductDeleteInput,
     @Context() ctx: AuthContext
   ): Promise<number> {
-    await this.validateStoreAccess(input.storeId, ctx.req.user.id, 'delete');
-
     try {
       return await this.productService.bulkDelete(
         input.storeId,
