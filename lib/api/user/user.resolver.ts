@@ -22,7 +22,7 @@ import {
   UserPasswordUpdateInput,
 } from './user.dto';
 import { PaginationArgs } from 'lib/api/pagination/pagination.args';
-import { JwtAuthGuard } from '../auth/guard/jwt-auth.guard';
+import { JwtAuthGuard } from '../authentication/guard/jwt-auth.guard';
 import { Store } from '../store/store.entity';
 import { StoreService } from '../store/store.service';
 

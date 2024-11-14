@@ -1,10 +1,10 @@
 import { Module } from '@nestjs/common';
 import { CollectionResolver } from './collection.resolver';
 import { CollectionService } from './collection.service';
-import { StoreModule } from '../store/store.module';
+import { AuthorizationModule } from '../authorization/authorization.module';
 
 @Module({
-  imports: [StoreModule],
+  imports: [AuthorizationModule],
   providers: [CollectionResolver, CollectionService],
   exports: [CollectionService],
 })

@@ -1,8 +1,8 @@
 import { Module } from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';
-import { AuthResolver } from './auth.resolver';
+import { AuthenticationResolver } from './authentication.resolver';
 import { UserModule } from 'lib/api/user/user.module';
-import { AuthService } from './auth.service';
+import { AuthenticationService } from './authentication.service';
 import { PassportModule } from '@nestjs/passport';
 import { JwtAuthStrategy } from './strategy/jwt-auth.strategy';
 import { JwtRefreshStrategy } from './strategy/jwt-refresh.strategy';
@@ -16,6 +16,11 @@ import { JwtRefreshStrategy } from './strategy/jwt-refresh.strategy';
     }),
     UserModule,
   ],
-  providers: [AuthResolver, AuthService, JwtRefreshStrategy, JwtAuthStrategy],
+  providers: [
+    AuthenticationResolver,
+    AuthenticationService,
+    JwtRefreshStrategy,
+    JwtAuthStrategy,
+  ],
 })
-export class AuthModule {}
+export class AuthenticationModule {}

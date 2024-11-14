@@ -330,11 +330,9 @@ input MediaUpdateInput {
 }
 
 type Mutation {
-  """Bulk delete collections"""
+  addProductsToCollection(collectionId: String!, productIds: [String!]!): Collection!
   bulkDeleteCollections(input: BulkCollectionDeleteInput!): Int!
   bulkDeleteProducts(input: BulkProductDeleteInput!): Int!
-
-  """Bulk update collections"""
   bulkUpdateCollections(input: BulkCollectionUpdateInput!): Int!
   bulkUpdateProducts(input: BulkProductUpdateInput!): Int!
   createCategory(input: CategoryCreateInput!): Category!
@@ -363,6 +361,7 @@ type Mutation {
 
   """Refresh auth token"""
   refresh: AuthSignin!
+  removeProductsFromCollection(collectionId: String!, productIds: [String!]!): Collection!
   reorderMedia(orderedIds: [String!]!, ownerId: String!, ownerType: MediaOwnerType!): [Media!]!
 
   """Sign in"""

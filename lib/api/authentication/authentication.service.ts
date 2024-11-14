@@ -1,6 +1,6 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { AuthSigninInput, AuthSignupInput, TokenPayload } from './auth.dto';
-import { AuthSignin, AuthSignup } from './auth.entity';
+import { AuthSigninInput, AuthSignupInput, TokenPayload } from './authentication.dto';
+import { AuthSignin, AuthSignup } from './authentication.entity';
 import { JwtService } from '@nestjs/jwt';
 import { UserService } from 'lib/api/user/user.service';
 import { comparePassword } from 'lib/api/utils/hashing';
@@ -8,7 +8,7 @@ import { User } from '@prisma/client';
 import { Response } from 'express';
 
 @Injectable()
-export class AuthService {
+export class AuthenticationService {
   constructor(
     private readonly jwtService: JwtService,
     private readonly userService: UserService,

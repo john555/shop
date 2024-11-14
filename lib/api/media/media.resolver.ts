@@ -16,7 +16,7 @@ import {
   MediaUpdateInput,
   GetMediaByOwnerArgs,
 } from './media.dto';
-import { JwtAuthGuard } from '../auth/guard/jwt-auth.guard';
+import { JwtAuthGuard } from '../authentication/guard/jwt-auth.guard';
 import { AuthContext } from '../utils/auth';
 import { PaginationArgs } from '@/api/pagination/pagination.args';
 import { Product } from '../product/entities/product.entity';

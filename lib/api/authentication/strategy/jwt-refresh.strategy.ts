@@ -1,7 +1,7 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { Strategy, ExtractJwt } from 'passport-jwt';
-import { TokenPayload } from '../auth.dto';
+import { TokenPayload } from '../authentication.dto';
 import { type Request } from 'express';
 
 @Injectable()

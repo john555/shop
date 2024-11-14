@@ -24,7 +24,7 @@ import {
   GetCategoryBySlugArgs,
 } from './category.dto';
 import { PaginationArgs } from '@/api/pagination/pagination.args';
-import { JwtAuthGuard } from '../auth/guard/jwt-auth.guard';
+import { JwtAuthGuard } from '../authentication/guard/jwt-auth.guard';
 import { AuthContext } from '../utils/auth';
 import { DEFAULT_CATEGORY_INCLUDE } from './category.types';
 import { Store } from '../store/store.entity';

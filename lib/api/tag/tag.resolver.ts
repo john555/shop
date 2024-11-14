@@ -18,7 +18,7 @@ import { Tag } from './tag.entity';
 import { TagService } from './tag.service';
 import { TagGetArgs, TagCreateInput, TagUpdateInput } from './tag.dto';
 import { PaginationArgs } from '@/api/pagination/pagination.args';
-import { JwtAuthGuard } from '../auth/guard/jwt-auth.guard';
+import { JwtAuthGuard } from '../authentication/guard/jwt-auth.guard';
 import { AuthContext } from '../utils/auth';
 import { Store } from '../store/store.entity';
 import { StoreService } from '../store/store.service';

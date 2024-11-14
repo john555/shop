@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { Strategy, ExtractJwt } from 'passport-jwt';
-import { TokenPayload } from '../auth.dto';
+import { TokenPayload } from '../authentication.dto';
 import { Request } from 'express';
 import { PrismaService } from '@/lib/api/prisma/prisma.service';
 

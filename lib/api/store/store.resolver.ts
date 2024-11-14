@@ -23,7 +23,7 @@ import {
   GetStoreBySlugArgs,
 } from './store.dto';
 import { PaginationArgs } from '@/api/pagination/pagination.args';
-import { JwtAuthGuard } from '../auth/guard/jwt-auth.guard';
+import { JwtAuthGuard } from '../authentication/guard/jwt-auth.guard';
 import { AuthContext } from '../utils/auth';
 import { AddressOwnerType } from '@prisma/client';
 import { AddressOnOwner } from '../address/entities/address-owner.entity';

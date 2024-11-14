@@ -34,7 +34,7 @@ import {
   GetMyStoreProductsArgs,
 } from './product.dto';
 import { PaginationArgs } from '@/api/pagination/pagination.args';
-import { JwtAuthGuard } from '@/api/auth/guard/jwt-auth.guard';
+import { JwtAuthGuard } from '@/api/authentication/guard/jwt-auth.guard';
 import { AuthContext } from '@/api/utils/auth';
 import { StoreService } from '../store/store.service';
 

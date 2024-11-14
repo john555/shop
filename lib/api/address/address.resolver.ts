@@ -7,7 +7,7 @@ import {
 } from '@nestjs/common';
 import { AddressService } from './address.service';
 import { StoreService } from '../store/store.service';
-import { JwtAuthGuard } from '../auth/guard/jwt-auth.guard';
+import { JwtAuthGuard } from '../authentication/guard/jwt-auth.guard';
 import { Address } from './entities/address.entity';
 import { AddressOnOwner } from './entities/address-owner.entity';
 import {
