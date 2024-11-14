@@ -50,6 +50,7 @@ import {
   CommandList,
 } from '@/components/ui/command';
 import { useCollections } from '@/admin/hooks/collection';
+import { ProductStatusBadge } from '../(ui)/product-status-badge';
 
 function generateSlug(title: string): string {
   return title
@@ -96,7 +97,6 @@ export function ProductForm() {
   const { collections } = useCollections({ storeId: store?.id });
   const [images, setImages] = useState<string[]>([]);
   const [openCollections, setOpenCollections] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
 
   const isEditMode = !!id;
 
@@ -116,9 +116,9 @@ export function ProductForm() {
     return currentCollections.some((id) => !initialCollections.includes(id));
   };
 
-  function getInitialValues(product: Product): ProductFormValues {
+  function getInitialValues(product?: Product): ProductFormValues {
     return {
-      title: product?.title ?? undefined,
+      title: product?.title ?? '',
       description: product?.description ?? undefined,
       price: product?.price || 0,
       compareAtPrice: product?.compareAtPrice ?? undefined,
@@ -138,6 +138,7 @@ export function ProductForm() {
   useEffect(() => {
     if (!product) return;
     form.reset(getInitialValues(product));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [product]);
 
   const onSubmit = async (data: ProductFormValues) => {
@@ -145,7 +146,8 @@ export function ProductForm() {
     if (!store?.id) return;
 
     if (product) {
-      await updateProduct({ ...data });
+      const updatedProduct = await updateProduct({ ...data });
+      form.reset(getInitialValues(updatedProduct));
     } else {
       const createdProduct = await createProduct({
         ...data,
@@ -171,10 +173,6 @@ export function ProductForm() {
   const removeImage = (index: number) => {
     setImages((prev) => prev.filter((_, i) => i !== index));
   };
-
-  const filteredCollections = collections.filter((collection) =>
-    collection.name.toLowerCase().includes(searchQuery.toLowerCase())
-  );
 
   if (loading) {
     return <div>Loading...</div>;
@@ -611,12 +609,14 @@ export function ProductForm() {
                           </FormControl>
                           <SelectContent>
                             <SelectItem value={ProductStatus.Draft}>
-                              <Badge variant="secondary">Draft</Badge>
+                              <ProductStatusBadge
+                                status={ProductStatus.Draft}
+                              />
                             </SelectItem>
                             <SelectItem value={ProductStatus.Active}>
-                              <Badge className="bg-green-500 hover:bg-green-600">
-                                Active
-                              </Badge>
+                              <ProductStatusBadge
+                                status={ProductStatus.Active}
+                              />
                             </SelectItem>
                           </SelectContent>
                         </Select>
@@ -709,7 +709,7 @@ export function ProductForm() {
                                 <CommandList>
                                   <CommandEmpty>No product found.</CommandEmpty>
                                   <CommandGroup>
-                                    {filteredCollections.map((collection) => (
+                                    {collections.map((collection) => (
                                       <CommandItem
                                         key={collection.id}
                                         onSelect={() => {

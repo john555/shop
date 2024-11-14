@@ -1,3 +1,3 @@
-import { ProductForm } from '@/admin/features/forms/product';
+import { ProductForm } from "../(components)/(forms)/product-form";
 
 export default ProductForm;

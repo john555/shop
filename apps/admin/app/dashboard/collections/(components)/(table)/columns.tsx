@@ -1,5 +1,4 @@
 import { DASHBOARD_PAGE_LINK } from '@/common/constants';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Collection } from '@/types/api';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -8,11 +7,11 @@ import {
   DropdownMenuTrigger,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu';
 import { ColumnDef } from '@tanstack/react-table';
 import { ArrowUpDown, MoreHorizontal } from 'lucide-react';
 import Link from 'next/link';
+import { CollectionStatusBadge } from '../(ui)/collection-status-badge';
 
 export type CreateColumnsProps = {
   handleDeleteActionClick: (collection: Collection) => void;
@@ -82,13 +81,7 @@ export const createColumns: (
     accessorKey: 'isActive',
     header: 'Status',
     cell: ({ row }) => (
-      <Badge
-        color={row.getValue('isActive') ? 'success' : 'danger'}
-        className="capitalize"
-        variant={row.getValue('isActive') ? 'default' : 'destructive'}
-      >
-        {row.getValue('isActive') ? 'Active' : 'Inactive'}
-      </Badge>
+      <CollectionStatusBadge isActive={row.getValue('isActive')} />
     ),
   },
   {
@@ -106,13 +99,9 @@ export const createColumns: (
             </div>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            <Link
-              href={`${DASHBOARD_PAGE_LINK}/collections/${row.original.id}`}
+            <DropdownMenuItem
+              onClick={() => handleDeleteActionClick(row.original)}
             >
-              <DropdownMenuItem>Edit</DropdownMenuItem>
-            </Link>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={() => handleDeleteActionClick(row.original)}>
               Delete
             </DropdownMenuItem>
           </DropdownMenuContent>

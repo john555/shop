@@ -111,6 +111,17 @@ export type AuthSignupInput = {
   password: Scalars['String']['input'];
 };
 
+export type BulkCollectionDeleteInput = {
+  collectionIds: Array<Scalars['String']['input']>;
+  storeId: Scalars['String']['input'];
+};
+
+export type BulkCollectionUpdateInput = {
+  collectionIds: Array<Scalars['String']['input']>;
+  data: CollectionBulkUpdateData;
+  storeId: Scalars['String']['input'];
+};
+
 export type BulkProductDeleteInput = {
   productIds: Array<Scalars['String']['input']>;
   storeId: Scalars['String']['input'];
@@ -189,6 +200,11 @@ export type Collection = {
   store: Store;
   /** When the collection was last updated */
   updatedAt: Scalars['DateTime']['output'];
+};
+
+export type CollectionBulkUpdateData = {
+  description?: InputMaybe<Scalars['String']['input']>;
+  isActive?: InputMaybe<Scalars['Boolean']['input']>;
 };
 
 export type CollectionCreateInput = {
@@ -309,7 +325,10 @@ export type MediaUpdateInput = {
 
 export type Mutation = {
   __typename?: 'Mutation';
+  addProductsToCollection: Collection;
+  bulkDeleteCollections: Scalars['Int']['output'];
   bulkDeleteProducts: Scalars['Int']['output'];
+  bulkUpdateCollections: Scalars['Int']['output'];
   bulkUpdateProducts: Scalars['Int']['output'];
   createCategory: Category;
   createCollection: Collection;
@@ -317,16 +336,15 @@ export type Mutation = {
   createProduct: Product;
   createStore: Store;
   createTag: Tag;
-  createUser: User;
   deleteAddress: Scalars['Boolean']['output'];
   deleteCategory: Scalars['Boolean']['output'];
   deleteCollection: Scalars['Boolean']['output'];
   deleteMedia: Scalars['Boolean']['output'];
   deleteProduct: Scalars['Boolean']['output'];
-  deleteStore: Scalars['Boolean']['output'];
   deleteTag: Scalars['Boolean']['output'];
   /** Refresh auth token */
   refresh: AuthSignin;
+  removeProductsFromCollection: Collection;
   reorderMedia: Array<Media>;
   /** Sign in */
   signin: AuthSignin;
@@ -346,8 +364,24 @@ export type Mutation = {
 };
 
 
+export type MutationAddProductsToCollectionArgs = {
+  collectionId: Scalars['String']['input'];
+  productIds: Array<Scalars['String']['input']>;
+};
+
+
+export type MutationBulkDeleteCollectionsArgs = {
+  input: BulkCollectionDeleteInput;
+};
+
+
 export type MutationBulkDeleteProductsArgs = {
   input: BulkProductDeleteInput;
+};
+
+
+export type MutationBulkUpdateCollectionsArgs = {
+  input: BulkCollectionUpdateInput;
 };
 
 
@@ -386,11 +420,6 @@ export type MutationCreateTagArgs = {
 };
 
 
-export type MutationCreateUserArgs = {
-  input: UserCreateInput;
-};
-
-
 export type MutationDeleteAddressArgs = {
   ownerId: Scalars['ID']['input'];
   ownerType: AddressOwnerType;
@@ -418,13 +447,14 @@ export type MutationDeleteProductArgs = {
 };
 
 
-export type MutationDeleteStoreArgs = {
+export type MutationDeleteTagArgs = {
   id: Scalars['String']['input'];
 };
 
 
-export type MutationDeleteTagArgs = {
-  id: Scalars['String']['input'];
+export type MutationRemoveProductsFromCollectionArgs = {
+  collectionId: Scalars['String']['input'];
+  productIds: Array<Scalars['String']['input']>;
 };
 
 
@@ -660,15 +690,12 @@ export type Query = {
   myStoreProducts: Array<Product>;
   myStores: Array<Store>;
   product?: Maybe<Product>;
-  productBySlug?: Maybe<Product>;
   store: Store;
-  storeBySlug?: Maybe<Store>;
   storeCategories: Array<Category>;
   storeCollections: Array<Collection>;
   storeTags: Array<Tag>;
   tag: Tag;
   user: User;
-  users: Array<User>;
 };
 
 
@@ -734,18 +761,8 @@ export type QueryProductArgs = {
 };
 
 
-export type QueryProductBySlugArgs = {
-  slug: Scalars['String']['input'];
-};
-
-
 export type QueryStoreArgs = {
   id: Scalars['ID']['input'];
-};
-
-
-export type QueryStoreBySlugArgs = {
-  slug: Scalars['String']['input'];
 };
 
 
@@ -783,14 +800,6 @@ export type QueryTagArgs = {
 
 export type QueryUserArgs = {
   id: Scalars['String']['input'];
-};
-
-
-export type QueryUsersArgs = {
-  cursor?: InputMaybe<Scalars['String']['input']>;
-  skip?: Scalars['Int']['input'];
-  sortOrder?: InputMaybe<SortOrder>;
-  take?: Scalars['Int']['input'];
 };
 
 /** Sales channel for the product (ONLINE, IN_STORE) */
@@ -986,23 +995,6 @@ export type User = {
   updatedAt: Scalars['DateTime']['output'];
 };
 
-export type UserCreateInput = {
-  /** Email of the User */
-  email: Scalars['String']['input'];
-  /** First name of the User */
-  firstName?: InputMaybe<Scalars['String']['input']>;
-  /** Preferred language for the user interface */
-  language?: InputMaybe<Language>;
-  /** Last name of the User */
-  lastName?: InputMaybe<Scalars['String']['input']>;
-  /** Password of the User */
-  password?: InputMaybe<Scalars['String']['input']>;
-  /** Preferred theme for the user interface */
-  theme?: InputMaybe<Theme>;
-  /** Preferred timezone (e.g., "Africa/Nairobi") */
-  timeZone?: InputMaybe<Scalars['String']['input']>;
-};
-
 export type UserPasswordUpdateInput = {
   /** ID of the User */
   id: Scalars['String']['input'];
@@ -1117,12 +1109,15 @@ export type ResolversTypes = {
   AuthSignup: ResolverTypeWrapper<AuthSignup>;
   AuthSignupInput: AuthSignupInput;
   Boolean: ResolverTypeWrapper<Scalars['Boolean']['output']>;
+  BulkCollectionDeleteInput: BulkCollectionDeleteInput;
+  BulkCollectionUpdateInput: BulkCollectionUpdateInput;
   BulkProductDeleteInput: BulkProductDeleteInput;
   BulkProductUpdateInput: BulkProductUpdateInput;
   Category: ResolverTypeWrapper<Category>;
   CategoryCreateInput: CategoryCreateInput;
   CategoryUpdateInput: CategoryUpdateInput;
   Collection: ResolverTypeWrapper<Collection>;
+  CollectionBulkUpdateData: CollectionBulkUpdateData;
   CollectionCreateInput: CollectionCreateInput;
   CollectionUpdateInput: CollectionUpdateInput;
   CurrencyPosition: CurrencyPosition;
@@ -1164,7 +1159,6 @@ export type ResolversTypes = {
   UnitSystem: UnitSystem;
   UpdateAddressInput: UpdateAddressInput;
   User: ResolverTypeWrapper<User>;
-  UserCreateInput: UserCreateInput;
   UserPasswordUpdateInput: UserPasswordUpdateInput;
   UserUpdateInput: UserUpdateInput;
   WeightUnit: WeightUnit;
@@ -1181,12 +1175,15 @@ export type ResolversParentTypes = {
   AuthSignup: AuthSignup;
   AuthSignupInput: AuthSignupInput;
   Boolean: Scalars['Boolean']['output'];
+  BulkCollectionDeleteInput: BulkCollectionDeleteInput;
+  BulkCollectionUpdateInput: BulkCollectionUpdateInput;
   BulkProductDeleteInput: BulkProductDeleteInput;
   BulkProductUpdateInput: BulkProductUpdateInput;
   Category: Category;
   CategoryCreateInput: CategoryCreateInput;
   CategoryUpdateInput: CategoryUpdateInput;
   Collection: Collection;
+  CollectionBulkUpdateData: CollectionBulkUpdateData;
   CollectionCreateInput: CollectionCreateInput;
   CollectionUpdateInput: CollectionUpdateInput;
   DateTime: Scalars['DateTime']['output'];
@@ -1217,7 +1214,6 @@ export type ResolversParentTypes = {
   TagUpdateInput: TagUpdateInput;
   UpdateAddressInput: UpdateAddressInput;
   User: User;
-  UserCreateInput: UserCreateInput;
   UserPasswordUpdateInput: UserPasswordUpdateInput;
   UserUpdateInput: UserUpdateInput;
 };
@@ -1326,7 +1322,10 @@ export type MediaResolvers<ContextType = any, ParentType extends ResolversParent
 };
 
 export type MutationResolvers<ContextType = any, ParentType extends ResolversParentTypes['Mutation'] = ResolversParentTypes['Mutation']> = {
+  addProductsToCollection?: Resolver<ResolversTypes['Collection'], ParentType, ContextType, RequireFields<MutationAddProductsToCollectionArgs, 'collectionId' | 'productIds'>>;
+  bulkDeleteCollections?: Resolver<ResolversTypes['Int'], ParentType, ContextType, RequireFields<MutationBulkDeleteCollectionsArgs, 'input'>>;
   bulkDeleteProducts?: Resolver<ResolversTypes['Int'], ParentType, ContextType, RequireFields<MutationBulkDeleteProductsArgs, 'input'>>;
+  bulkUpdateCollections?: Resolver<ResolversTypes['Int'], ParentType, ContextType, RequireFields<MutationBulkUpdateCollectionsArgs, 'input'>>;
   bulkUpdateProducts?: Resolver<ResolversTypes['Int'], ParentType, ContextType, RequireFields<MutationBulkUpdateProductsArgs, 'input'>>;
   createCategory?: Resolver<ResolversTypes['Category'], ParentType, ContextType, RequireFields<MutationCreateCategoryArgs, 'input'>>;
   createCollection?: Resolver<ResolversTypes['Collection'], ParentType, ContextType, RequireFields<MutationCreateCollectionArgs, 'input'>>;
@@ -1334,15 +1333,14 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   createProduct?: Resolver<ResolversTypes['Product'], ParentType, ContextType, RequireFields<MutationCreateProductArgs, 'input'>>;
   createStore?: Resolver<ResolversTypes['Store'], ParentType, ContextType, RequireFields<MutationCreateStoreArgs, 'input'>>;
   createTag?: Resolver<ResolversTypes['Tag'], ParentType, ContextType, RequireFields<MutationCreateTagArgs, 'input'>>;
-  createUser?: Resolver<ResolversTypes['User'], ParentType, ContextType, RequireFields<MutationCreateUserArgs, 'input'>>;
   deleteAddress?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<MutationDeleteAddressArgs, 'ownerId' | 'ownerType' | 'type'>>;
   deleteCategory?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<MutationDeleteCategoryArgs, 'id'>>;
   deleteCollection?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<MutationDeleteCollectionArgs, 'id'>>;
   deleteMedia?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<MutationDeleteMediaArgs, 'id'>>;
   deleteProduct?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<MutationDeleteProductArgs, 'id'>>;
-  deleteStore?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<MutationDeleteStoreArgs, 'id'>>;
   deleteTag?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<MutationDeleteTagArgs, 'id'>>;
   refresh?: Resolver<ResolversTypes['AuthSignin'], ParentType, ContextType>;
+  removeProductsFromCollection?: Resolver<ResolversTypes['Collection'], ParentType, ContextType, RequireFields<MutationRemoveProductsFromCollectionArgs, 'collectionId' | 'productIds'>>;
   reorderMedia?: Resolver<Array<ResolversTypes['Media']>, ParentType, ContextType, RequireFields<MutationReorderMediaArgs, 'orderedIds' | 'ownerId' | 'ownerType'>>;
   signin?: Resolver<ResolversTypes['AuthSignin'], ParentType, ContextType, RequireFields<MutationSigninArgs, 'input'>>;
   signout?: Resolver<ResolversTypes['AuthSignout'], ParentType, ContextType>;
@@ -1427,15 +1425,12 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   myStoreProducts?: Resolver<Array<ResolversTypes['Product']>, ParentType, ContextType, RequireFields<QueryMyStoreProductsArgs, 'skip' | 'storeId' | 'take'>>;
   myStores?: Resolver<Array<ResolversTypes['Store']>, ParentType, ContextType, RequireFields<QueryMyStoresArgs, 'skip' | 'take'>>;
   product?: Resolver<Maybe<ResolversTypes['Product']>, ParentType, ContextType, RequireFields<QueryProductArgs, 'id'>>;
-  productBySlug?: Resolver<Maybe<ResolversTypes['Product']>, ParentType, ContextType, RequireFields<QueryProductBySlugArgs, 'slug'>>;
   store?: Resolver<ResolversTypes['Store'], ParentType, ContextType, RequireFields<QueryStoreArgs, 'id'>>;
-  storeBySlug?: Resolver<Maybe<ResolversTypes['Store']>, ParentType, ContextType, RequireFields<QueryStoreBySlugArgs, 'slug'>>;
   storeCategories?: Resolver<Array<ResolversTypes['Category']>, ParentType, ContextType, RequireFields<QueryStoreCategoriesArgs, 'skip' | 'storeId' | 'take'>>;
   storeCollections?: Resolver<Array<ResolversTypes['Collection']>, ParentType, ContextType, RequireFields<QueryStoreCollectionsArgs, 'skip' | 'storeId' | 'take'>>;
   storeTags?: Resolver<Array<ResolversTypes['Tag']>, ParentType, ContextType, RequireFields<QueryStoreTagsArgs, 'skip' | 'storeId' | 'take'>>;
   tag?: Resolver<ResolversTypes['Tag'], ParentType, ContextType, RequireFields<QueryTagArgs, 'id'>>;
   user?: Resolver<ResolversTypes['User'], ParentType, ContextType, RequireFields<QueryUserArgs, 'id'>>;
-  users?: Resolver<Array<ResolversTypes['User']>, ParentType, ContextType, RequireFields<QueryUsersArgs, 'skip' | 'take'>>;
 };
 
 export type StoreResolvers<ContextType = any, ParentType extends ResolversParentTypes['Store'] = ResolversParentTypes['Store']> = {

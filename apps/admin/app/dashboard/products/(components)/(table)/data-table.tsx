@@ -75,7 +75,7 @@ export function DataTable<TData, TValue>({
         <div className="relative flex-1">
           <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
           <Input
-            placeholder="Filter collections..."
+            placeholder="Filter products..."
             value={(table.getColumn('name')?.getFilterValue() as string) ?? ''}
             onChange={(event) =>
               table.getColumn('name')?.setFilterValue(event.target.value)
@@ -105,7 +105,7 @@ export function DataTable<TData, TValue>({
                       column.toggleVisibility(!!value)
                     }
                   >
-                    {column.id === 'isActive' ? 'Status' : column.id}
+                    {column.id}
                   </DropdownMenuCheckboxItem>
                 );
               })}
