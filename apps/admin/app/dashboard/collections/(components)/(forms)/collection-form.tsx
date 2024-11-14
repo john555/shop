@@ -80,8 +80,15 @@ type CollectionFormValues = z.infer<typeof collectionSchema>;
 export function CollectionForm() {
   const router = useRouter();
   const { id } = useParams();
-  const { collection, loading, error, createCollection, updateCollection } =
-    useCollection(id?.toString());
+  const {
+    collection,
+    loading,
+    updating,
+    creating,
+    error,
+    createCollection,
+    updateCollection,
+  } = useCollection(id?.toString());
   const { store } = useStore();
   const { products } = useProducts({ storeId: store?.id });
   const [image, setImage] = useState<string | null>(null);
@@ -100,7 +107,6 @@ export function CollectionForm() {
   const { isDirty, isValid } = form.formState;
 
   const haveProductIdsChanged = useCallback(() => {
-
     if (!collection?.products) return false;
 
     if (collection.products.length !== productIds.length) return true;
@@ -110,7 +116,7 @@ export function CollectionForm() {
     );
   }, [collection, productIds, isEditMode]);
 
-  function getInitialValues(collection: Collection): CollectionFormValues {
+  function getInitialValues(collection?: Collection): CollectionFormValues {
     return {
       name: collection?.name ?? '',
       description: collection?.description ?? '',
@@ -130,10 +136,8 @@ export function CollectionForm() {
     if (!store) return;
 
     if (isEditMode) {
-      updateCollection({
-        ...data,
-        id: collection?.id,
-      });
+      const updatedProduct = await updateCollection(data);
+      form.reset(getInitialValues(updatedProduct));
     } else {
       const createdCollection = await createCollection({
         ...data,
@@ -179,11 +183,12 @@ export function CollectionForm() {
     return <div>Error: {error.message}</div>;
   }
 
-  const isSubmitDisabled = isEditMode
-    ? !isValid ||
-      (!isDirty &&
-        !haveProductIdsChanged())
-    : !isValid;
+  const isSubmitDisabled =
+    updating ||
+    creating ||
+    (isEditMode
+      ? !isValid || (!isDirty && !haveProductIdsChanged())
+      : !isValid);
 
   return (
     <div className="space-y-6">
@@ -210,8 +215,13 @@ export function CollectionForm() {
             type="submit"
             form="collection-form"
             disabled={isSubmitDisabled}
+            className="min-w-[152px]"
           >
-            {isEditMode ? 'Update Collection' : 'Create Collection'}
+            {updating || creating
+              ? 'Saving...'
+              : isEditMode
+              ? 'Update Collection'
+              : 'Create Collection'}
           </Button>
         </div>
       </div>
@@ -502,8 +512,13 @@ export function CollectionForm() {
             type="submit"
             form="collection-form"
             disabled={isSubmitDisabled}
+            className="min-w-[152px]"
           >
-            {isEditMode ? 'Update Collection' : 'Create Collection'}
+            {updating || creating
+              ? 'Saving...'
+              : isEditMode
+              ? 'Update Collection'
+              : 'Create Collection'}
           </Button>
         </form>
       </Form>

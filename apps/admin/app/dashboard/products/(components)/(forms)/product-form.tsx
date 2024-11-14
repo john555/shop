@@ -91,9 +91,15 @@ export function ProductForm() {
   const router = useRouter();
   const { id } = useParams();
   const { store } = useStore();
-  const { product, loading, error, createProduct, updateProduct } = useProduct(
-    id?.toString()
-  );
+  const {
+    product,
+    loading,
+    updating,
+    creating,
+    error,
+    createProduct,
+    updateProduct,
+  } = useProduct(id?.toString());
   const { collections } = useCollections({ storeId: store?.id });
   const [images, setImages] = useState<string[]>([]);
   const [openCollections, setOpenCollections] = useState(false);
@@ -182,14 +188,17 @@ export function ProductForm() {
     return <div>Error: {error.message}</div>;
   }
 
-  const isSubmitDisabled = isEditMode
-    ? !isValid ||
-      (!isDirty &&
-        !haveCollectionsChanged(
-          selectedCollections,
-          product?.collections?.map((c) => c.id)
-        ))
-    : !isValid;
+  const isSubmitDisabled =
+    updating ||
+    creating ||
+    (isEditMode
+      ? !isValid ||
+        (!isDirty &&
+          !haveCollectionsChanged(
+            selectedCollections,
+            product?.collections?.map((c) => c.id)
+          ))
+      : !isValid);
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -214,13 +223,14 @@ export function ProductForm() {
           <Button
             type="submit"
             form="create-product-form"
+            className="min-w-[136px]"
             disabled={isSubmitDisabled}
           >
-            {loading
+            {updating || creating
               ? 'Saving...'
               : isEditMode
-              ? 'Update Product'
-              : 'Create Product'}
+              ? 'Update product'
+              : 'Create product'}
           </Button>
         </div>
       </div>

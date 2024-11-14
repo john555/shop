@@ -1,11 +1,17 @@
 import { DASHBOARD_PAGE_LINK } from '@/common/constants';
 import { Button } from '@/components/ui/button';
-import { Product } from '@/types/api';
+import { Product, SalesChannel } from '@/types/api';
 import { Checkbox } from '@/components/ui/checkbox';
 import { ColumnDef } from '@tanstack/react-table';
-import { ArrowUpDown } from 'lucide-react';
+import { ArrowUpDown, ChevronDown } from 'lucide-react';
 import Link from 'next/link';
 import { ProductStatusBadge } from '../(ui)/product-status-badge';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover';
+import { Badge } from '@/components/ui/badge';
 
 export const columns: ColumnDef<Product>[] = [
   {
@@ -65,9 +71,28 @@ export const columns: ColumnDef<Product>[] = [
     accessorKey: 'salesChannels',
     header: 'Sales channels',
     cell: ({ row }) => (
-      <div className="font-medium px-6">
-        {row.original.salesChannels.length}
-      </div>
+      <Popover>
+        <PopoverTrigger>
+          <Button
+            variant="ghost"
+            className="flex gap-2 items-center font-medium px-2"
+          >
+            {row.original.salesChannels.length}
+            <ChevronDown size={16} />
+          </Button>
+        </PopoverTrigger>
+        <PopoverContent>
+          {row.original.salesChannels
+            .map((channel) =>
+              channel === SalesChannel.Online
+                ? 'Online store'
+                : channel === SalesChannel.InStore
+                ? 'In store'
+                : ''
+            )
+            .join(', ')}
+        </PopoverContent>
+      </Popover>
     ),
   },
   {
@@ -75,9 +100,28 @@ export const columns: ColumnDef<Product>[] = [
     header: () => <div>Collections</div>,
     cell: ({ row }) => {
       return (
-        <div className="font-medium px-6">
-          {row.original.collections.length}
-        </div>
+        <Popover>
+          <PopoverTrigger>
+            <Button
+              variant="ghost"
+              className="flex gap-2 items-center font-medium px-2"
+            >
+              {row.original.collections.length}
+              <ChevronDown size={16} />
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="flex flex-wrap gap-2">
+            {row.original.collections.map((collection) => (
+              <Badge
+                key={collection.id}
+                variant="secondary"
+                className="text-xs"
+              >
+                {collection.name}
+              </Badge>
+            ))}
+          </PopoverContent>
+        </Popover>
       );
     },
   },

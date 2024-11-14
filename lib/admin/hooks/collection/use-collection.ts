@@ -120,10 +120,11 @@ export function useCollection(initialId?: string) {
   };
 
   // Handler for updating a collection
-  const handleUpdate = async (input: CollectionUpdateInput) => {
+  const handleUpdate = async (input: Omit<CollectionUpdateInput, 'id'>) => {
+    if (!initialId) throw new Error('Product ID is required for updates');
     try {
       const { data } = await updateCollection({
-        variables: { input },
+        variables: { input: { ...input, id: initialId } },
       });
       return data.updateCollection;
     } catch (error) {
@@ -147,7 +148,10 @@ export function useCollection(initialId?: string) {
 
   return {
     collection: data?.collection as Collection | undefined,
-    loading: fetchingCollection || creating || updating || deleting,
+    loading: fetchingCollection,
+    creating,
+    updating,
+    deleting,
     error: fetchError || createError || updateError || deleteError,
     createCollection: handleCreate,
     updateCollection: handleUpdate,
