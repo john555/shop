@@ -4,7 +4,6 @@ import { DASHBOARD_PAGE_LINK } from '@/common/constants';
 import { Button } from '@/components/ui/button';
 import {
   AlertDialog,
-  AlertDialogTrigger,
   AlertDialogContent,
   AlertDialogHeader,
   AlertDialogTitle,
@@ -17,8 +16,8 @@ import { Plus } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useCollections } from '@/admin/hooks/collection';
 import { useStore } from '@/admin/hooks/store';
-import { DataTable } from '@/apps/admin/app/dashboard/collections/(table)/data-table';
-import { createColumns } from './(table)/columns';
+import { DataTable } from './(components)/(table)/data-table';
+import { createColumns } from './(components)/(table)/columns';
 import { useState } from 'react';
 import { Collection } from '@/types/api';
 

@@ -1,3 +1,3 @@
-import { CollectionForm } from '@/admin/features/forms/collection';
+import { CollectionForm } from '../(components)/(forms)/collection-form';
 
 export default CollectionForm;
