@@ -199,7 +199,7 @@ model User {
 model Store {
   id   String    @id @default(cuid())
   name String
-  slug String    @unique
+  slug String
   type StoreType
 
   // Contact Information
@@ -233,11 +233,13 @@ model Store {
   categories       Category[]
   collections      Collection[]
   tags             Tag[]
+  customers        Customer[]
 
   // Timestamps
   createdAt DateTime @default(now()) @db.Timestamp(6)
   updatedAt DateTime @updatedAt @db.Timestamp(6)
 
+  @@unique([ownerId, slug])
   @@index([phone])
   @@index([whatsApp])
   @@map("stores")
@@ -247,7 +249,7 @@ model Product {
   id          String        @id @default(cuid())
   title       String
   description String?       @db.Text
-  slug        String        @unique
+  slug        String
   status      ProductStatus @default(DRAFT)
 
   // SEO fields
@@ -280,6 +282,7 @@ model Product {
   createdAt DateTime @default(now()) @db.Timestamp(6)
   updatedAt DateTime @updatedAt @db.Timestamp(6)
 
+  @@unique([storeId, slug])
   @@index([storeId])
   @@index([categoryId])
   @@map("products")
@@ -332,7 +335,7 @@ model PropertyListing {
   id          String         @id @default(cuid())
   title       String
   description String?        @db.Text
-  slug        String         @unique
+  slug        String
   status      PropertyStatus @default(DRAFT)
 
   // SEO fields
@@ -375,6 +378,7 @@ model PropertyListing {
   createdAt DateTime @default(now()) @db.Timestamp(6)
   updatedAt DateTime @updatedAt @db.Timestamp(6)
 
+  @@unique([storeId, slug])
   @@index([storeId])
   @@map("property_listings")
 }
@@ -383,7 +387,7 @@ model VehicleListing {
   id          String        @id @default(cuid())
   title       String
   description String?       @db.Text
-  slug        String        @unique
+  slug        String
   status      VehicleStatus @default(DRAFT)
 
   // SEO fields
@@ -438,6 +442,7 @@ model VehicleListing {
   createdAt DateTime @default(now()) @db.Timestamp(6)
   updatedAt DateTime @updatedAt @db.Timestamp(6)
 
+  @@unique([storeId, slug])
   @@index([storeId])
   @@map("vehicle_listings")
 }
@@ -445,7 +450,7 @@ model VehicleListing {
 model Category {
   id          String  @id @default(cuid())
   name        String
-  slug        String  @unique
+  slug        String
   description String? @db.Text
 
   // Hierarchical structure
@@ -462,6 +467,7 @@ model Category {
   createdAt DateTime @default(now()) @db.Timestamp(6)
   updatedAt DateTime @updatedAt @db.Timestamp(6)
 
+  @@unique([storeId, slug])
   @@index([storeId])
   @@index([parentId])
   @@map("categories")
@@ -470,7 +476,7 @@ model Category {
 model Collection {
   id             String  @id @default(cuid())
   name           String
-  slug           String  @unique
+  slug           String
   description    String? @db.Text
   isActive       Boolean @default(true)
   seoTitle       String?
@@ -485,6 +491,7 @@ model Collection {
   createdAt DateTime @default(now()) @db.Timestamp(6)
   updatedAt DateTime @updatedAt @db.Timestamp(6)
 
+  @@unique([storeId, slug])
   @@index([storeId])
   @@map("collections")
 }
@@ -492,7 +499,7 @@ model Collection {
 model Tag {
   id   String @id @default(cuid())
   name String
-  slug String @unique
+  slug String
 
   // Relations
   store    Store     @relation(fields: [storeId], references: [id], onDelete: Cascade)
@@ -503,6 +510,7 @@ model Tag {
   createdAt DateTime @default(now()) @db.Timestamp(6)
   updatedAt DateTime @updatedAt @db.Timestamp(6)
 
+  @@unique([storeId, slug])
   @@index([storeId])
   @@map("tags")
 }
@@ -581,4 +589,24 @@ model AddressOnOwner {
   @@index([ownerId, ownerType])
   @@index([addressId])
   @@map("address_owners")
+}
+
+model Customer {
+  id              String   @id @default(cuid())
+  firstName       String
+  lastName        String
+  language        Language @default(EN)
+  email           String
+  phoneNumber     String?
+  marketingEmails Boolean  @default(false)
+  marketingSMS    Boolean  @default(false)
+  notes           String?
+  storeId         String
+  store           Store    @relation(fields: [storeId], references: [id])
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@unique([storeId, email])
+  @@unique([storeId, phoneNumber])
+  @@index([storeId])
 }
