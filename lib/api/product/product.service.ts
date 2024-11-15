@@ -50,10 +50,10 @@ export class ProductService {
     }
   }
 
-  async findBySlug(slug: string): Promise<Product | null> {
+  async findBySlug(slug: string, storeId: string): Promise<Product | null> {
     try {
       return this.prisma.product.findUnique({
-        where: { slug },
+        where: { storeId_slug: { storeId, slug } },
       });
     } catch (error) {
       this.logger.error(`Error fetching product with slug ${slug}:`, error);
@@ -413,24 +413,25 @@ export class ProductService {
             updatedAt: new Date(),
           },
         });
-  
+
         // Handle category relationship separately for each product
         await Promise.all(
           productIds.map((id) =>
             this.prisma.product.update({
               where: { id },
               data: {
-                category: data.categoryId === null
-                  ? { disconnect: true }
-                  : { connect: { id: data.categoryId } },
+                category:
+                  data.categoryId === null
+                    ? { disconnect: true }
+                    : { connect: { id: data.categoryId } },
               },
             })
           )
         );
-  
+
         return productIds.length;
       }
-  
+
       // If no relationship updates, use updateMany
       const result = await this.prisma.product.updateMany({
         where: {
@@ -444,7 +445,7 @@ export class ProductService {
           updatedAt: new Date(),
         },
       });
-  
+
       return result.count;
     } catch (error) {
       this.logger.error('Failed to bulk update products:', error);
