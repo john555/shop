@@ -55,11 +55,7 @@ export default function CollectionsPage() {
             <Plus className="mr-2 h-4 w-4" /> Add Collection
           </Button>
         </div>
-        {collections?.length > 0 ? (
-          <DataTable data={collections} columns={columns} />
-        ) : (
-          <p>No collections</p>
-        )}
+        <DataTable data={collections} columns={columns} />
       </div>
       <AlertDialog open={deleteModalOpen} onOpenChange={setDeleteModalOpen}>
         <AlertDialogContent>
