@@ -593,8 +593,8 @@ model AddressOnOwner {
 
 model Customer {
   id              String   @id @default(cuid())
-  firstName       String
-  lastName        String
+  firstName       String?
+  lastName        String?
   language        Language @default(EN)
   email           String
   phoneNumber     String?
@@ -609,4 +609,5 @@ model Customer {
   @@unique([storeId, email])
   @@unique([storeId, phoneNumber])
   @@index([storeId])
+  @@map("customers")
 }

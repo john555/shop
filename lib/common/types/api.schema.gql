@@ -236,12 +236,75 @@ enum CurrencyPosition {
   BEFORE_AMOUNT
 }
 
+"""Customer model"""
+type Customer {
+  """When the customer was created"""
+  createdAt: DateTime!
+
+  """Email address of the customer"""
+  email: String!
+
+  """First name of the customer"""
+  firstName: String
+
+  """Unique identifier of the customer"""
+  id: ID!
+
+  """Preferred language of the customer"""
+  language: Language!
+
+  """Last name of the customer"""
+  lastName: String
+
+  """Whether the customer has opted into marketing emails"""
+  marketingEmails: Boolean!
+
+  """Whether the customer has opted into marketing SMS"""
+  marketingSMS: Boolean!
+
+  """Additional notes about the customer"""
+  notes: String
+
+  """Phone number of the customer"""
+  phoneNumber: String
+
+  """ID of the store this customer belongs to"""
+  storeId: String!
+
+  """When the customer was last updated"""
+  updatedAt: DateTime!
+}
+
+input CustomerCreateInput {
+  email: String!
+  firstName: String
+  language: Language! = EN
+  lastName: String
+  marketingEmails: Boolean! = false
+  marketingSMS: Boolean! = false
+  notes: String
+  phoneNumber: String
+  storeId: ID!
+}
+
+input CustomerUpdateInput {
+  email: String
+  firstName: String
+  id: ID!
+  language: Language! = EN
+  lastName: String
+  marketingEmails: Boolean
+  marketingSMS: Boolean
+  notes: String
+  phoneNumber: String
+}
+
 """
 A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date-time format.
 """
 scalar DateTime
 
-"""Supported user interface languages"""
+"""The language of the customer"""
 enum Language {
   AR
   EN
@@ -337,6 +400,7 @@ type Mutation {
   bulkUpdateProducts(input: BulkProductUpdateInput!): Int!
   createCategory(input: CategoryCreateInput!): Category!
   createCollection(input: CollectionCreateInput!): Collection!
+  createCustomer(input: CustomerCreateInput!): Customer!
   createMedia(input: MediaCreateInput!): Media!
   createProduct(input: ProductCreateInput!): Product!
   createStore(input: StoreCreateInput!): Store!
@@ -353,6 +417,7 @@ type Mutation {
   ): Boolean!
   deleteCategory(id: String!): Boolean!
   deleteCollection(id: String!): Boolean!
+  deleteCustomer(id: String!): Boolean!
   deleteMedia(id: String!): Boolean!
   deleteProduct(id: String!): Boolean!
   deleteTag(id: String!): Boolean!
@@ -373,6 +438,7 @@ type Mutation {
   updateAddress(input: UpdateAddressInput!): AddressOnOwner!
   updateCategory(input: CategoryUpdateInput!): Category!
   updateCollection(input: CollectionUpdateInput!): Collection!
+  updateCustomer(input: CustomerUpdateInput!): Customer!
   updateMedia(input: MediaUpdateInput!): Media!
   updatePassword(input: UserPasswordUpdateInput!): User!
   updateProduct(input: ProductUpdateInput!): Product!
@@ -554,6 +620,7 @@ input ProductVariantInput {
 type Query {
   categoryBySlug(slug: String!, storeId: ID!): Category
   collection(id: ID!): Collection!
+  customer(id: ID!): Customer!
   getAddress(
     """ID of the entity that owns the address"""
     ownerId: ID!
@@ -582,6 +649,7 @@ type Query {
   store(id: ID!): Store!
   storeCategories(cursor: String, skip: Int! = 0, sortOrder: SortOrder, storeId: String!, take: Int! = 25): [Category!]!
   storeCollections(cursor: String, skip: Int! = 0, sortOrder: SortOrder, storeId: String!, take: Int! = 25): [Collection!]!
+  storeCustomers(cursor: String, skip: Int! = 0, sortOrder: SortOrder, storeId: String!, take: Int! = 25): [Customer!]!
   storeTags(cursor: String, skip: Int! = 0, sortOrder: SortOrder, storeId: String!, take: Int! = 25): [Tag!]!
   tag(id: ID!): Tag!
   user(id: String!): User!

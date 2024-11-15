@@ -234,7 +234,60 @@ export enum CurrencyPosition {
   BeforeAmount = 'BEFORE_AMOUNT'
 }
 
-/** Supported user interface languages */
+/** Customer model */
+export type Customer = {
+  __typename?: 'Customer';
+  /** When the customer was created */
+  createdAt: Scalars['DateTime']['output'];
+  /** Email address of the customer */
+  email: Scalars['String']['output'];
+  /** First name of the customer */
+  firstName?: Maybe<Scalars['String']['output']>;
+  /** Unique identifier of the customer */
+  id: Scalars['ID']['output'];
+  /** Preferred language of the customer */
+  language: Language;
+  /** Last name of the customer */
+  lastName?: Maybe<Scalars['String']['output']>;
+  /** Whether the customer has opted into marketing emails */
+  marketingEmails: Scalars['Boolean']['output'];
+  /** Whether the customer has opted into marketing SMS */
+  marketingSMS: Scalars['Boolean']['output'];
+  /** Additional notes about the customer */
+  notes?: Maybe<Scalars['String']['output']>;
+  /** Phone number of the customer */
+  phoneNumber?: Maybe<Scalars['String']['output']>;
+  /** ID of the store this customer belongs to */
+  storeId: Scalars['String']['output'];
+  /** When the customer was last updated */
+  updatedAt: Scalars['DateTime']['output'];
+};
+
+export type CustomerCreateInput = {
+  email: Scalars['String']['input'];
+  firstName?: InputMaybe<Scalars['String']['input']>;
+  language?: Language;
+  lastName?: InputMaybe<Scalars['String']['input']>;
+  marketingEmails?: Scalars['Boolean']['input'];
+  marketingSMS?: Scalars['Boolean']['input'];
+  notes?: InputMaybe<Scalars['String']['input']>;
+  phoneNumber?: InputMaybe<Scalars['String']['input']>;
+  storeId: Scalars['ID']['input'];
+};
+
+export type CustomerUpdateInput = {
+  email?: InputMaybe<Scalars['String']['input']>;
+  firstName?: InputMaybe<Scalars['String']['input']>;
+  id: Scalars['ID']['input'];
+  language?: Language;
+  lastName?: InputMaybe<Scalars['String']['input']>;
+  marketingEmails?: InputMaybe<Scalars['Boolean']['input']>;
+  marketingSMS?: InputMaybe<Scalars['Boolean']['input']>;
+  notes?: InputMaybe<Scalars['String']['input']>;
+  phoneNumber?: InputMaybe<Scalars['String']['input']>;
+};
+
+/** The language of the customer */
 export enum Language {
   Ar = 'AR',
   En = 'EN',
@@ -332,6 +385,7 @@ export type Mutation = {
   bulkUpdateProducts: Scalars['Int']['output'];
   createCategory: Category;
   createCollection: Collection;
+  createCustomer: Customer;
   createMedia: Media;
   createProduct: Product;
   createStore: Store;
@@ -339,6 +393,7 @@ export type Mutation = {
   deleteAddress: Scalars['Boolean']['output'];
   deleteCategory: Scalars['Boolean']['output'];
   deleteCollection: Scalars['Boolean']['output'];
+  deleteCustomer: Scalars['Boolean']['output'];
   deleteMedia: Scalars['Boolean']['output'];
   deleteProduct: Scalars['Boolean']['output'];
   deleteTag: Scalars['Boolean']['output'];
@@ -355,6 +410,7 @@ export type Mutation = {
   updateAddress: AddressOnOwner;
   updateCategory: Category;
   updateCollection: Collection;
+  updateCustomer: Customer;
   updateMedia: Media;
   updatePassword: User;
   updateProduct: Product;
@@ -400,6 +456,11 @@ export type MutationCreateCollectionArgs = {
 };
 
 
+export type MutationCreateCustomerArgs = {
+  input: CustomerCreateInput;
+};
+
+
 export type MutationCreateMediaArgs = {
   input: MediaCreateInput;
 };
@@ -433,6 +494,11 @@ export type MutationDeleteCategoryArgs = {
 
 
 export type MutationDeleteCollectionArgs = {
+  id: Scalars['String']['input'];
+};
+
+
+export type MutationDeleteCustomerArgs = {
   id: Scalars['String']['input'];
 };
 
@@ -487,6 +553,11 @@ export type MutationUpdateCategoryArgs = {
 
 export type MutationUpdateCollectionArgs = {
   input: CollectionUpdateInput;
+};
+
+
+export type MutationUpdateCustomerArgs = {
+  input: CustomerUpdateInput;
 };
 
 
@@ -681,6 +752,7 @@ export type Query = {
   __typename?: 'Query';
   categoryBySlug?: Maybe<Category>;
   collection: Collection;
+  customer: Customer;
   getAddress?: Maybe<AddressOnOwner>;
   getAddresses: Array<AddressOnOwner>;
   /** Get current user */
@@ -693,6 +765,7 @@ export type Query = {
   store: Store;
   storeCategories: Array<Category>;
   storeCollections: Array<Collection>;
+  storeCustomers: Array<Customer>;
   storeTags: Array<Tag>;
   tag: Tag;
   user: User;
@@ -706,6 +779,11 @@ export type QueryCategoryBySlugArgs = {
 
 
 export type QueryCollectionArgs = {
+  id: Scalars['ID']['input'];
+};
+
+
+export type QueryCustomerArgs = {
   id: Scalars['ID']['input'];
 };
 
@@ -776,6 +854,15 @@ export type QueryStoreCategoriesArgs = {
 
 
 export type QueryStoreCollectionsArgs = {
+  cursor?: InputMaybe<Scalars['String']['input']>;
+  skip?: Scalars['Int']['input'];
+  sortOrder?: InputMaybe<SortOrder>;
+  storeId: Scalars['String']['input'];
+  take?: Scalars['Int']['input'];
+};
+
+
+export type QueryStoreCustomersArgs = {
   cursor?: InputMaybe<Scalars['String']['input']>;
   skip?: Scalars['Int']['input'];
   sortOrder?: InputMaybe<SortOrder>;
@@ -1121,6 +1208,9 @@ export type ResolversTypes = {
   CollectionCreateInput: CollectionCreateInput;
   CollectionUpdateInput: CollectionUpdateInput;
   CurrencyPosition: CurrencyPosition;
+  Customer: ResolverTypeWrapper<Customer>;
+  CustomerCreateInput: CustomerCreateInput;
+  CustomerUpdateInput: CustomerUpdateInput;
   DateTime: ResolverTypeWrapper<Scalars['DateTime']['output']>;
   Float: ResolverTypeWrapper<Scalars['Float']['output']>;
   ID: ResolverTypeWrapper<Scalars['ID']['output']>;
@@ -1186,6 +1276,9 @@ export type ResolversParentTypes = {
   CollectionBulkUpdateData: CollectionBulkUpdateData;
   CollectionCreateInput: CollectionCreateInput;
   CollectionUpdateInput: CollectionUpdateInput;
+  Customer: Customer;
+  CustomerCreateInput: CustomerCreateInput;
+  CustomerUpdateInput: CustomerUpdateInput;
   DateTime: Scalars['DateTime']['output'];
   Float: Scalars['Float']['output'];
   ID: Scalars['ID']['output'];
@@ -1291,6 +1384,22 @@ export type CollectionResolvers<ContextType = any, ParentType extends ResolversP
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
+export type CustomerResolvers<ContextType = any, ParentType extends ResolversParentTypes['Customer'] = ResolversParentTypes['Customer']> = {
+  createdAt?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
+  email?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  firstName?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  language?: Resolver<ResolversTypes['Language'], ParentType, ContextType>;
+  lastName?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  marketingEmails?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  marketingSMS?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  notes?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  phoneNumber?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  storeId?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  updatedAt?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
 export interface DateTimeScalarConfig extends GraphQLScalarTypeConfig<ResolversTypes['DateTime'], any> {
   name: 'DateTime';
 }
@@ -1329,6 +1438,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   bulkUpdateProducts?: Resolver<ResolversTypes['Int'], ParentType, ContextType, RequireFields<MutationBulkUpdateProductsArgs, 'input'>>;
   createCategory?: Resolver<ResolversTypes['Category'], ParentType, ContextType, RequireFields<MutationCreateCategoryArgs, 'input'>>;
   createCollection?: Resolver<ResolversTypes['Collection'], ParentType, ContextType, RequireFields<MutationCreateCollectionArgs, 'input'>>;
+  createCustomer?: Resolver<ResolversTypes['Customer'], ParentType, ContextType, RequireFields<MutationCreateCustomerArgs, 'input'>>;
   createMedia?: Resolver<ResolversTypes['Media'], ParentType, ContextType, RequireFields<MutationCreateMediaArgs, 'input'>>;
   createProduct?: Resolver<ResolversTypes['Product'], ParentType, ContextType, RequireFields<MutationCreateProductArgs, 'input'>>;
   createStore?: Resolver<ResolversTypes['Store'], ParentType, ContextType, RequireFields<MutationCreateStoreArgs, 'input'>>;
@@ -1336,6 +1446,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   deleteAddress?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<MutationDeleteAddressArgs, 'ownerId' | 'ownerType' | 'type'>>;
   deleteCategory?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<MutationDeleteCategoryArgs, 'id'>>;
   deleteCollection?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<MutationDeleteCollectionArgs, 'id'>>;
+  deleteCustomer?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<MutationDeleteCustomerArgs, 'id'>>;
   deleteMedia?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<MutationDeleteMediaArgs, 'id'>>;
   deleteProduct?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<MutationDeleteProductArgs, 'id'>>;
   deleteTag?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<MutationDeleteTagArgs, 'id'>>;
@@ -1348,6 +1459,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   updateAddress?: Resolver<ResolversTypes['AddressOnOwner'], ParentType, ContextType, RequireFields<MutationUpdateAddressArgs, 'input'>>;
   updateCategory?: Resolver<ResolversTypes['Category'], ParentType, ContextType, RequireFields<MutationUpdateCategoryArgs, 'input'>>;
   updateCollection?: Resolver<ResolversTypes['Collection'], ParentType, ContextType, RequireFields<MutationUpdateCollectionArgs, 'input'>>;
+  updateCustomer?: Resolver<ResolversTypes['Customer'], ParentType, ContextType, RequireFields<MutationUpdateCustomerArgs, 'input'>>;
   updateMedia?: Resolver<ResolversTypes['Media'], ParentType, ContextType, RequireFields<MutationUpdateMediaArgs, 'input'>>;
   updatePassword?: Resolver<ResolversTypes['User'], ParentType, ContextType, RequireFields<MutationUpdatePasswordArgs, 'input'>>;
   updateProduct?: Resolver<ResolversTypes['Product'], ParentType, ContextType, RequireFields<MutationUpdateProductArgs, 'input'>>;
@@ -1417,6 +1529,7 @@ export type ProductVariantResolvers<ContextType = any, ParentType extends Resolv
 export type QueryResolvers<ContextType = any, ParentType extends ResolversParentTypes['Query'] = ResolversParentTypes['Query']> = {
   categoryBySlug?: Resolver<Maybe<ResolversTypes['Category']>, ParentType, ContextType, RequireFields<QueryCategoryBySlugArgs, 'slug' | 'storeId'>>;
   collection?: Resolver<ResolversTypes['Collection'], ParentType, ContextType, RequireFields<QueryCollectionArgs, 'id'>>;
+  customer?: Resolver<ResolversTypes['Customer'], ParentType, ContextType, RequireFields<QueryCustomerArgs, 'id'>>;
   getAddress?: Resolver<Maybe<ResolversTypes['AddressOnOwner']>, ParentType, ContextType, RequireFields<QueryGetAddressArgs, 'ownerId' | 'ownerType' | 'type'>>;
   getAddresses?: Resolver<Array<ResolversTypes['AddressOnOwner']>, ParentType, ContextType, RequireFields<QueryGetAddressesArgs, 'ownerId' | 'ownerType'>>;
   me?: Resolver<ResolversTypes['User'], ParentType, ContextType>;
@@ -1428,6 +1541,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   store?: Resolver<ResolversTypes['Store'], ParentType, ContextType, RequireFields<QueryStoreArgs, 'id'>>;
   storeCategories?: Resolver<Array<ResolversTypes['Category']>, ParentType, ContextType, RequireFields<QueryStoreCategoriesArgs, 'skip' | 'storeId' | 'take'>>;
   storeCollections?: Resolver<Array<ResolversTypes['Collection']>, ParentType, ContextType, RequireFields<QueryStoreCollectionsArgs, 'skip' | 'storeId' | 'take'>>;
+  storeCustomers?: Resolver<Array<ResolversTypes['Customer']>, ParentType, ContextType, RequireFields<QueryStoreCustomersArgs, 'skip' | 'storeId' | 'take'>>;
   storeTags?: Resolver<Array<ResolversTypes['Tag']>, ParentType, ContextType, RequireFields<QueryStoreTagsArgs, 'skip' | 'storeId' | 'take'>>;
   tag?: Resolver<ResolversTypes['Tag'], ParentType, ContextType, RequireFields<QueryTagArgs, 'id'>>;
   user?: Resolver<ResolversTypes['User'], ParentType, ContextType, RequireFields<QueryUserArgs, 'id'>>;
@@ -1499,6 +1613,7 @@ export type Resolvers<ContextType = any> = {
   AuthSignup?: AuthSignupResolvers<ContextType>;
   Category?: CategoryResolvers<ContextType>;
   Collection?: CollectionResolvers<ContextType>;
+  Customer?: CustomerResolvers<ContextType>;
   DateTime?: GraphQLScalarType;
   Media?: MediaResolvers<ContextType>;
   Mutation?: MutationResolvers<ContextType>;

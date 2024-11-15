@@ -14,6 +14,7 @@ import { CollectionModule } from '../collection/collection.module';
 import { TagModule } from '../tag/tag.module';
 import { SlugModule } from '../slug/slug.module';
 import { AuthorizationModule } from '../authorization/authorization.module';
+import { CustomerModule } from '../customer/customer.module';
 
 @Module({
   imports: [
@@ -51,6 +52,7 @@ import { AuthorizationModule } from '../authorization/authorization.module';
     ProductModule,
     CollectionModule,
     TagModule,
+    CustomerModule,
   ],
   providers: [],
 })
