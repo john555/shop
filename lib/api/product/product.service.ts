@@ -180,15 +180,15 @@ export class ProductService {
       let slug = input.slug;
       if (!slug) {
         slug = await this.slugService.createUniqueSlug(input.title, (s) =>
-          this.checkSlugUnique(s)
+          this.isSlugUnique(s, input.storeId)
         );
       } else if (!this.slugService.isValidSlug(slug)) {
         throw new BadRequestException(
           'Invalid slug format. Use only lowercase letters, numbers, and hyphens.'
         );
-      } else if (!(await this.checkSlugUnique(slug))) {
+      } else if (!(await this.isSlugUnique(slug, input.storeId))) {
         slug = await this.slugService.createUniqueSlug(slug, (s) =>
-          this.checkSlugUnique(s)
+          this.isSlugUnique(s, input.storeId)
         );
       }
 
@@ -274,9 +274,9 @@ export class ProductService {
             'Invalid slug format. Use only lowercase letters, numbers, and hyphens.'
           );
         }
-        if (!(await this.checkSlugUnique(slug, input.id))) {
+        if (!(await this.isSlugUnique(slug, product.storeId, input.id))) {
           slug = await this.slugService.createUniqueSlug(slug, (s) =>
-            this.checkSlugUnique(s, input.id)
+            this.isSlugUnique(s, product.storeId, input.id)
           );
         }
       }
@@ -480,14 +480,16 @@ export class ProductService {
   }
 
   // Helper Methods
-  private async checkSlugUnique(
+  private async isSlugUnique(
     slug: string,
+    storeId: string,
     excludeId?: string
   ): Promise<boolean> {
     try {
       const product = await this.prisma.product.findFirst({
         where: {
           slug,
+          storeId,
           id: excludeId ? { not: excludeId } : undefined,
         },
       });

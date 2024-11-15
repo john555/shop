@@ -84,16 +84,6 @@ export class CollectionResolver {
     @Context() context: AuthContext
   ): Promise<Collection> {
     try {
-      const isSlugUnique = await this.collectionService.isSlugUnique(
-        input.slug,
-        input.storeId
-      );
-      if (!isSlugUnique) {
-        throw new BadRequestException(
-          'Collection slug is already taken in this store'
-        );
-      }
-
       return this.collectionService.create(input);
     } catch (error) {
       this.logger.error('Failed to create collection:', error);

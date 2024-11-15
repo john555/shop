@@ -1,9 +1,10 @@
-import { Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '@/api/prisma/prisma.service';
 import { Collection, Product, Prisma, Store } from '@prisma/client';
 import { PaginationArgs } from '@/api/pagination/pagination.args';
 import { paginate } from '@/api/pagination/paginate';
 import { CollectionBulkUpdateData } from './collection.dto';
+import { SlugService } from '@/api/slug/slug.service';
 
 type CollectionWithRelations = Collection & {
   store?: Store;
@@ -14,7 +15,10 @@ type CollectionWithRelations = Collection & {
 export class CollectionService {
   private readonly logger = new Logger(CollectionService.name);
 
-  constructor(private readonly prismaService: PrismaService) {}
+  constructor(
+    private readonly prismaService: PrismaService,
+    private readonly slugService: SlugService
+  ) {}
 
   async getCollectionById(id: string): Promise<CollectionWithRelations | null> {
     try {
@@ -60,10 +64,27 @@ export class CollectionService {
     data: Prisma.CollectionUncheckedCreateInput & { productIds?: string[] }
   ): Promise<CollectionWithRelations> {
     try {
+      // Generate or validate slug
+      let slug = data.slug;
+      if (!slug) {
+        slug = await this.slugService.createUniqueSlug(data.name, (s) =>
+          this.isSlugUnique(s, data.storeId)
+        );
+      } else if (!this.slugService.isValidSlug(slug)) {
+        throw new BadRequestException(
+          'Invalid slug format. Use only lowercase letters, numbers, and hyphens.'
+        );
+      } else if (!(await this.isSlugUnique(slug, data.storeId))) {
+        slug = await this.slugService.createUniqueSlug(slug, (s) =>
+          this.isSlugUnique(s, data.storeId)
+        );
+      }
+
       const { productIds, ...collectionData } = data;
       const collection = await this.prismaService.collection.create({
         data: {
           ...collectionData,
+          slug,
           products: productIds
             ? { connect: productIds.map((id) => ({ id })) }
             : undefined,
