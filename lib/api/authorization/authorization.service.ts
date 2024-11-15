@@ -44,6 +44,22 @@ export class AuthorizationService {
     return collection?.store?.ownerId === userId;
   }
 
+  async canAccessCustomer(
+    userId: string,
+    customerId: string
+  ): Promise<boolean> {
+    const customer = await this.prisma.customer.findUnique({
+      where: { id: customerId },
+      select: {
+        store: {
+          select: { ownerId: true },
+        },
+      },
+    });
+
+    return customer?.store?.ownerId === userId;
+  }
+
   // Bulk authorization methods
   async validateBulkStoreAccess(
     userId: string,
@@ -166,6 +182,41 @@ export class AuthorizationService {
     if (unauthorizedIds.length > 0) {
       throw new UnauthorizedException(
         `Not authorized to access collections: ${unauthorizedIds.join(', ')}`
+      );
+    }
+  }
+
+  async validateBulkCustomerAccess(
+    userId: string,
+    customerIds: string[]
+  ): Promise<void> {
+    const customers = await this.prisma.customer.findMany({
+      where: { id: { in: customerIds } },
+      select: {
+        id: true,
+        store: {
+          select: { ownerId: true },
+        },
+      },
+    });
+
+    // Check if all customers were found
+    if (customers.length !== customerIds.length) {
+      const foundIds = new Set(customers.map((customer) => customer.id));
+      const missingIds = customerIds.filter((id) => !foundIds.has(id));
+      throw new UnauthorizedException(
+        `Customers not found: ${missingIds.join(', ')}`
+      );
+    }
+
+    // Check if user has access to all customers
+    const unauthorizedIds = customers
+      .filter((customer) => customer.store.ownerId !== userId)
+      .map((customer) => customer.id);
+
+    if (unauthorizedIds.length > 0) {
+      throw new UnauthorizedException(
+        `Not authorized to access customers: ${unauthorizedIds.join(', ')}`
       );
     }
   }
