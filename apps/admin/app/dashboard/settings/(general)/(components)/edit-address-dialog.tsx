@@ -22,20 +22,7 @@ import {
 import { useStore } from '@/admin/hooks/store/use-store';
 import { useEffect } from 'react';
 import { AddressOwnerType, AddressType } from '@/types/api';
-
-const countries = [
-  { value: 'UG', label: 'Uganda' },
-  { value: 'KE', label: 'Kenya' },
-  { value: 'TZ', label: 'Tanzania' },
-  { value: 'RW', label: 'Rwanda' },
-  { value: 'BI', label: 'Burundi' },
-  { value: 'SS', label: 'South Sudan' },
-  { value: 'ET', label: 'Ethiopia' },
-  { value: 'SO', label: 'Somalia' },
-  { value: 'CD', label: 'Democratic Republic of the Congo' },
-  { value: 'US', label: 'United States' },
-  { value: 'GB', label: 'United Kingdom' },
-];
+import { COUNTRIES } from '@/common/constants';
 
 export const addressSchema = z.object({
   country: z.string().min(1, 'Country is required'),
@@ -129,9 +116,9 @@ export function EditAddressDialog({
                     <SelectValue placeholder="Select country" />
                   </SelectTrigger>
                   <SelectContent>
-                    {countries.map((country) => (
-                      <SelectItem key={country.value} value={country.label}>
-                        {country.label}
+                    {COUNTRIES.map((country) => (
+                      <SelectItem key={country.code} value={country.code}>
+                        {country.flag} {country.name}
                       </SelectItem>
                     ))}
                   </SelectContent>
