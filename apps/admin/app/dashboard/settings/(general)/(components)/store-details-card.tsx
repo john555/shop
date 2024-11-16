@@ -16,7 +16,7 @@ import { EditProfileDialog } from './edit-profile-dialog';
 import { EditAddressDialog } from './edit-address-dialog';
 import { EditSocialMediaDialog } from './edit-social-media-dialog';
 import { AddressType } from '@/types/api';
-import { getCountryNameFromCode } from '@/common/constants';
+import { getCountryFromCode } from '@/common/constants';
 
 export function StoreDetailsCard() {
   const { store, loading } = useStore();
@@ -81,7 +81,7 @@ export function StoreDetailsCard() {
                       address.line1,
                       [address.line2, address.city].filter(Boolean).join(', '),
                       address.state,
-                      [getCountryNameFromCode(address.country), address.zipCode].filter(Boolean).join(' '),
+                      [getCountryFromCode(address.country)?.name, address.zipCode].filter(Boolean).join(' '),
                     ].filter(Boolean).join(', ')}
                   </div>
                 ) : (

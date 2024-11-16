@@ -8,66 +8,71 @@ export const COUNTRIES: CountryMetadata[] = [
   {
     code: 'UG',
     flag: '🇺🇬',
-    phoneCode: '+256',
+    phoneCode: '256',
     name: 'Uganda',
   },
   {
     code: 'KE',
     flag: '🇰🇪',
-    phoneCode: '+254',
+    phoneCode: '254',
     name: 'Kenya',
   },
   {
     code: 'TZ',
     flag: '🇹🇿',
-    phoneCode: '+255',
+    phoneCode: '255',
     name: 'Tanzania',
   },
   {
     code: 'RW',
     flag: '🇷🇼',
-    phoneCode: '+250',
+    phoneCode: '250',
     name: 'Rwanda',
   },
   {
     code: 'BI',
     flag: '🇧🇮',
-    phoneCode: '+257',
+    phoneCode: '257',
     name: 'Burundi',
   },
   {
     code: 'SS',
     flag: '🇸🇸',
-    phoneCode: '+211',
+    phoneCode: '211',
     name: 'South Sudan',
   },
   {
     code: 'ET',
     flag: '🇪🇹',
-    phoneCode: '+251',
+    phoneCode: '251',
     name: 'Ethiopia',
   },
   {
     code: 'ER',
     flag: '🇪🇷',
-    phoneCode: '+291',
+    phoneCode: '291',
     name: 'Eritrea',
   },
   {
     code: 'DJ',
     flag: '🇩🇯',
-    phoneCode: '+253',
+    phoneCode: '253',
     name: 'Djibouti',
   },
   {
     code: 'SO',
     flag: '🇸🇴',
-    phoneCode: '+252',
+    phoneCode: '252',
     name: 'Somalia',
   },
 ];
 
-export function getCountryNameFromCode(code: string): string | undefined {
+export function getCountryFromCode(code: string): CountryMetadata | undefined {
   const country = COUNTRIES.find((country) => country.code === code);
-  return country ? country.name : undefined;
+  return country ? country : undefined;
+}
+
+export function getCountryFromPhoneCode(phoneCode: string): CountryMetadata | undefined {
+  const country = COUNTRIES.find((country) => country.phoneCode === phoneCode);
+  return country ? country : undefined;
 }
