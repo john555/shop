@@ -1,3 +1,4 @@
+import { Store } from '@/types/api';
 import { gql, useMutation, useQuery } from '@apollo/client';
 
 const UPDATE_STORE = gql`
@@ -125,7 +126,7 @@ export function useStore() {
   });
 
   return {
-    store: data?.myStores?.[0],
+    store: data?.myStores?.[0] as Store,
     loading,
     updating: updatingStore || updatingStoreAddress,
     error: loadingError || updateError || updateAddressError,
