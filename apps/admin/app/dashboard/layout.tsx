@@ -17,6 +17,7 @@ import {
   Box,
   List,
   Settings,
+  Activity,
 } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
@@ -91,6 +92,7 @@ const navLinks = [
   },
   { href: '/dashboard/orders', icon: ShoppingCart, label: 'Orders' },
   { href: '/dashboard/customers', icon: Users, label: 'Customers' },
+  { href: '/dashboard/activity', icon: Activity, label: 'Activity' },
 ];
 
 export default function DashboardLayout({
