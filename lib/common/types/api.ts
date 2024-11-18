@@ -18,7 +18,7 @@ export type Scalars = {
   DateTime: { input: any; output: any; }
 };
 
-/** Address */
+/** Address information */
 export type Address = {
   __typename?: 'Address';
   city?: Maybe<Scalars['String']['output']>;
@@ -33,25 +33,18 @@ export type Address = {
 };
 
 export type AddressInput = {
-  /** City/town/municipality */
   city?: InputMaybe<Scalars['String']['input']>;
-  /** Country name or ISO code */
   country: Scalars['String']['input'];
-  /** Street address, building number */
   line1?: InputMaybe<Scalars['String']['input']>;
-  /** Suite, apartment, unit number */
   line2?: InputMaybe<Scalars['String']['input']>;
-  /** State/province/region */
   state?: InputMaybe<Scalars['String']['input']>;
-  /** Postal/ZIP code */
   zipCode?: InputMaybe<Scalars['String']['input']>;
 };
 
-/** Address relationship with owner */
+/** Address association with an owner entity */
 export type AddressOnOwner = {
   __typename?: 'AddressOnOwner';
-  address: Address;
-  addressId: Scalars['String']['output'];
+  address?: Maybe<Address>;
   createdAt: Scalars['DateTime']['output'];
   id: Scalars['ID']['output'];
   isDefault: Scalars['Boolean']['output'];
@@ -61,7 +54,22 @@ export type AddressOnOwner = {
   updatedAt: Scalars['DateTime']['output'];
 };
 
-/** Type of entity that owns the address */
+export type AddressOnOwnerCreateInput = {
+  address: AddressInput;
+  isDefault?: InputMaybe<Scalars['Boolean']['input']>;
+  ownerId: Scalars['String']['input'];
+  ownerType: AddressOwnerType;
+  type: AddressType;
+};
+
+export type AddressOnOwnerUpdateInput = {
+  address?: InputMaybe<AddressInput>;
+  id: Scalars['ID']['input'];
+  isDefault?: InputMaybe<Scalars['Boolean']['input']>;
+  type?: InputMaybe<AddressType>;
+};
+
+/** Type of entity that owns the address (STORE, CUSTOMER, ORDER, etc.) */
 export enum AddressOwnerType {
   Customer = 'CUSTOMER',
   Order = 'ORDER',
@@ -70,7 +78,7 @@ export enum AddressOwnerType {
   Vehicle = 'VEHICLE'
 }
 
-/** Type of address (billing, shipping, etc.) */
+/** Type of address (BILLING, SHIPPING, PICKUP, etc.) */
 export enum AddressType {
   Billing = 'BILLING',
   Pickup = 'PICKUP',
@@ -383,6 +391,7 @@ export type Mutation = {
   bulkDeleteProducts: Scalars['Int']['output'];
   bulkUpdateCollections: Scalars['Int']['output'];
   bulkUpdateProducts: Scalars['Int']['output'];
+  createAddressOnOwner: AddressOnOwner;
   createCategory: Category;
   createCollection: Collection;
   createCustomer: Customer;
@@ -390,7 +399,7 @@ export type Mutation = {
   createProduct: Product;
   createStore: Store;
   createTag: Tag;
-  deleteAddress: Scalars['Boolean']['output'];
+  deleteAddressOnOwner: Scalars['Boolean']['output'];
   deleteCategory: Scalars['Boolean']['output'];
   deleteCollection: Scalars['Boolean']['output'];
   deleteCustomer: Scalars['Boolean']['output'];
@@ -407,7 +416,7 @@ export type Mutation = {
   signout: AuthSignout;
   /** Sign up new user */
   signup: AuthSignup;
-  updateAddress: AddressOnOwner;
+  updateAddressOnOwner: AddressOnOwner;
   updateCategory: Category;
   updateCollection: Collection;
   updateCustomer: Customer;
@@ -446,6 +455,11 @@ export type MutationBulkUpdateProductsArgs = {
 };
 
 
+export type MutationCreateAddressOnOwnerArgs = {
+  input: AddressOnOwnerCreateInput;
+};
+
+
 export type MutationCreateCategoryArgs = {
   input: CategoryCreateInput;
 };
@@ -481,10 +495,8 @@ export type MutationCreateTagArgs = {
 };
 
 
-export type MutationDeleteAddressArgs = {
-  ownerId: Scalars['ID']['input'];
-  ownerType: AddressOwnerType;
-  type: AddressType;
+export type MutationDeleteAddressOnOwnerArgs = {
+  id: Scalars['String']['input'];
 };
 
 
@@ -541,8 +553,8 @@ export type MutationSignupArgs = {
 };
 
 
-export type MutationUpdateAddressArgs = {
-  input: UpdateAddressInput;
+export type MutationUpdateAddressOnOwnerArgs = {
+  input: AddressOnOwnerUpdateInput;
 };
 
 
@@ -750,17 +762,17 @@ export type ProductVariantInput = {
 
 export type Query = {
   __typename?: 'Query';
+  addressOnOwner: AddressOnOwner;
   categoryBySlug?: Maybe<Category>;
   collection: Collection;
   customer: Customer;
-  getAddress?: Maybe<AddressOnOwner>;
-  getAddresses: Array<AddressOnOwner>;
   /** Get current user */
   me: User;
   media?: Maybe<Media>;
   mediaByOwner: Array<Media>;
   myStoreProducts: Array<Product>;
   myStores: Array<Store>;
+  ownerAddresses: Array<AddressOnOwner>;
   product?: Maybe<Product>;
   store: Store;
   storeCategories: Array<Category>;
@@ -769,6 +781,11 @@ export type Query = {
   storeTags: Array<Tag>;
   tag: Tag;
   user: User;
+};
+
+
+export type QueryAddressOnOwnerArgs = {
+  id: Scalars['ID']['input'];
 };
 
 
@@ -785,19 +802,6 @@ export type QueryCollectionArgs = {
 
 export type QueryCustomerArgs = {
   id: Scalars['ID']['input'];
-};
-
-
-export type QueryGetAddressArgs = {
-  ownerId: Scalars['ID']['input'];
-  ownerType: AddressOwnerType;
-  type: AddressType;
-};
-
-
-export type QueryGetAddressesArgs = {
-  ownerId: Scalars['ID']['input'];
-  ownerType: AddressOwnerType;
 };
 
 
@@ -831,6 +835,12 @@ export type QueryMyStoresArgs = {
   skip?: Scalars['Int']['input'];
   sortOrder?: InputMaybe<SortOrder>;
   take?: Scalars['Int']['input'];
+};
+
+
+export type QueryOwnerAddressesArgs = {
+  ownerId: Scalars['String']['input'];
+  ownerType: AddressOwnerType;
 };
 
 
@@ -1042,19 +1052,6 @@ export enum UnitSystem {
   Metric = 'METRIC'
 }
 
-export type UpdateAddressInput = {
-  /** Address details */
-  address: AddressInput;
-  /** Whether this is the default address of this type */
-  isDefault?: InputMaybe<Scalars['Boolean']['input']>;
-  /** ID of the entity that owns the address */
-  ownerId: Scalars['ID']['input'];
-  /** Type of entity that owns the address */
-  ownerType: AddressOwnerType;
-  /** Type of address */
-  type: AddressType;
-};
-
 /** user */
 export type User = {
   __typename?: 'User';
@@ -1188,6 +1185,8 @@ export type ResolversTypes = {
   Address: ResolverTypeWrapper<Address>;
   AddressInput: AddressInput;
   AddressOnOwner: ResolverTypeWrapper<AddressOnOwner>;
+  AddressOnOwnerCreateInput: AddressOnOwnerCreateInput;
+  AddressOnOwnerUpdateInput: AddressOnOwnerUpdateInput;
   AddressOwnerType: AddressOwnerType;
   AddressType: AddressType;
   AuthSignin: ResolverTypeWrapper<AuthSignin>;
@@ -1247,7 +1246,6 @@ export type ResolversTypes = {
   TagUpdateInput: TagUpdateInput;
   Theme: Theme;
   UnitSystem: UnitSystem;
-  UpdateAddressInput: UpdateAddressInput;
   User: ResolverTypeWrapper<User>;
   UserPasswordUpdateInput: UserPasswordUpdateInput;
   UserUpdateInput: UserUpdateInput;
@@ -1259,6 +1257,8 @@ export type ResolversParentTypes = {
   Address: Address;
   AddressInput: AddressInput;
   AddressOnOwner: AddressOnOwner;
+  AddressOnOwnerCreateInput: AddressOnOwnerCreateInput;
+  AddressOnOwnerUpdateInput: AddressOnOwnerUpdateInput;
   AuthSignin: AuthSignin;
   AuthSigninInput: AuthSigninInput;
   AuthSignout: AuthSignout;
@@ -1305,7 +1305,6 @@ export type ResolversParentTypes = {
   Tag: Tag;
   TagCreateInput: TagCreateInput;
   TagUpdateInput: TagUpdateInput;
-  UpdateAddressInput: UpdateAddressInput;
   User: User;
   UserPasswordUpdateInput: UserPasswordUpdateInput;
   UserUpdateInput: UserUpdateInput;
@@ -1325,8 +1324,7 @@ export type AddressResolvers<ContextType = any, ParentType extends ResolversPare
 };
 
 export type AddressOnOwnerResolvers<ContextType = any, ParentType extends ResolversParentTypes['AddressOnOwner'] = ResolversParentTypes['AddressOnOwner']> = {
-  address?: Resolver<ResolversTypes['Address'], ParentType, ContextType>;
-  addressId?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  address?: Resolver<Maybe<ResolversTypes['Address']>, ParentType, ContextType>;
   createdAt?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   isDefault?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
@@ -1436,6 +1434,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   bulkDeleteProducts?: Resolver<ResolversTypes['Int'], ParentType, ContextType, RequireFields<MutationBulkDeleteProductsArgs, 'input'>>;
   bulkUpdateCollections?: Resolver<ResolversTypes['Int'], ParentType, ContextType, RequireFields<MutationBulkUpdateCollectionsArgs, 'input'>>;
   bulkUpdateProducts?: Resolver<ResolversTypes['Int'], ParentType, ContextType, RequireFields<MutationBulkUpdateProductsArgs, 'input'>>;
+  createAddressOnOwner?: Resolver<ResolversTypes['AddressOnOwner'], ParentType, ContextType, RequireFields<MutationCreateAddressOnOwnerArgs, 'input'>>;
   createCategory?: Resolver<ResolversTypes['Category'], ParentType, ContextType, RequireFields<MutationCreateCategoryArgs, 'input'>>;
   createCollection?: Resolver<ResolversTypes['Collection'], ParentType, ContextType, RequireFields<MutationCreateCollectionArgs, 'input'>>;
   createCustomer?: Resolver<ResolversTypes['Customer'], ParentType, ContextType, RequireFields<MutationCreateCustomerArgs, 'input'>>;
@@ -1443,7 +1442,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   createProduct?: Resolver<ResolversTypes['Product'], ParentType, ContextType, RequireFields<MutationCreateProductArgs, 'input'>>;
   createStore?: Resolver<ResolversTypes['Store'], ParentType, ContextType, RequireFields<MutationCreateStoreArgs, 'input'>>;
   createTag?: Resolver<ResolversTypes['Tag'], ParentType, ContextType, RequireFields<MutationCreateTagArgs, 'input'>>;
-  deleteAddress?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<MutationDeleteAddressArgs, 'ownerId' | 'ownerType' | 'type'>>;
+  deleteAddressOnOwner?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<MutationDeleteAddressOnOwnerArgs, 'id'>>;
   deleteCategory?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<MutationDeleteCategoryArgs, 'id'>>;
   deleteCollection?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<MutationDeleteCollectionArgs, 'id'>>;
   deleteCustomer?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<MutationDeleteCustomerArgs, 'id'>>;
@@ -1456,7 +1455,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   signin?: Resolver<ResolversTypes['AuthSignin'], ParentType, ContextType, RequireFields<MutationSigninArgs, 'input'>>;
   signout?: Resolver<ResolversTypes['AuthSignout'], ParentType, ContextType>;
   signup?: Resolver<ResolversTypes['AuthSignup'], ParentType, ContextType, RequireFields<MutationSignupArgs, 'input'>>;
-  updateAddress?: Resolver<ResolversTypes['AddressOnOwner'], ParentType, ContextType, RequireFields<MutationUpdateAddressArgs, 'input'>>;
+  updateAddressOnOwner?: Resolver<ResolversTypes['AddressOnOwner'], ParentType, ContextType, RequireFields<MutationUpdateAddressOnOwnerArgs, 'input'>>;
   updateCategory?: Resolver<ResolversTypes['Category'], ParentType, ContextType, RequireFields<MutationUpdateCategoryArgs, 'input'>>;
   updateCollection?: Resolver<ResolversTypes['Collection'], ParentType, ContextType, RequireFields<MutationUpdateCollectionArgs, 'input'>>;
   updateCustomer?: Resolver<ResolversTypes['Customer'], ParentType, ContextType, RequireFields<MutationUpdateCustomerArgs, 'input'>>;
@@ -1527,16 +1526,16 @@ export type ProductVariantResolvers<ContextType = any, ParentType extends Resolv
 };
 
 export type QueryResolvers<ContextType = any, ParentType extends ResolversParentTypes['Query'] = ResolversParentTypes['Query']> = {
+  addressOnOwner?: Resolver<ResolversTypes['AddressOnOwner'], ParentType, ContextType, RequireFields<QueryAddressOnOwnerArgs, 'id'>>;
   categoryBySlug?: Resolver<Maybe<ResolversTypes['Category']>, ParentType, ContextType, RequireFields<QueryCategoryBySlugArgs, 'slug' | 'storeId'>>;
   collection?: Resolver<ResolversTypes['Collection'], ParentType, ContextType, RequireFields<QueryCollectionArgs, 'id'>>;
   customer?: Resolver<ResolversTypes['Customer'], ParentType, ContextType, RequireFields<QueryCustomerArgs, 'id'>>;
-  getAddress?: Resolver<Maybe<ResolversTypes['AddressOnOwner']>, ParentType, ContextType, RequireFields<QueryGetAddressArgs, 'ownerId' | 'ownerType' | 'type'>>;
-  getAddresses?: Resolver<Array<ResolversTypes['AddressOnOwner']>, ParentType, ContextType, RequireFields<QueryGetAddressesArgs, 'ownerId' | 'ownerType'>>;
   me?: Resolver<ResolversTypes['User'], ParentType, ContextType>;
   media?: Resolver<Maybe<ResolversTypes['Media']>, ParentType, ContextType, RequireFields<QueryMediaArgs, 'id'>>;
   mediaByOwner?: Resolver<Array<ResolversTypes['Media']>, ParentType, ContextType, RequireFields<QueryMediaByOwnerArgs, 'ownerId' | 'ownerType' | 'skip' | 'take'>>;
   myStoreProducts?: Resolver<Array<ResolversTypes['Product']>, ParentType, ContextType, RequireFields<QueryMyStoreProductsArgs, 'skip' | 'storeId' | 'take'>>;
   myStores?: Resolver<Array<ResolversTypes['Store']>, ParentType, ContextType, RequireFields<QueryMyStoresArgs, 'skip' | 'take'>>;
+  ownerAddresses?: Resolver<Array<ResolversTypes['AddressOnOwner']>, ParentType, ContextType, RequireFields<QueryOwnerAddressesArgs, 'ownerId' | 'ownerType'>>;
   product?: Resolver<Maybe<ResolversTypes['Product']>, ParentType, ContextType, RequireFields<QueryProductArgs, 'id'>>;
   store?: Resolver<ResolversTypes['Store'], ParentType, ContextType, RequireFields<QueryStoreArgs, 'id'>>;
   storeCategories?: Resolver<Array<ResolversTypes['Category']>, ParentType, ContextType, RequireFields<QueryStoreCategoriesArgs, 'skip' | 'storeId' | 'take'>>;

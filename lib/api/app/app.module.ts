@@ -15,6 +15,7 @@ import { TagModule } from '../tag/tag.module';
 import { SlugModule } from '../slug/slug.module';
 import { AuthorizationModule } from '../authorization/authorization.module';
 import { CustomerModule } from '../customer/customer.module';
+import { AddressOnOwnerModule } from '../address-on-owner/address-on-owner.module';
 
 @Module({
   imports: [
@@ -53,6 +54,7 @@ import { CustomerModule } from '../customer/customer.module';
     CollectionModule,
     TagModule,
     CustomerModule,
+    AddressOnOwnerModule,
   ],
   providers: [],
 })

@@ -10,7 +10,6 @@ import {
 import {
   Logger,
   NotFoundException,
-  UseGuards,
   BadRequestException,
 } from '@nestjs/common';
 import { Store } from './store.entity';
@@ -19,20 +18,19 @@ import {
   StoreGetArgs,
   StoreCreateInput,
   StoreUpdateInput,
-  GetStoreBySlugArgs,
 } from './store.dto';
 import { PaginationArgs } from '@/api/pagination/pagination.args';
-import { JwtAuthGuard } from '../authentication/guard/jwt-auth.guard';
 import { AuthContext } from '../utils/auth';
 import { AddressOwnerType } from '@prisma/client';
-import { AddressOnOwner } from '../address/entities/address-owner.entity';
-import { AddressService } from '../address/address.service';
+
 import { User } from '../user/user.entity';
 import { Category } from '../category/category.entity';
 import { Collection } from '../collection/collection.entity';
 import { Tag } from '../tag/tag.entity';
 import { Product } from '../product/entities/product.entity';
 import { Auth, AuthStore } from '../authorization/decorators/auth.decorator';
+import { AddressOnOwnerService } from '../address-on-owner/address-on-owner.service';
+import { AddressOnOwner } from '../address-on-owner/address-on-owner.entity';
 
 @Resolver(() => Store)
 export class StoreResolver {
@@ -40,7 +38,7 @@ export class StoreResolver {
 
   constructor(
     private readonly storeService: StoreService,
-    private readonly addressService: AddressService
+    private readonly addressOnOwnerService: AddressOnOwnerService
   ) {}
 
   // Query Methods
@@ -126,7 +124,7 @@ export class StoreResolver {
 
   @ResolveField(() => [AddressOnOwner])
   async addresses(@Parent() store: Store): Promise<AddressOnOwner[]> {
-    return this.addressService.findOwnerAddresses(
+    return this.addressOnOwnerService.findOwnerAddresses(
       store.id,
       AddressOwnerType.STORE
     );

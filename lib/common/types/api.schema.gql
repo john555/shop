@@ -2,7 +2,7 @@
 # THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
 # ------------------------------------------------------
 
-"""Address"""
+"""Address information"""
 type Address {
   city: String
   country: String!
@@ -16,29 +16,17 @@ type Address {
 }
 
 input AddressInput {
-  """City/town/municipality"""
   city: String
-
-  """Country name or ISO code"""
   country: String!
-
-  """Street address, building number"""
   line1: String
-
-  """Suite, apartment, unit number"""
   line2: String
-
-  """State/province/region"""
   state: String
-
-  """Postal/ZIP code"""
   zipCode: String
 }
 
-"""Address relationship with owner"""
+"""Address association with an owner entity"""
 type AddressOnOwner {
-  address: Address!
-  addressId: String!
+  address: Address
   createdAt: DateTime!
   id: ID!
   isDefault: Boolean!
@@ -48,7 +36,22 @@ type AddressOnOwner {
   updatedAt: DateTime!
 }
 
-"""Type of entity that owns the address"""
+input AddressOnOwnerCreateInput {
+  address: AddressInput!
+  isDefault: Boolean
+  ownerId: String!
+  ownerType: AddressOwnerType!
+  type: AddressType!
+}
+
+input AddressOnOwnerUpdateInput {
+  address: AddressInput
+  id: ID!
+  isDefault: Boolean
+  type: AddressType
+}
+
+"""Type of entity that owns the address (STORE, CUSTOMER, ORDER, etc.)"""
 enum AddressOwnerType {
   CUSTOMER
   ORDER
@@ -57,7 +60,7 @@ enum AddressOwnerType {
   VEHICLE
 }
 
-"""Type of address (billing, shipping, etc.)"""
+"""Type of address (BILLING, SHIPPING, PICKUP, etc.)"""
 enum AddressType {
   BILLING
   PICKUP
@@ -398,6 +401,7 @@ type Mutation {
   bulkDeleteProducts(input: BulkProductDeleteInput!): Int!
   bulkUpdateCollections(input: BulkCollectionUpdateInput!): Int!
   bulkUpdateProducts(input: BulkProductUpdateInput!): Int!
+  createAddressOnOwner(input: AddressOnOwnerCreateInput!): AddressOnOwner!
   createCategory(input: CategoryCreateInput!): Category!
   createCollection(input: CollectionCreateInput!): Collection!
   createCustomer(input: CustomerCreateInput!): Customer!
@@ -405,16 +409,7 @@ type Mutation {
   createProduct(input: ProductCreateInput!): Product!
   createStore(input: StoreCreateInput!): Store!
   createTag(input: TagCreateInput!): Tag!
-  deleteAddress(
-    """ID of the entity that owns the address"""
-    ownerId: ID!
-
-    """Type of entity that owns the address"""
-    ownerType: AddressOwnerType!
-
-    """Type of address to fetch"""
-    type: AddressType!
-  ): Boolean!
+  deleteAddressOnOwner(id: String!): Boolean!
   deleteCategory(id: String!): Boolean!
   deleteCollection(id: String!): Boolean!
   deleteCustomer(id: String!): Boolean!
@@ -435,7 +430,7 @@ type Mutation {
 
   """Sign up new user"""
   signup(input: AuthSignupInput!): AuthSignup!
-  updateAddress(input: UpdateAddressInput!): AddressOnOwner!
+  updateAddressOnOwner(input: AddressOnOwnerUpdateInput!): AddressOnOwner!
   updateCategory(input: CategoryUpdateInput!): Category!
   updateCollection(input: CollectionUpdateInput!): Collection!
   updateCustomer(input: CustomerUpdateInput!): Customer!
@@ -618,26 +613,10 @@ input ProductVariantInput {
 }
 
 type Query {
+  addressOnOwner(id: ID!): AddressOnOwner!
   categoryBySlug(slug: String!, storeId: ID!): Category
   collection(id: ID!): Collection!
   customer(id: ID!): Customer!
-  getAddress(
-    """ID of the entity that owns the address"""
-    ownerId: ID!
-
-    """Type of entity that owns the address"""
-    ownerType: AddressOwnerType!
-
-    """Type of address to fetch"""
-    type: AddressType!
-  ): AddressOnOwner
-  getAddresses(
-    """ID of the entity that owns the addresses"""
-    ownerId: ID!
-
-    """Type of entity that owns the addresses"""
-    ownerType: AddressOwnerType!
-  ): [AddressOnOwner!]!
 
   """Get current user"""
   me: User!
@@ -645,6 +624,7 @@ type Query {
   mediaByOwner(cursor: String, ownerId: String!, ownerType: MediaOwnerType!, skip: Int! = 0, sortOrder: SortOrder, take: Int! = 25): [Media!]!
   myStoreProducts(cursor: String, filters: ProductFiltersInput, skip: Int! = 0, sortOrder: SortOrder, storeId: String!, take: Int! = 25): [Product!]!
   myStores(cursor: String, skip: Int! = 0, sortOrder: SortOrder, take: Int! = 25): [Store!]!
+  ownerAddresses(ownerId: String!, ownerType: AddressOwnerType!): [AddressOnOwner!]!
   product(id: String!): Product
   store(id: ID!): Store!
   storeCategories(cursor: String, skip: Int! = 0, sortOrder: SortOrder, storeId: String!, take: Int! = 25): [Category!]!
@@ -833,23 +813,6 @@ enum Theme {
 enum UnitSystem {
   IMPERIAL
   METRIC
-}
-
-input UpdateAddressInput {
-  """Address details"""
-  address: AddressInput!
-
-  """Whether this is the default address of this type"""
-  isDefault: Boolean = false
-
-  """ID of the entity that owns the address"""
-  ownerId: ID!
-
-  """Type of entity that owns the address"""
-  ownerType: AddressOwnerType!
-
-  """Type of address"""
-  type: AddressType!
 }
 
 """user"""

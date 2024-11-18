@@ -18,13 +18,14 @@ import {
 import { PrismaService } from '@/api/prisma/prisma.service';
 import { PaginationArgs } from '@/api/pagination/pagination.args';
 import { paginate } from '@/api/pagination/paginate';
-import { AddressService } from '../address/address.service';
-import { AddressInput } from '../address/dto/address.dto';
+
 import {
   StoreCreateData,
   StoreUpdateData,
   StoreCurrencySettings,
 } from './store.types';
+import { AddressOnOwnerService } from '../address-on-owner/address-on-owner.service';
+import { AddressOnOwnerCreateInput } from '../address-on-owner/address-on-owner.dto';
 
 const DEFAULT_CURRENCY_SYMBOLS: Record<StoreCurrency, string> = {
   KES: 'KSh',
@@ -41,7 +42,7 @@ export class StoreService {
 
   constructor(
     private readonly prismaService: PrismaService,
-    private readonly addressService: AddressService
+    private readonly addressOnOwnerService: AddressOnOwnerService
   ) {}
 
   async findById(id: string): Promise<Store | null> {
@@ -339,7 +340,7 @@ export class StoreService {
   async updateStoreAddress(
     storeId: string,
     type: AddressType,
-    addressData: AddressInput,
+    addressData: AddressOnOwnerCreateInput,
     
   ): Promise<Store> {
     try {
@@ -348,7 +349,7 @@ export class StoreService {
         throw new NotFoundException(`Store with ID ${storeId} not found`);
       }
 
-      await this.addressService.upsertOwnerAddress(
+      await this.addressOnOwnerService.upsert(
         storeId,
         AddressOwnerType.STORE,
         type,

@@ -1,22 +1,23 @@
 import { ObjectType, Field, ID, registerEnumType } from '@nestjs/graphql';
 import {
-  Address as AddressModel,
-  AddressType,
+  AddressOnOwner as AddressOnOwnerModel,
   AddressOwnerType,
+  AddressType,
 } from '@prisma/client';
-
-registerEnumType(AddressType, {
-  name: 'AddressType',
-  description: 'Type of address (billing, shipping, etc.)',
-});
 
 registerEnumType(AddressOwnerType, {
   name: 'AddressOwnerType',
-  description: 'Type of entity that owns the address',
+  description:
+    'Type of entity that owns the address (STORE, CUSTOMER, ORDER, etc.)',
 });
 
-@ObjectType({ description: 'Address' })
-export class Address implements AddressModel {
+registerEnumType(AddressType, {
+  name: 'AddressType',
+  description: 'Type of address (BILLING, SHIPPING, PICKUP, etc.)',
+});
+
+@ObjectType({ description: 'Address information' })
+export class Address {
   @Field(() => ID)
   id: string;
 
@@ -45,16 +46,13 @@ export class Address implements AddressModel {
   updatedAt: Date;
 }
 
-@ObjectType({ description: 'Address relationship with owner' })
-export class AddressOnOwner {
+@ObjectType({ description: 'Address association with an owner entity' })
+export class AddressOnOwner implements Omit<AddressOnOwnerModel, 'addressId'> {
   @Field(() => ID)
   id: string;
 
-  @Field(() => String)
-  addressId: string;
-
-  @Field(() => Address)
-  address: Address;
+  @Field(() => AddressOwnerType)
+  ownerType: AddressOwnerType;
 
   @Field(() => String)
   ownerId: string;
@@ -62,11 +60,11 @@ export class AddressOnOwner {
   @Field(() => AddressType)
   type: AddressType;
 
-  @Field(() => AddressOwnerType)
-  ownerType: AddressOwnerType;
-
   @Field(() => Boolean)
   isDefault: boolean;
+
+  @Field(() => Address, { nullable: true })
+  address?: Address;
 
   @Field(() => Date)
   createdAt: Date;
