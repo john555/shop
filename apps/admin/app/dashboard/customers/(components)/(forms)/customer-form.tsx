@@ -36,6 +36,7 @@ import { useStore } from '@/admin/hooks/store';
 import {
   COUNTRIES,
   DASHBOARD_PAGE_LINK,
+  getCountryFromCode,
   getCountryFromPhoneCode,
   LANGUAGES,
 } from '@/common/constants';
@@ -398,9 +399,9 @@ export function CustomerForm() {
                         <p>{address.line1}</p>
                         <p>{address.line2}</p>
                         <p>
-                          {address.city}, {address.state} {address.zipCode}
+                          {[[address.city, address.state].filter(Boolean).join(', '), address.zipCode].join(' ')}
                         </p>
-                        <p>{address.country}</p>
+                        <p>{getCountryFromCode(address.country)?.name}</p>
                       </div>
                     ) : (
                       <p className="text-sm text-muted-foreground">
@@ -519,7 +520,6 @@ export function CustomerForm() {
           </form>
         </Form>
       </div>
-      {console.log(customer)}
       {customer && (
         <AddressDialog
           ownerId={customer.id}

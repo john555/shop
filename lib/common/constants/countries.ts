@@ -72,7 +72,9 @@ export function getCountryFromCode(code: string): CountryMetadata | undefined {
   return country ? country : undefined;
 }
 
-export function getCountryFromPhoneCode(phoneCode: string): CountryMetadata | undefined {
+export function getCountryFromPhoneCode(
+  phoneCode: string
+): CountryMetadata | undefined {
   const country = COUNTRIES.find((country) => country.phoneCode === phoneCode);
   return country ? country : undefined;
 }

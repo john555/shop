@@ -145,7 +145,6 @@ export class CustomerResolver {
       customer.id,
       AddressOwnerType.CUSTOMER
     );
-    console.log('customer', customer, 'addresses', addresses);
     return addresses.find((addr) => addr.type === AddressType.BILLING) || null;
   }
 }
