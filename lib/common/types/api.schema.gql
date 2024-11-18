@@ -241,6 +241,8 @@ enum CurrencyPosition {
 
 """Customer model"""
 type Customer {
+  billingAddress: AddressOnOwner
+
   """When the customer was created"""
   createdAt: DateTime!
 

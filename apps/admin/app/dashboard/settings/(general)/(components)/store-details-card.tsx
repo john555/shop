@@ -158,7 +158,7 @@ export function StoreDetailsCard() {
       />
 
       <AddressDialog
-        storeId={store?.id}
+        ownerId={store.id}
         type={AddressType.Registered}
         ownerType={AddressOwnerType.Store}
         isOpen={isEditAddressDialogOpen}

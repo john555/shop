@@ -2,7 +2,9 @@ import {
   Args,
   Context,
   Mutation,
+  Parent,
   Query,
+  ResolveField,
   Resolver,
 } from '@nestjs/graphql';
 import {
@@ -21,6 +23,9 @@ import {
 import { AuthContext } from '../utils/auth';
 import { PaginationArgs } from '@/api/pagination/pagination.args';
 import { JwtAuthGuard } from '../authentication/guard/jwt-auth.guard';
+import { AddressOnOwner } from '../address-on-owner/address-on-owner.entity';
+import { AddressOnOwnerService } from '../address-on-owner/address-on-owner.service';
+import { AddressOwnerType, AddressType } from '@prisma/client';
 
 @Resolver(() => Customer)
 export class CustomerResolver {
@@ -28,16 +33,20 @@ export class CustomerResolver {
 
   constructor(
     private readonly customerService: CustomerService,
+    private readonly addressOnOwnerService: AddressOnOwnerService
   ) {}
 
   private async validateStoreAccess(
     storeId: string,
     userId: string
   ): Promise<void> {
-    const hasAccess = await this.customerService.validateStoreAccess(storeId, userId);
+    const hasAccess = await this.customerService.validateStoreAccess(
+      storeId,
+      userId
+    );
     if (!hasAccess) {
       throw new UnauthorizedException(
-        'You do not have permission to access this store\'s customers'
+        "You do not have permission to access this store's customers"
       );
     }
   }
@@ -75,7 +84,7 @@ export class CustomerResolver {
     @Context() context: AuthContext
   ): Promise<Customer> {
     await this.validateStoreAccess(input.storeId, context.req.user.id);
-    
+
     try {
       return await this.customerService.create(input);
     } catch (error) {
@@ -96,7 +105,7 @@ export class CustomerResolver {
     }
 
     await this.validateStoreAccess(customer.storeId, context.req.user.id);
-    
+
     try {
       return await this.customerService.update(input.id, input);
     } catch (error) {
@@ -117,7 +126,7 @@ export class CustomerResolver {
     }
 
     await this.validateStoreAccess(customer.storeId, context.req.user.id);
-    
+
     try {
       await this.customerService.delete(id);
       return true;
@@ -125,5 +134,18 @@ export class CustomerResolver {
       this.logger.error(`Failed to delete customer ${id}:`, error);
       throw error;
     }
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @ResolveField(() => AddressOnOwner, { nullable: true })
+  async billingAddress(
+    @Parent() customer: Customer
+  ): Promise<AddressOnOwner | null> {
+    const addresses = await this.addressOnOwnerService.findOwnerAddresses(
+      customer.id,
+      AddressOwnerType.CUSTOMER
+    );
+    console.log('customer', customer, 'addresses', addresses);
+    return addresses.find((addr) => addr.type === AddressType.BILLING) || null;
   }
 }

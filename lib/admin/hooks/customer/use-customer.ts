@@ -15,6 +15,24 @@ const CUSTOMER_FIELDS = `
   storeId
   createdAt
   updatedAt
+  billingAddress {
+    id
+    type
+    ownerId
+    ownerType
+    isDefault
+    address {
+      id
+      country
+      city
+      state
+      line1
+      line2
+      zipCode
+      updatedAt
+      createdAt
+    }
+  }
 `;
 
 const GET_CUSTOMER = gql`
@@ -130,6 +148,6 @@ export function useCustomer({ id, storeId }: UseCustomerProps) {
     updateError,
     createCustomer: handleCreateCustomer,
     updateCustomer: handleUpdateCustomer,
-    refetch: refetchCustomer,
+    refetchCustomer,
   };
 }

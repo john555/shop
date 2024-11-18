@@ -34,7 +34,7 @@ export const addressSchema = z.object({
 });
 
 interface AddressDialogProps {
-  storeId: string;
+  ownerId: string;
   addressOwnerId?: string;
   ownerType: AddressOwnerType;
   type: AddressType;
@@ -44,7 +44,7 @@ interface AddressDialogProps {
 }
 
 export function AddressDialog({
-  storeId,
+  ownerId,
   type,
   ownerType,
   addressOwnerId,
@@ -108,7 +108,7 @@ export function AddressDialog({
         });
       } else {
         await createAddressOwner({
-          ownerId: storeId,
+          ownerId,
           ownerType,
           type,
           isDefault: true,

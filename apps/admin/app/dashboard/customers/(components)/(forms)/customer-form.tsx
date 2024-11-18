@@ -36,13 +36,12 @@ import { useStore } from '@/admin/hooks/store';
 import {
   COUNTRIES,
   DASHBOARD_PAGE_LINK,
-  getCountryFromCode,
   getCountryFromPhoneCode,
   LANGUAGES,
 } from '@/common/constants';
-import { Customer, Language } from '@/types/api';
-import { CustomerAddressForm } from './customer-address-form';
+import { AddressOwnerType, AddressType, Customer, Language } from '@/types/api';
 import { Badge } from '@/components/ui/badge';
+import { AddressDialog } from '@/components/address-dialog';
 
 const customerSchema = z.object({
   firstName: z.string().min(1, 'First name is required'),
@@ -67,11 +66,17 @@ export function CustomerForm() {
   const { id } = useParams();
   const router = useRouter();
   const { store } = useStore();
-  const { customer, createCustomer, updateCustomer, creating, updating } =
-    useCustomer({
-      id: id?.toString(),
-      storeId: store?.id,
-    });
+  const {
+    customer,
+    createCustomer,
+    updateCustomer,
+    creating,
+    updating,
+    refetchCustomer,
+  } = useCustomer({
+    id: id?.toString(),
+    storeId: store?.id,
+  });
 
   const isEditMode = !!id;
 
@@ -139,14 +144,8 @@ export function CustomerForm() {
     router.push(`${DASHBOARD_PAGE_LINK}/customers/${createdCustomer.id}`);
   };
 
-  const address = {
-    line1: '123 Main St',
-    line2: 'Apt 101',
-    city: 'Anytown',
-    state: 'CA',
-    zipCode: '12345',
-    country: 'United States',
-  };
+  const address = customer?.billingAddress?.address;
+
   const selectedCountry = getCountryFromPhoneCode(
     form.watch('phoneNumber')?.countryCallingCode ?? ''
   );
@@ -520,10 +519,18 @@ export function CustomerForm() {
           </form>
         </Form>
       </div>
-      <CustomerAddressForm
-        isAddressDialogOpen={isAddressDialogOpen}
-        setIsAddressDialogOpen={setIsAddressDialogOpen}
-      />
+      {console.log(customer)}
+      {customer && (
+        <AddressDialog
+          ownerId={customer.id}
+          type={AddressType.Billing}
+          ownerType={AddressOwnerType.Customer}
+          isOpen={isAddressDialogOpen}
+          onOpenChange={setIsAddressDialogOpen}
+          addressOwnerId={customer?.billingAddress?.id}
+          onComplete={refetchCustomer}
+        />
+      )}
     </>
   );
 }

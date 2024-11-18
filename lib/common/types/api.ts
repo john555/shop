@@ -245,6 +245,7 @@ export enum CurrencyPosition {
 /** Customer model */
 export type Customer = {
   __typename?: 'Customer';
+  billingAddress?: Maybe<AddressOnOwner>;
   /** When the customer was created */
   createdAt: Scalars['DateTime']['output'];
   /** Email address of the customer */
@@ -1383,6 +1384,7 @@ export type CollectionResolvers<ContextType = any, ParentType extends ResolversP
 };
 
 export type CustomerResolvers<ContextType = any, ParentType extends ResolversParentTypes['Customer'] = ResolversParentTypes['Customer']> = {
+  billingAddress?: Resolver<Maybe<ResolversTypes['AddressOnOwner']>, ParentType, ContextType>;
   createdAt?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   email?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   firstName?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
