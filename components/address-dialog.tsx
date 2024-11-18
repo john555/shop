@@ -130,9 +130,13 @@ export function AddressDialog({
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[600px] max-h-[80vh] overflow-y-auto p-4">
         <DialogHeader className="pb-2">
-          <DialogTitle>Edit business address</DialogTitle>
+          <DialogTitle>
+            {addressOnOwner ? 'Edit' : 'Create'} {type.toLowerCase()} address
+          </DialogTitle>
           <DialogDescription className="text-base">
-            Update your business address information.
+            {addressOnOwner
+              ? `Update ${type.toLowerCase()} address information.`
+              : `Add ${type.toLowerCase()} address information.`}
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit(onSubmit)}>
