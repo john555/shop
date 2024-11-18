@@ -61,7 +61,7 @@ const FETCH_STORE_QUERY = gql`
       weightUnit
       orderPrefix
       orderSuffix
-      categories{
+      categories {
         id
         name
         slug
@@ -91,46 +91,19 @@ const FETCH_STORE_QUERY = gql`
   }
 `;
 
-const UPDATE_ADDRESS = gql`
-  mutation UpdateAddress($input: UpdateAddressInput!) {
-    updateAddress(input: $input) {
-      id
-      isDefault
-      type
-      ownerId
-      ownerType
-      address {
-        id
-        country
-        state
-        city
-        line1
-        line2
-        zipCode
-      }
-    }
-  }
-`;
-
 export function useStore() {
-  const { loading, error: loadingError, data } = useQuery(FETCH_STORE_QUERY);
+  const { loading, error: loadingError, data,  refetch: refetchStore, } = useQuery(FETCH_STORE_QUERY);
   const [updateStore, { loading: updatingStore, error: updateError }] =
     useMutation(UPDATE_STORE, {
       refetchQueries: [FETCH_STORE_QUERY],
     });
-  const [
-    updateStoreAddress,
-    { loading: updatingStoreAddress, error: updateAddressError },
-  ] = useMutation(UPDATE_ADDRESS, {
-    refetchQueries: [FETCH_STORE_QUERY],
-  });
 
   return {
     store: data?.myStores?.[0] as Store,
     loading,
-    updating: updatingStore || updatingStoreAddress,
-    error: loadingError || updateError || updateAddressError,
+    updating: updatingStore,
+    error: loadingError || updateError,
     updateStore,
-    updateStoreAddress,
+    refetchStore,
   };
 }

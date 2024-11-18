@@ -19,10 +19,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { useStore } from '@/admin/hooks/store/use-store';
 import { useEffect } from 'react';
 import { AddressOwnerType, AddressType } from '@/types/api';
 import { COUNTRIES } from '@/common/constants';
+import { useAddressOwner } from '@/admin/hooks/address-owner';
 
 export const addressSchema = z.object({
   country: z.string().min(1, 'Country is required'),
@@ -33,19 +33,33 @@ export const addressSchema = z.object({
   zipCode: z.string().optional(),
 });
 
-interface EditAddressDialogProps {
+interface AddressDialogProps {
+  storeId: string;
+  addressOwnerId?: string;
+  ownerType: AddressOwnerType;
+  type: AddressType;
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
+  onComplete?: () => void;
 }
 
-export function EditAddressDialog({
+export function AddressDialog({
+  storeId,
+  type,
+  ownerType,
+  addressOwnerId,
   isOpen,
   onOpenChange,
-}: EditAddressDialogProps) {
-  const { store, updating, updateStoreAddress } = useStore();
-  const addressOnOwner = store?.addresses?.find(
-    (a) => a.type === AddressType.Registered
-  );
+  onComplete,
+}: AddressDialogProps) {
+  const {
+    addressOnOwner,
+    updating,
+    creating,
+    createAddressOwner,
+    updateAddressOwner,
+  } = useAddressOwner(addressOwnerId);
+
   const address = addressOnOwner?.address;
 
   const {
@@ -66,32 +80,50 @@ export function EditAddressDialog({
   });
 
   useEffect(() => {
-    if (store) {
-      setValue('country', address?.country || '');
-      setValue('state', address?.state || '');
-      setValue('city', address?.city || '');
-      setValue('line1', address?.line1 || '');
-      setValue('line2', address?.line2 || '');
-      setValue('zipCode', address?.zipCode || '');
+    if (!address) {
+      return;
     }
-  }, [address, store, setValue]);
+    setValue('country', address.country || '');
+    setValue('state', address.state || '');
+    setValue('city', address.city || '');
+    setValue('line1', address.line1 || '');
+    setValue('line2', address.line2 || '');
+    setValue('zipCode', address.zipCode || '');
+  }, [address, setValue]);
 
   const onSubmit = async (data: z.infer<typeof addressSchema>) => {
-    if (!store?.id) return;
+    const addressData = {
+      country: data.country as string,
+      state: data.state as string,
+      city: data.city as string,
+      line1: data.line1 as string,
+      line2: data.line2 as string,
+      zipCode: data.zipCode as string,
+    };
+    try {
+      if (addressOnOwner) {
+        await updateAddressOwner({
+          id: addressOwnerId,
+          address: addressData,
+        });
+      } else {
+        await createAddressOwner({
+          ownerId: storeId,
+          ownerType,
+          type,
+          isDefault: true,
+          address: addressData,
+        });
+      }
 
-    await updateStoreAddress({
-      variables: {
-        input: {
-          ownerId: store.id,
-          ownerType: AddressOwnerType.Store,
-          type: AddressType.Registered,
-          address: {
-            ...data,
-          },
-        },
-      },
-    });
-    onOpenChange(false);
+      if (onComplete) {
+        onComplete();
+      }
+
+      onOpenChange(false);
+    } catch (error) {
+      console.error('Failed to save address:', error);
+    }
   };
 
   return (
@@ -184,7 +216,7 @@ export function EditAddressDialog({
               Cancel
             </Button>
             <Button type="submit" disabled={updating}>
-              {updating ? 'Saving...' : 'Save'}
+              {updating || creating ? 'Saving...' : 'Save'}
             </Button>
           </DialogFooter>
         </form>

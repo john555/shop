@@ -13,13 +13,13 @@ import {
 import { useStore } from '@/admin/hooks/store/use-store';
 import { useState } from 'react';
 import { EditProfileDialog } from './edit-profile-dialog';
-import { EditAddressDialog } from './edit-address-dialog';
 import { EditSocialMediaDialog } from './edit-social-media-dialog';
-import { AddressType } from '@/types/api';
+import { AddressOwnerType, AddressType } from '@/types/api';
 import { getCountryFromCode } from '@/common/constants';
+import { AddressDialog } from '@/components/address-dialog';
 
 export function StoreDetailsCard() {
-  const { store, loading } = useStore();
+  const { store, loading, refetchStore } = useStore();
   const address = store?.addresses?.find(
     (a) => a.type === AddressType.Registered
   )?.address;
@@ -81,8 +81,15 @@ export function StoreDetailsCard() {
                       address.line1,
                       [address.line2, address.city].filter(Boolean).join(', '),
                       address.state,
-                      [getCountryFromCode(address.country)?.name, address.zipCode].filter(Boolean).join(' '),
-                    ].filter(Boolean).join(', ')}
+                      [
+                        getCountryFromCode(address.country)?.name,
+                        address.zipCode,
+                      ]
+                        .filter(Boolean)
+                        .join(' '),
+                    ]
+                      .filter(Boolean)
+                      .join(', ')}
                   </div>
                 ) : (
                   <div className="text-muted-foreground">No address</div>
@@ -150,9 +157,16 @@ export function StoreDetailsCard() {
         onOpenChange={setIsEditProfileDialogOpen}
       />
 
-      <EditAddressDialog
+      <AddressDialog
+        storeId={store?.id}
+        type={AddressType.Registered}
+        ownerType={AddressOwnerType.Store}
         isOpen={isEditAddressDialogOpen}
         onOpenChange={setIsEditAddressDialogOpen}
+        addressOwnerId={
+          store.addresses?.find((a) => a.type === AddressType.Registered)?.id
+        }
+        onComplete={refetchStore}
       />
 
       <EditSocialMediaDialog
