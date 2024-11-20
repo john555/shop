@@ -29,6 +29,10 @@ export class ProductGetBySlugArgs {
   @Field(() => String)
   @IsString()
   slug: string;
+
+  @Field(() => String)
+  @IsString()
+  storeId: string;
 }
 
 @ArgsType()
@@ -161,17 +165,7 @@ export class ProductCreateInput {
   @MaxLength(1000)
   seoDescription?: string;
 
-  @Field(() => Float)
-  @IsNumber()
-  @Min(0)
-  price: number;
-
-  @Field(() => Float, { nullable: true })
-  @IsOptional()
-  @IsNumber()
-  @Min(0)
-  compareAtPrice?: number;
-
+  // Default variant fields
   @Field(() => String, { nullable: true })
   @IsOptional()
   @IsString()
@@ -183,6 +177,18 @@ export class ProductCreateInput {
   @IsNumber()
   @Min(0)
   available?: number;
+
+  @Field(() => Float, { nullable: true })
+  @IsOptional()
+  @IsNumber()
+  @Min(0)
+  price?: number;
+
+  @Field(() => Float, { nullable: true })
+  @IsOptional()
+  @IsNumber()
+  @Min(0)
+  compareAtPrice?: number;
 
   @Field(() => Boolean, { nullable: true })
   @IsOptional()
@@ -273,30 +279,6 @@ export class ProductUpdateInput {
   @MaxLength(1000)
   seoDescription?: string;
 
-  @Field(() => Float, { nullable: true })
-  @IsOptional()
-  @IsNumber()
-  @Min(0)
-  price?: number;
-
-  @Field(() => Float, { nullable: true })
-  @IsOptional()
-  @IsNumber()
-  @Min(0)
-  compareAtPrice?: number | null;
-
-  @Field(() => String, { nullable: true })
-  @IsOptional()
-  @IsString()
-  @MaxLength(100)
-  sku?: string;
-
-  @Field(() => Int, { nullable: true })
-  @IsOptional()
-  @IsNumber()
-  @Min(0)
-  available?: number;
-
   @Field(() => Boolean, { nullable: true })
   @IsOptional()
   @IsBoolean()
@@ -324,6 +306,32 @@ export class ProductUpdateInput {
   @IsString({ each: true })
   collectionIds?: string[];
 
+  // Default variant fields
+  @Field(() => Float, { nullable: true, description: 'Price for the default variant' })
+  @IsOptional()
+  @IsNumber()
+  @Min(0)
+  price?: number;
+
+  @Field(() => Float, { nullable: true, description: 'Compare at price for the default variant' })
+  @IsOptional()
+  @IsNumber()
+  @Min(0)
+  compareAtPrice?: number | null;
+
+  @Field(() => String, { nullable: true, description: 'SKU for the default variant' })
+  @IsOptional()
+  @IsString()
+  @MaxLength(100)
+  sku?: string;
+
+  @Field(() => Int, { nullable: true, description: 'Available quantity for the default variant' })
+  @IsOptional()
+  @IsNumber()
+  @Min(0)
+  available?: number;
+
+  // Options and variants
   @Field(() => [ProductOptionInput], { nullable: true })
   @IsOptional()
   @ValidateNested({ each: true })
@@ -338,7 +346,7 @@ export class ProductUpdateInput {
 }
 
 @InputType()
-export class ProductBulkUpdateData {
+export class BulkProductUpdateData {
   @Field(() => ProductStatus, { nullable: true })
   @IsOptional()
   @IsEnum(ProductStatus)
@@ -372,10 +380,10 @@ export class BulkProductUpdateInput {
   @IsString()
   storeId: string;
 
-  @Field(() => ProductBulkUpdateData)
+  @Field(() => BulkProductUpdateData)
   @ValidateNested()
-  @Type(() => ProductBulkUpdateData)
-  data: ProductBulkUpdateData;
+  @Type(() => BulkProductUpdateData)
+  data: BulkProductUpdateData;
 }
 
 @InputType()
@@ -389,27 +397,4 @@ export class BulkProductDeleteInput {
   @Field(() => String)
   @IsString()
   storeId: string;
-}
-
-@InputType()
-export class BulkProductUpdateData {
-  @Field(() => ProductStatus, { nullable: true })
-  @IsOptional()
-  @IsEnum(ProductStatus)
-  status?: ProductStatus;
-
-  @Field(() => String, { nullable: true })
-  @IsOptional()
-  @IsString()
-  categoryId?: string | null;
-
-  @Field(() => [SalesChannel], { nullable: true })
-  @IsOptional()
-  @IsEnum(SalesChannel, { each: true })
-  salesChannels?: SalesChannel[];
-
-  @Field(() => Boolean, { nullable: true })
-  @IsOptional()
-  @IsBoolean()
-  trackInventory?: boolean;
 }

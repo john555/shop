@@ -6,10 +6,12 @@ import {
   Float,
   Int,
 } from '@nestjs/graphql';
-import { ProductStatus, SalesChannel } from '@prisma/client';
-import { Store } from '../../store/store.entity';
-import { Category } from '../../category/category.entity';
-import { Decimal } from '@prisma/client/runtime/library';
+import {
+  Product as PrismaProduct,
+  ProductStatus,
+  SalesChannel,
+} from '@prisma/client';
+import { ProductVariant } from './product-variant.entity';
 
 registerEnumType(ProductStatus, {
   name: 'ProductStatus',
@@ -22,58 +24,60 @@ registerEnumType(SalesChannel, {
 });
 
 @ObjectType({ description: 'Product model' })
-export class Product {
+export class Product implements Partial<PrismaProduct> {
   @Field(() => ID)
-  id: string;
+  id!: string;
 
   @Field(() => String)
-  title: string;
+  title!: string;
 
   @Field(() => String, { nullable: true })
-  description: string | null;
+  description!: string | null;
 
   @Field(() => String)
-  slug: string;
+  slug!: string;
 
   @Field(() => ProductStatus)
-  status: ProductStatus;
+  status!: ProductStatus;
 
   @Field(() => String, { nullable: true })
-  seoTitle: string | null;
+  seoTitle!: string | null;
 
   @Field(() => String, { nullable: true })
-  seoDescription: string | null;
-
-  @Field(() => Float)
-  price: Decimal;
-
-  @Field(() => Float, { nullable: true })
-  compareAtPrice: Decimal | null;
-
-  @Field(() => String, { nullable: true })
-  sku: string | null;
-
-  @Field(() => Int)
-  available: number;
+  seoDescription!: string | null;
 
   @Field(() => Boolean)
-  trackInventory: boolean;
+  trackInventory!: boolean;
 
   @Field(() => [SalesChannel])
-  salesChannels: SalesChannel[];
+  salesChannels!: SalesChannel[];
 
   @Field(() => String, { nullable: true })
-  categoryId: string | null;
+  categoryId!: string | null;
 
-  @Field(() => Category, { nullable: true })
-  category?: Category;
-
-  @Field(() => Store, { nullable: true })
-  store?: Store;
+  @Field(() => String)
+  storeId!: string;
 
   @Field(() => Date)
-  createdAt: Date;
+  createdAt!: Date;
 
   @Field(() => Date)
-  updatedAt: Date;
+  updatedAt!: Date;
+
+  // Relations that will be resolved
+  @Field(() => [ProductVariant])
+  variants?: ProductVariant[];
+
+  // Computed fields that will be resolved
+  @Field(() => Float, { nullable: true })
+  price?: number;
+
+  @Field(() => Float, { nullable: true })
+  compareAtPrice?: number | null;
+
+  @Field(() => String, { nullable: true })
+  sku?: string | null;
+
+  @Field(() => Int)
+  available?: number;
 }

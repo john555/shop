@@ -7,13 +7,9 @@ import {
   Query,
   ResolveField,
   Resolver,
+  Float,
 } from '@nestjs/graphql';
-import {
-  ForbiddenException,
-  Logger,
-  NotFoundException,
-  UseGuards,
-} from '@nestjs/common';
+import { Logger, NotFoundException } from '@nestjs/common';
 import { Product } from './entities/product.entity';
 import { ProductService } from './product.service';
 import { Store } from '../store/store.entity';
@@ -34,7 +30,6 @@ import {
   GetMyStoreProductsArgs,
 } from './product.dto';
 import { PaginationArgs } from '@/api/pagination/pagination.args';
-import { JwtAuthGuard } from '@/api/authentication/guard/jwt-auth.guard';
 import { AuthContext } from '@/api/utils/auth';
 import {
   AuthBulkProducts,
@@ -55,7 +50,13 @@ export class ProductResolver {
     return this.productService.findById(args.id);
   }
 
-  // Field Resolvers
+  @Query(() => Product, { nullable: true })
+  async productBySlug(
+    @Args() args: ProductGetBySlugArgs
+  ): Promise<Product | null> {
+    return this.productService.findBySlug(args.slug, args.storeId);
+  }
+
   @AuthStore()
   @Query(() => [Product])
   async myStoreProducts(
@@ -67,14 +68,16 @@ export class ProductResolver {
     return this.productService.findByStore(args.storeId, pagination, filters);
   }
 
+  // Field Resolvers
   @ResolveField(() => Store)
-  async store(@Parent() product: Product): Promise<Store | null> {
+  async store(@Parent() product: Product): Promise<Store> {
     return this.productService.findProductStore(product.id);
   }
 
   @ResolveField(() => Category, { nullable: true })
   async category(@Parent() product: Product): Promise<Category | null> {
-    return this.productService.findProductCategory(product.id);
+    if (!product.categoryId) return null;
+    return this.productService.findProductCategory(product.categoryId);
   }
 
   @ResolveField(() => [ProductOption])
@@ -100,6 +103,46 @@ export class ProductResolver {
   @ResolveField(() => [Media])
   async media(@Parent() product: Product): Promise<Media[]> {
     return this.productService.findProductMedia(product.id);
+  }
+
+  // Default variant computed fields
+  @ResolveField(() => Float)
+  async price(@Parent() product: Product): Promise<number> {
+    if ('price' in product && typeof product.price === 'number') {
+      return product.price;
+    }
+    return this.productService.getPrice(product.id);
+  }
+
+  @ResolveField(() => Float, { nullable: true })
+  async compareAtPrice(@Parent() product: Product): Promise<number | null> {
+    if (
+      'compareAtPrice' in product &&
+      (typeof product.compareAtPrice === 'number' ||
+        product.compareAtPrice === null)
+    ) {
+      return product.compareAtPrice;
+    }
+    return this.productService.getCompareAtPrice(product.id);
+  }
+
+  @ResolveField(() => String, { nullable: true })
+  async sku(@Parent() product: Product): Promise<string | null> {
+    if (
+      'sku' in product &&
+      (typeof product.sku === 'string' || product.sku === null)
+    ) {
+      return product.sku;
+    }
+    return this.productService.getSku(product.id);
+  }
+
+  @ResolveField(() => Int)
+  async available(@Parent() product: Product): Promise<number> {
+    if ('available' in product && typeof product.available === 'number') {
+      return product.available;
+    }
+    return this.productService.getAvailable(product.id);
   }
 
   // Mutations
@@ -162,7 +205,6 @@ export class ProductResolver {
     @Args('input') input: BulkProductUpdateInput,
     @Context() ctx: AuthContext
   ): Promise<number> {
-
     try {
       return await this.productService.bulkUpdate(
         input.storeId,

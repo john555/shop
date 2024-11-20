@@ -246,46 +246,29 @@ model Store {
 }
 
 model Product {
-  id          String        @id @default(cuid())
-  title       String
-  description String?       @db.Text
-  slug        String
-  status      ProductStatus @default(DRAFT)
-
-  // SEO fields
+  id             String         @id @default(cuid())
+  title          String
+  description    String?       
+  slug           String        
+  status         ProductStatus  @default(DRAFT)
   seoTitle       String?
-  seoDescription String? @db.Text
-
-  // Pricing
-  price          Decimal  @db.Decimal(10, 2)
-  compareAtPrice Decimal? @db.Decimal(10, 2)
-
-  // Inventory
-  sku            String? @unique
-  available      Int     @default(0)
-  trackInventory Boolean @default(false)
-
-  // Relations
-  store       Store            @relation(fields: [storeId], references: [id], onDelete: Cascade)
-  storeId     String
-  category    Category?        @relation(fields: [categoryId], references: [id])
-  categoryId  String?
-  options     ProductOption[]
-  variants    ProductVariant[]
-  collections Collection[]
-  tags        Tag[]
-
-  // Distribution
-  salesChannels SalesChannel[]
-
-  // Timestamps
-  createdAt DateTime @default(now()) @db.Timestamp(6)
-  updatedAt DateTime @updatedAt @db.Timestamp(6)
+  seoDescription String?
+  trackInventory Boolean        @default(false)
+  salesChannels  SalesChannel[]
+  storeId        String
+  store          Store          @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  categoryId     String?
+  category       Category?      @relation(fields: [categoryId], references: [id])
+  variants       ProductVariant[]
+  options        ProductOption[]
+  collections    Collection[]
+  tags           Tag[]
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
 
   @@unique([storeId, slug])
   @@index([storeId])
   @@index([categoryId])
-  @@map("products")
 }
 
 model ProductOption {

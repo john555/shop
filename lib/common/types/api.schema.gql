@@ -114,8 +114,15 @@ input BulkProductDeleteInput {
   storeId: String!
 }
 
+input BulkProductUpdateData {
+  categoryId: String
+  salesChannels: [SalesChannel!]
+  status: ProductStatus
+  trackInventory: Boolean
+}
+
 input BulkProductUpdateInput {
-  data: ProductBulkUpdateData!
+  data: BulkProductUpdateData!
   productIds: [String!]!
   storeId: String!
 }
@@ -456,26 +463,20 @@ type Product {
   id: ID!
   media: [Media!]!
   options: [ProductOption!]!
-  price: Float!
+  price: Float
   salesChannels: [SalesChannel!]!
   seoDescription: String
   seoTitle: String
   sku: String
   slug: String!
   status: ProductStatus!
-  store: Store
+  store: Store!
+  storeId: String!
   tags: [Tag!]!
   title: String!
   trackInventory: Boolean!
   updatedAt: DateTime!
   variants: [ProductVariant!]!
-}
-
-input ProductBulkUpdateData {
-  categoryId: String
-  salesChannels: [SalesChannel!]
-  status: ProductStatus
-  trackInventory: Boolean
 }
 
 input ProductCreateInput {
@@ -485,7 +486,7 @@ input ProductCreateInput {
   compareAtPrice: Float
   description: String
   options: [ProductOptionInput!]
-  price: Float!
+  price: Float
   salesChannels: [SalesChannel!]
   seoDescription: String
   seoTitle: String
@@ -550,17 +551,24 @@ enum ProductStatus {
 }
 
 input ProductUpdateInput {
+  """Available quantity for the default variant"""
   available: Int
   categoryId: String
   collectionIds: [String!]
+
+  """Compare at price for the default variant"""
   compareAtPrice: Float
   description: String
   id: String!
   options: [ProductOptionInput!]
+
+  """Price for the default variant"""
   price: Float
   salesChannels: [SalesChannel!]
   seoDescription: String
   seoTitle: String
+
+  """SKU for the default variant"""
   sku: String
   slug: String
   status: ProductStatus
@@ -628,6 +636,7 @@ type Query {
   myStores(cursor: String, skip: Int! = 0, sortOrder: SortOrder, take: Int! = 25): [Store!]!
   ownerAddresses(ownerId: String!, ownerType: AddressOwnerType!): [AddressOnOwner!]!
   product(id: String!): Product
+  productBySlug(slug: String!, storeId: String!): Product
   store(id: ID!): Store!
   storeCategories(cursor: String, skip: Int! = 0, sortOrder: SortOrder, storeId: String!, take: Int! = 25): [Category!]!
   storeCollections(cursor: String, skip: Int! = 0, sortOrder: SortOrder, storeId: String!, take: Int! = 25): [Collection!]!
