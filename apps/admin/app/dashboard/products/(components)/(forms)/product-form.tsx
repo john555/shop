@@ -50,7 +50,9 @@ import {
   CommandList,
 } from '@/components/ui/command';
 import { useCollections } from '@/admin/hooks/collection';
+import MediaInput from '@/components/media-input';
 import { ProductStatusBadge } from '../(ui)/product-status-badge';
+import { VariantsCard } from './variants-card';
 
 function generateSlug(title: string): string {
   return title
@@ -58,6 +60,23 @@ function generateSlug(title: string): string {
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/(^-|-$)+/g, '');
 }
+
+const variantSchema = z.object({
+  id: z.string().optional(),
+  optionCombination: z.array(z.string()),
+  price: z.number().nonnegative('Price must be non-negative'),
+  compareAtPrice: z
+    .number()
+    .nonnegative('Compare at price must be positive')
+    .optional()
+    .nullable(),
+  sku: z.string().optional().nullable(),
+  available: z
+    .number()
+    .int()
+    .nonnegative('Available quantity must be non-negative')
+    .optional(),
+});
 
 const productSchema = z.object({
   title: z.string().min(2, 'Title must be at least 2 characters'),
@@ -83,9 +102,20 @@ const productSchema = z.object({
   status: z.nativeEnum(ProductStatus).default(ProductStatus.Active),
   tagIds: z.array(z.string()),
   trackInventory: z.boolean().default(false),
+  options: z
+    .array(
+      z.object({
+        name: z.string().min(1, 'Option name is required'),
+        values: z.array(z.string().min(1, 'Option value is required')),
+        isCollapsed: z.boolean().optional().default(false),
+      })
+    )
+    .optional()
+    .default([]),
+  variants: z.array(variantSchema).optional(),
 });
 
-type ProductFormValues = z.infer<typeof productSchema>;
+export type ProductFormValues = z.infer<typeof productSchema>;
 
 export function ProductForm() {
   const router = useRouter();
@@ -101,7 +131,6 @@ export function ProductForm() {
     updateProduct,
   } = useProduct(id?.toString());
   const { collections } = useCollections({ storeId: store?.id });
-  const [images, setImages] = useState<string[]>([]);
   const [openCollections, setOpenCollections] = useState(false);
 
   const isEditMode = !!id;
@@ -138,14 +167,16 @@ export function ProductForm() {
       categoryId: product?.category?.id,
       seoTitle: product?.seoTitle ?? undefined,
       seoDescription: product?.seoDescription ?? undefined,
+      options:
+        product?.options?.map((o) => ({ ...o, isCollapsed: true })) || [],
+      variants: product?.variants || [],
     };
   }
 
   useEffect(() => {
     if (!product) return;
     form.reset(getInitialValues(product));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [product]);
+  }, [product, form]);
 
   const onSubmit = async (data: ProductFormValues) => {
     const slug = generateSlug(data.title);
@@ -157,27 +188,13 @@ export function ProductForm() {
     } else {
       const createdProduct = await createProduct({
         ...data,
-        title: data.title, // Ensure title is always included
+        title: data.title,
         slug,
         storeId: store.id,
         price: data.price || 0,
       });
       router.push(`${DASHBOARD_PAGE_LINK}/products/${createdProduct.id}`);
     }
-  };
-
-  const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const files = event.target.files;
-    if (files) {
-      const newImages = Array.from(files).map((file) =>
-        URL.createObjectURL(file)
-      );
-      setImages((prev) => [...prev, ...newImages]);
-    }
-  };
-
-  const removeImage = (index: number) => {
-    setImages((prev) => prev.filter((_, i) => i !== index));
   };
 
   if (loading) {
@@ -317,57 +334,7 @@ export function ProductForm() {
                   />
                   <div>
                     <FormLabel>Product Images</FormLabel>
-                    <div className="mt-2 flex justify-center rounded-lg border border-dashed border-gray-900/25 dark:border-gray-100/25 px-6 py-10">
-                      <div className="text-center">
-                        <Upload
-                          className="mx-auto h-12 w-12 text-gray-300"
-                          aria-hidden="true"
-                        />
-                        <div className="mt-4 flex text-sm leading-6 text-gray-600 dark:text-gray-400">
-                          <label
-                            htmlFor="file-upload"
-                            className="relative cursor-pointer rounded-md bg-white dark:bg-gray-800 font-semibold text-primary hover:text-primary/80 focus-within:outline-none focus-within:ring-2 focus-within:ring-primary focus-within:ring-offset-2"
-                          >
-                            <span>Upload files</span>
-                            <input
-                              id="file-upload"
-                              name="file-upload"
-                              type="file"
-                              className="sr-only"
-                              multiple
-                              onChange={handleImageUpload}
-                            />
-                          </label>
-                          <p className="pl-1">or drag and drop</p>
-                        </div>
-                        <p className="text-xs leading-5 text-gray-600 dark:text-gray-400">
-                          PNG, JPG, GIF up to 10MB
-                        </p>
-                      </div>
-                    </div>
-                    <div className="mt-4 grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4">
-                      {images.map((image, index) => (
-                        <div key={index} className="relative group">
-                          <Image
-                            src={image}
-                            alt={`Uploaded image ${index + 1}`}
-                            width={100}
-                            height={100}
-                            className="rounded-lg object-cover w-full h-full"
-                          />
-                          <div className="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                            <Button
-                              variant="destructive"
-                              size="icon"
-                              className="h-8 w-8"
-                              onClick={() => removeImage(index)}
-                            >
-                              <X className="h-4 w-4" />
-                            </Button>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
+                    <MediaInput />
                   </div>
                 </CardContent>
               </Card>
@@ -548,6 +515,7 @@ export function ProductForm() {
                   )}
                 </CardContent>
               </Card>
+              <VariantsCard form={form} />
               <Card>
                 <CardHeader>
                   <CardTitle>SEO</CardTitle>
