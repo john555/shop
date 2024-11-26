@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from '@/api/prisma/prisma.service';
 import { OrderStatus, ProductStatus } from '@prisma/client';
-import { StoreOverview, RecentOrder, RecentActivity } from './overview.entity';
+import { StoreOverview, RecentOrder, RecentActivity, ActivityType } from './overview.entity';
 
 @Injectable()
 export class OverviewService {
@@ -126,24 +126,93 @@ export class OverviewService {
   }
 
   private async getRecentActivities(storeId: string): Promise<RecentActivity[]> {
-    const events = await this.prisma.orderEvent.findMany({
-      where: { order: { storeId } },
-      orderBy: { createdAt: 'desc' },
-      take: 5,
-      include: {
-        order: true,
-      },
-    });
-
-    return events.map(event => ({
-      type: event.type,
-      message: event.description,
-      userId: event.createdById,
-      userName: 'System', // You might want to fetch the actual user name
-      details: event.data as string,
-      timestamp: event.createdAt,
-    }));
+    // Get various types of recent activities
+    const [orderEvents, products, collections, customers] = await Promise.all([
+      this.prisma.orderEvent.findMany({
+        where: { order: { storeId } },
+        orderBy: { createdAt: 'desc' },
+        take: 5,
+        include: {
+          order: true,
+        },
+      }),
+      this.prisma.product.findMany({
+        where: { storeId },
+        orderBy: { createdAt: 'desc' },
+        take: 5,
+        include: {
+          store: {
+            include: {
+              owner: true,
+            },
+          },
+        },
+      }),
+      this.prisma.collection.findMany({
+        where: { storeId },
+        orderBy: { createdAt: 'desc' },
+        take: 5,
+        include: {
+          store: {
+            include: {
+              owner: true,
+            },
+          },
+        },
+      }),
+      this.prisma.customer.findMany({
+        where: { storeId },
+        orderBy: { createdAt: 'desc' },
+        take: 5,
+      }),
+    ]);
+  
+    // Combine and sort all activities
+    const allActivities: RecentActivity[] = [
+      ...products.map(product => ({
+        id: `product-${product.id}`,
+        type: ActivityType.PRODUCT_ADDED,
+        title: 'New product added',
+        description: product.title,
+        timestamp: product.createdAt,
+        user: product.store.owner ? {
+          name: `${product.store.owner.firstName} ${product.store.owner.lastName}`.trim(),
+          avatar: `/api/avatar/${product.store.owner.id}`,
+        } : undefined,
+      })),
+      ...collections.map(collection => ({
+        id: `collection-${collection.id}`,
+        type: ActivityType.COLLECTION_CREATED,
+        title: 'Collection created',
+        description: collection.name,
+        timestamp: collection.createdAt,
+        user: collection.store.owner ? {
+          name: `${collection.store.owner.firstName} ${collection.store.owner.lastName}`.trim(),
+          avatar: `/api/avatar/${collection.store.owner.id}`,
+        } : undefined,
+      })),
+      ...customers.map(customer => ({
+        id: `customer-${customer.id}`,
+        type: ActivityType.CUSTOMER_REGISTERED,
+        title: 'New customer registered',
+        description: `${customer.firstName} ${customer.lastName}`.trim(),
+        timestamp: customer.createdAt,
+      })),
+      ...orderEvents.map(event => ({
+        id: `order-${event.id}`,
+        type: ActivityType.ORDER_RECEIVED,
+        title: 'New order received',
+        description: `Order #${event.order.orderNumber} - ${event.description}`,
+        timestamp: event.createdAt,
+      })),
+    ];
+  
+    // Sort by timestamp descending and take the most recent 5
+    return allActivities
+      .sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime())
+      .slice(0, 5);
   }
+  
 
   async getStoreOverview(storeId: string): Promise<StoreOverview> {
     try {

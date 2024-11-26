@@ -13,6 +13,49 @@ registerEnumType(OrderStatus, {
   description: 'Order Status',
 });
 
+export enum ActivityType {
+  PRODUCT_ADDED = 'PRODUCT_ADDED',
+  PRODUCT_UPDATED = 'PRODUCT_UPDATED',
+  COLLECTION_CREATED = 'COLLECTION_CREATED',
+  ORDER_RECEIVED = 'ORDER_RECEIVED',
+  CUSTOMER_REGISTERED = 'CUSTOMER_REGISTERED',
+}
+
+registerEnumType(ActivityType, {
+  name: 'ActivityType',
+  description: 'Type of activity in the system',
+});
+
+@ObjectType()
+class ActivityUser {
+  @Field(() => String)
+  name: string;
+
+  @Field(() => String)
+  avatar: string;
+}
+
+@ObjectType()
+export class RecentActivity {
+  @Field(() => String)
+  id: string;
+
+  @Field(() => ActivityType)
+  type: ActivityType;
+
+  @Field(() => String)
+  title: string;
+
+  @Field(() => String)
+  description: string;
+
+  @Field(() => Date)
+  timestamp: Date;
+
+  @Field(() => ActivityUser, { nullable: true })
+  user?: ActivityUser;
+}
+
 @ObjectType()
 export class RecentOrder {
   @Field(() => String)
@@ -29,27 +72,6 @@ export class RecentOrder {
 
   @Field(() => Boolean)
   isNew: boolean;
-}
-
-@ObjectType()
-export class RecentActivity {
-  @Field(() => String)
-  type: string;
-
-  @Field(() => String)
-  message: string;
-
-  @Field(() => String)
-  userId: string;
-
-  @Field(() => String)
-  userName: string;
-
-  @Field(() => String, { nullable: true })
-  details?: string;
-
-  @Field(() => Date)
-  timestamp: Date;
 }
 
 @ObjectType()

@@ -52,6 +52,7 @@ import {
 import { Checkbox } from '@/components/ui/checkbox';
 import { useOverview } from '@/admin/hooks/overview';
 import { useStore } from '@/admin/hooks/store';
+import { OrderStatus } from '@/types/api';
 
 interface DashboardCard {
   id: string;
@@ -66,35 +67,6 @@ interface DashboardSection {
   cards: DashboardCard[];
 }
 
-interface Stats {
-  totalProducts: number;
-  totalCollections: number;
-  totalCustomers: number;
-  totalOrders: number;
-  revenue: number;
-  averageOrderValue: number;
-}
-
-interface Order {
-  id: string;
-  customer: string;
-  total: number;
-  status: 'completed' | 'processing' | 'shipped';
-  isNew: boolean;
-}
-
-interface Activity {
-  id: string;
-  icon: React.ReactNode;
-  title: string;
-  description: string;
-  timestamp: string;
-  user?: {
-    name: string;
-    avatar: string;
-  };
-}
-
 interface StatsCardProps {
   title: string;
   value: number;
@@ -104,13 +76,12 @@ interface StatsCardProps {
 }
 
 interface OrderStatusBadgeProps {
-  status: Order['status'];
+  status: OrderStatus;
 }
 
 export default function DashboardOverview() {
   const { store } = useStore();
   const { overview, loading } = useOverview({ storeId: store?.id });
-  console.log({ overview });
   const [sections, setSections] = useState<DashboardSection[]>([
     {
       id: 'stats',
@@ -155,116 +126,31 @@ export default function DashboardOverview() {
 
   const [hasData, setHasData] = useState(false);
 
-  const [stats] = useState<Stats>({
-    totalProducts: 150,
-    totalCollections: 12,
-    totalCustomers: 1024,
-    totalOrders: 256,
-    revenue: 25600,
-    averageOrderValue: 100,
-  });
+  const sumOfStats = () => {
+    if (!overview) return 0;
+    return (
+      overview.totalProducts +
+      overview.collections +
+      overview.customers +
+      overview.totalOrders
+    );
+  };
 
-  const [recentOrders] = useState<Order[]>([
-    {
-      id: 'ORD001',
-      customer: 'John Doe',
-      total: 150,
-      status: 'completed',
-      isNew: true,
-    },
-    {
-      id: 'ORD002',
-      customer: 'Jane Smith',
-      total: 89.99,
-      status: 'processing',
-      isNew: true,
-    },
-    {
-      id: 'ORD003',
-      customer: 'Bob Johnson',
-      total: 299.99,
-      status: 'completed',
-      isNew: false,
-    },
-    {
-      id: 'ORD004',
-      customer: 'Alice Brown',
-      total: 79.99,
-      status: 'shipped',
-      isNew: false,
-    },
-    {
-      id: 'ORD005',
-      customer: 'Charlie Davis',
-      total: 199.99,
-      status: 'processing',
-      isNew: false,
-    },
-  ]);
+  useEffect(() => {
+    if (loading) {
+      return;
+    }
 
-  const [recentActivities] = useState<Activity[]>([
-    {
-      id: '1',
-      icon: <Package className="h-4 w-4" />,
-      title: 'New product added',
-      description: 'Wireless Earbuds X1000',
-      timestamp: '2 hours ago',
-      user: {
-        name: 'Emily Johnson',
-        avatar: '/placeholder.svg?height=32&width=32',
-      },
-    },
-    {
-      id: '2',
-      icon: <FolderOpen className="h-4 w-4" />,
-      title: 'Collection created',
-      description: 'Summer Essentials 2024',
-      timestamp: '5 hours ago',
-      user: {
-        name: 'Michael Chen',
-        avatar: '/placeholder.svg?height=32&width=32',
-      },
-    },
-    {
-      id: '3',
-      icon: <Users className="h-4 w-4" />,
-      title: 'New customer registered',
-      description: 'johndoe@example.com',
-      timestamp: '1 day ago',
-    },
-    {
-      id: '4',
-      icon: <ShoppingCart className="h-4 w-4" />,
-      title: 'New order received',
-      description: 'Order #1234 - $250.00',
-      timestamp: '1 day ago',
-      user: {
-        name: 'Sarah Thompson',
-        avatar: '/placeholder.svg?height=32&width=32',
-      },
-    },
-    {
-      id: '5',
-      icon: <Package className="h-4 w-4" />,
-      title: 'Product updated',
-      description: 'Smart Watch Pro - Price changed',
-      timestamp: '2 days ago',
-      user: {
-        name: 'Alex Rodriguez',
-        avatar: '/placeholder.svg?height=32&width=32',
-      },
-    },
-  ]);
+    if (overview && sumOfStats() > 0) {
+      setHasData(true);
+    }
+  }, [overview, loading]);
 
   useEffect(() => {
     const savedSections = localStorage.getItem('dashboardSections');
     if (savedSections) {
       setSections(JSON.parse(savedSections));
     }
-
-    // Simulating data check
-    // In a real application, you would check if there's actual data
-    setHasData(true);
   }, []);
 
   useEffect(() => {
@@ -422,7 +308,7 @@ export default function DashboardOverview() {
                 Customers will appear here once they make a purchase.
               </EmptyPlaceholderDescription>
               <Button variant="outline" asChild>
-                <Link href="/dashboard/marketing">Set Up Marketing</Link>
+                <Link href="/dashboard/customers/create">Add a Customer</Link>
               </Button>
             </EmptyPlaceholder>
             <EmptyPlaceholder>
@@ -433,9 +319,6 @@ export default function DashboardOverview() {
               <EmptyPlaceholderDescription>
                 Your orders will show up here once you start selling.
               </EmptyPlaceholderDescription>
-              <Button variant="outline" asChild>
-                <Link href="/dashboard/products">Manage Products</Link>
-              </Button>
             </EmptyPlaceholder>
             <EmptyPlaceholder>
               <EmptyPlaceholderIcon>
@@ -469,7 +352,7 @@ export default function DashboardOverview() {
                 ?.cards.find((c) => c.id === 'totalProducts')?.visible && (
                 <StatsCard
                   title="Total Products"
-                  value={stats.totalProducts}
+                  value={overview?.totalProducts || 0}
                   description="Active products in your store"
                   icon={<Package className="h-6 w-6" />}
                   linkHref="/dashboard/products"
@@ -480,7 +363,7 @@ export default function DashboardOverview() {
                 ?.cards.find((c) => c.id === 'collections')?.visible && (
                 <StatsCard
                   title="Collections"
-                  value={stats.totalCollections}
+                  value={overview?.collections || 0}
                   description="Product collections"
                   icon={<FolderOpen className="h-6 w-6" />}
                   linkHref="/dashboard/collections"
@@ -491,7 +374,7 @@ export default function DashboardOverview() {
                 ?.cards.find((c) => c.id === 'customers')?.visible && (
                 <StatsCard
                   title="Customers"
-                  value={stats.totalCustomers}
+                  value={overview?.customers || 0}
                   description="Registered customers"
                   icon={<Users className="h-6 w-6" />}
                   linkHref="/dashboard/customers"
@@ -502,7 +385,7 @@ export default function DashboardOverview() {
                 ?.cards.find((c) => c.id === 'totalOrders')?.visible && (
                 <StatsCard
                   title="Total Orders"
-                  value={stats.totalOrders}
+                  value={overview?.totalOrders || 0}
                   description="Orders received"
                   icon={<ShoppingCart className="h-6 w-6" />}
                   linkHref="/dashboard/orders"
@@ -522,11 +405,14 @@ export default function DashboardOverview() {
                   </CardHeader>
                   <CardContent>
                     <div className="text-2xl font-bold">
-                      ${stats.revenue.toLocaleString()}
+                      ${overview?.revenue.toLocaleString()}
                     </div>
-                    <p className="text-xs text-muted-foreground">
-                      +12% from last month
-                    </p>
+                    {overview?.revenueGrowth ? (
+                      <p className="text-xs text-muted-foreground">
+                        {overview.revenueGrowth > 0 ? '+' : '-'}
+                        {overview.revenueGrowth}% from last month
+                      </p>
+                    ) : null}
                   </CardContent>
                 </Card>
               )}
@@ -539,11 +425,15 @@ export default function DashboardOverview() {
                   </CardHeader>
                   <CardContent>
                     <div className="text-2xl font-bold">
-                      ${stats.averageOrderValue.toLocaleString()}
+                      {/* UPDATE Currency formatting */}$
+                      {overview?.averageOrderValue.toLocaleString()}
                     </div>
-                    <p className="text-xs text-muted-foreground">
-                      +5% from last month
-                    </p>
+                    {overview?.orderValueGrowth ? (
+                      <p className="text-xs text-muted-foreground">
+                        {overview.orderValueGrowth > 0 ? '+' : '-'}
+                        {overview.orderValueGrowth}% from last month
+                      </p>
+                    ) : null}
                   </CardContent>
                 </Card>
               )}
@@ -555,10 +445,15 @@ export default function DashboardOverview() {
                     <CardTitle>Conversion Rate</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="text-2xl font-bold">3.2%</div>
-                    <p className="text-xs text-muted-foreground">
-                      +0.5% from last month
-                    </p>
+                    <div className="text-2xl font-bold">
+                      {overview?.conversionRate}
+                    </div>
+                    {overview?.conversionRateGrowth ? (
+                      <p className="text-xs text-muted-foreground">
+                        {overview.conversionRateGrowth > 0 ? '+' : '-'}
+                        {overview.conversionRateGrowth}% from last month
+                      </p>
+                    ) : null}
                   </CardContent>
                 </Card>
               )}
@@ -566,7 +461,8 @@ export default function DashboardOverview() {
           )}
 
           <div className="grid gap-6 lg:grid-cols-2">
-            {sections.find((s) => s.id === 'orders')?.visible &&
+            {overview?.recentOrders &&
+              sections.find((s) => s.id === 'orders')?.visible &&
               sections
                 .find((s) => s.id === 'orders')
                 ?.cards.find((c) => c.id === 'recentOrders')?.visible && (
@@ -575,7 +471,7 @@ export default function DashboardOverview() {
                     <CardTitle>Recent Orders</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    {recentOrders.length > 0 ? (
+                    {overview.recentOrders.length > 0 ? (
                       <Table>
                         <TableHeader>
                           <TableRow>
@@ -586,7 +482,7 @@ export default function DashboardOverview() {
                           </TableRow>
                         </TableHeader>
                         <TableBody>
-                          {recentOrders.map((order) => (
+                          {overview?.recentOrders?.map((order) => (
                             <TableRow
                               key={order.id}
                               className={
@@ -606,7 +502,7 @@ export default function DashboardOverview() {
                                   </Badge>
                                 )}
                               </TableCell>
-                              <TableCell>{order.customer}</TableCell>
+                              <TableCell>{order.customerName}</TableCell>
                               <TableCell>${order.total.toFixed(2)}</TableCell>
                               <TableCell>
                                 <OrderStatusBadge status={order.status} />
@@ -630,7 +526,7 @@ export default function DashboardOverview() {
                       </EmptyPlaceholder>
                     )}
                   </CardContent>
-                  {recentOrders.length > 0 ? (
+                  {overview.recentOrders.length > 0 ? (
                     <CardFooter>
                       <Button variant="ghost" className="w-full" asChild>
                         <Link href="/dashboard/orders">
@@ -643,7 +539,8 @@ export default function DashboardOverview() {
                 </Card>
               )}
 
-            {sections.find((s) => s.id === 'activities')?.visible &&
+            {overview?.recentActivities &&
+              sections.find((s) => s.id === 'activities')?.visible &&
               sections
                 .find((s) => s.id === 'activities')
                 ?.cards.find((c) => c.id === 'recentActivities')?.visible && (
@@ -653,15 +550,15 @@ export default function DashboardOverview() {
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-4">
-                      {recentActivities.length > 0 ? (
+                      {overview.recentActivities.length > 0 ? (
                         <div className="space-y-8">
-                          {recentActivities.map((activity) => (
+                          {overview.recentActivities.map((activity) => (
                             <div
                               key={activity.id}
                               className="flex items-center space-x-4"
                             >
                               <div className="flex h-8 w-8 items-center justify-center rounded-full bg-muted">
-                                {activity.icon}
+                                <activity.icon className="w-4 h-4" />
                               </div>
                               <div className="flex-grow min-w-0">
                                 <p className="text-sm font-medium leading-none">
@@ -674,8 +571,8 @@ export default function DashboardOverview() {
                                   <div className="flex items-center mt-1">
                                     <Avatar className="h-5 w-5 mr-1">
                                       <AvatarImage
-                                        src={activity.user.avatar}
-                                        alt={activity.user.name}
+                                        src={activity.user?.avatar}
+                                        alt={activity.user?.name}
                                       />
                                       <AvatarFallback>
                                         {activity.user.name.charAt(0)}
@@ -709,7 +606,7 @@ export default function DashboardOverview() {
                       )}
                     </div>
                   </CardContent>
-                  {recentActivities.length > 0 ? (
+                  {overview.recentActivities.length > 0 ? (
                     <CardFooter>
                       <Button variant="ghost" className="w-full" asChild>
                         <Link href="/dashboard/activity">
@@ -754,13 +651,13 @@ function StatsCard({
 function OrderStatusBadge({ status }: OrderStatusBadgeProps) {
   let color: string;
   switch (status) {
-    case 'completed':
+    case OrderStatus.Fulfilled:
       color = 'bg-green-500 hover:bg-green-600';
       break;
-    case 'processing':
+    case OrderStatus.Processing:
       color = 'bg-blue-500 hover:bg-blue-600';
       break;
-    case 'shipped':
+    case OrderStatus.Shipped:
       color = 'bg-purple-500 hover:bg-purple-600';
       break;
     default:

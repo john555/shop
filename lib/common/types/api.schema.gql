@@ -2,6 +2,20 @@
 # THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
 # ------------------------------------------------------
 
+"""Type of activity in the system"""
+enum ActivityType {
+  COLLECTION_CREATED
+  CUSTOMER_REGISTERED
+  ORDER_RECEIVED
+  PRODUCT_ADDED
+  PRODUCT_UPDATED
+}
+
+type ActivityUser {
+  avatar: String!
+  name: String!
+}
+
 """Address information"""
 type Address {
   city: String
@@ -661,12 +675,12 @@ type Query {
 }
 
 type RecentActivity {
-  details: String
-  message: String!
+  description: String!
+  id: String!
   timestamp: DateTime!
-  type: String!
-  userId: String!
-  userName: String!
+  title: String!
+  type: ActivityType!
+  user: ActivityUser
 }
 
 type RecentOrder {

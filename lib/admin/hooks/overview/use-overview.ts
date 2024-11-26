@@ -1,5 +1,12 @@
 import { gql, useQuery } from '@apollo/client';
-import { StoreOverview } from '@/types/api';
+import {
+  FolderOpen,
+  LucideIcon,
+  Package,
+  ShoppingCart,
+  Users,
+} from 'lucide-react';
+import { StoreOverview, ActivityType, RecentActivity } from '@/types/api';
 
 const STORE_OVERVIEW_QUERY = gql`
   query StoreOverview($storeId: String!) {
@@ -26,12 +33,15 @@ const STORE_OVERVIEW_QUERY = gql`
         isNew
       }
       recentActivities {
+        id
         type
-        message
-        userId
-        userName
-        details
+        title
+        description
         timestamp
+        user {
+          name
+          avatar
+        }
       }
     }
   }
@@ -42,11 +52,28 @@ export interface UseOverviewProps {
   pollInterval?: number; // Optional polling interval in milliseconds
 }
 
+type StoreOverviewData = Omit<StoreOverview, 'recentActivities'> & {
+  recentActivities: Array<RecentActivity & { icon: LucideIcon }>;
+};
+
 export interface UseOverviewResult {
-  overview: StoreOverview | null;
+  overview: StoreOverviewData | null;
   loading: boolean;
   error: any;
   refetch: () => Promise<any>;
+}
+
+function getActivityIcon(type: ActivityType) {
+  switch (type) {
+    case ActivityType.ProductAdded:
+      return Package;
+    case ActivityType.CollectionCreated:
+      return FolderOpen;
+    case ActivityType.CustomerRegistered:
+      return Users;
+    case ActivityType.OrderReceived:
+      return ShoppingCart;
+  }
 }
 
 /**
@@ -66,8 +93,24 @@ export function useOverview({
     nextFetchPolicy: 'cache-first', // Use cache for subsequent requests
   });
 
+  const overview = data?.storeOverview
+    ? {
+        ...data.storeOverview,
+        recentActivities: data.storeOverview.recentActivities.map(
+          (activity: any) => ({
+            id: activity.id,
+            icon: getActivityIcon(activity.type),
+            title: activity.title,
+            description: activity.description,
+            timestamp: new Date(activity.timestamp).toISOString(),
+            user: activity.user,
+          })
+        ),
+      }
+    : null;
+
   return {
-    overview: data?.storeOverview ?? null,
+    overview,
     loading,
     error,
     refetch,

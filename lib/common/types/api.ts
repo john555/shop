@@ -18,6 +18,21 @@ export type Scalars = {
   DateTime: { input: any; output: any; }
 };
 
+/** Type of activity in the system */
+export enum ActivityType {
+  CollectionCreated = 'COLLECTION_CREATED',
+  CustomerRegistered = 'CUSTOMER_REGISTERED',
+  OrderReceived = 'ORDER_RECEIVED',
+  ProductAdded = 'PRODUCT_ADDED',
+  ProductUpdated = 'PRODUCT_UPDATED'
+}
+
+export type ActivityUser = {
+  __typename?: 'ActivityUser';
+  avatar: Scalars['String']['output'];
+  name: Scalars['String']['output'];
+};
+
 /** Address information */
 export type Address = {
   __typename?: 'Address';
@@ -933,12 +948,12 @@ export type QueryUserArgs = {
 
 export type RecentActivity = {
   __typename?: 'RecentActivity';
-  details?: Maybe<Scalars['String']['output']>;
-  message: Scalars['String']['output'];
+  description: Scalars['String']['output'];
+  id: Scalars['String']['output'];
   timestamp: Scalars['DateTime']['output'];
-  type: Scalars['String']['output'];
-  userId: Scalars['String']['output'];
-  userName: Scalars['String']['output'];
+  title: Scalars['String']['output'];
+  type: ActivityType;
+  user?: Maybe<ActivityUser>;
 };
 
 export type RecentOrder = {
@@ -1253,6 +1268,8 @@ export type DirectiveResolverFn<TResult = {}, TParent = {}, TContext = {}, TArgs
 
 /** Mapping between all available schema types and the resolvers types */
 export type ResolversTypes = {
+  ActivityType: ActivityType;
+  ActivityUser: ResolverTypeWrapper<ActivityUser>;
   Address: ResolverTypeWrapper<Address>;
   AddressInput: AddressInput;
   AddressOnOwner: ResolverTypeWrapper<AddressOnOwner>;
@@ -1329,6 +1346,7 @@ export type ResolversTypes = {
 
 /** Mapping between all available schema types and the resolvers parents */
 export type ResolversParentTypes = {
+  ActivityUser: ActivityUser;
   Address: Address;
   AddressInput: AddressInput;
   AddressOnOwner: AddressOnOwner;
@@ -1386,6 +1404,12 @@ export type ResolversParentTypes = {
   User: User;
   UserPasswordUpdateInput: UserPasswordUpdateInput;
   UserUpdateInput: UserUpdateInput;
+};
+
+export type ActivityUserResolvers<ContextType = any, ParentType extends ResolversParentTypes['ActivityUser'] = ResolversParentTypes['ActivityUser']> = {
+  avatar?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
 export type AddressResolvers<ContextType = any, ParentType extends ResolversParentTypes['Address'] = ResolversParentTypes['Address']> = {
@@ -1629,12 +1653,12 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
 };
 
 export type RecentActivityResolvers<ContextType = any, ParentType extends ResolversParentTypes['RecentActivity'] = ResolversParentTypes['RecentActivity']> = {
-  details?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  message?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  description?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   timestamp?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
-  type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  userId?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  userName?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  title?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  type?: Resolver<ResolversTypes['ActivityType'], ParentType, ContextType>;
+  user?: Resolver<Maybe<ResolversTypes['ActivityUser']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
@@ -1726,6 +1750,7 @@ export type UserResolvers<ContextType = any, ParentType extends ResolversParentT
 };
 
 export type Resolvers<ContextType = any> = {
+  ActivityUser?: ActivityUserResolvers<ContextType>;
   Address?: AddressResolvers<ContextType>;
   AddressOnOwner?: AddressOnOwnerResolvers<ContextType>;
   AuthSignin?: AuthSigninResolvers<ContextType>;
