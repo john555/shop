@@ -80,8 +80,9 @@ interface OrderStatusBadgeProps {
 }
 
 export default function DashboardOverview() {
-  const { store } = useStore();
-  const { overview, loading } = useOverview({ storeId: store?.id });
+  const { store, loading: storeLoading } = useStore();
+  const { overview, loading: overviewLoading } = useOverview({ storeId: store?.id });
+  const loading = storeLoading || overviewLoading;
   const [sections, setSections] = useState<DashboardSection[]>([
     {
       id: 'stats',
