@@ -610,6 +610,19 @@ export type MutationUpdateUserArgs = {
   input: UserUpdateInput;
 };
 
+/** Order Status */
+export enum OrderStatus {
+  Cancelled = 'CANCELLED',
+  Delivered = 'DELIVERED',
+  Draft = 'DRAFT',
+  Fulfilled = 'FULFILLED',
+  Paid = 'PAID',
+  Pending = 'PENDING',
+  Processing = 'PROCESSING',
+  Refunded = 'REFUNDED',
+  Shipped = 'SHIPPED'
+}
+
 /** Product model */
 export type Product = {
   __typename?: 'Product';
@@ -785,6 +798,7 @@ export type Query = {
   storeCategories: Array<Category>;
   storeCollections: Array<Collection>;
   storeCustomers: Array<Customer>;
+  storeOverview: StoreOverview;
   storeTags: Array<Tag>;
   tag: Tag;
   user: User;
@@ -894,6 +908,11 @@ export type QueryStoreCustomersArgs = {
 };
 
 
+export type QueryStoreOverviewArgs = {
+  storeId: Scalars['String']['input'];
+};
+
+
 export type QueryStoreTagsArgs = {
   cursor?: InputMaybe<Scalars['String']['input']>;
   skip?: Scalars['Int']['input'];
@@ -910,6 +929,25 @@ export type QueryTagArgs = {
 
 export type QueryUserArgs = {
   id: Scalars['String']['input'];
+};
+
+export type RecentActivity = {
+  __typename?: 'RecentActivity';
+  details?: Maybe<Scalars['String']['output']>;
+  message: Scalars['String']['output'];
+  timestamp: Scalars['DateTime']['output'];
+  type: Scalars['String']['output'];
+  userId: Scalars['String']['output'];
+  userName: Scalars['String']['output'];
+};
+
+export type RecentOrder = {
+  __typename?: 'RecentOrder';
+  customerName: Scalars['String']['output'];
+  id: Scalars['String']['output'];
+  isNew: Scalars['Boolean']['output'];
+  status: OrderStatus;
+  total: Scalars['Float']['output'];
 };
 
 /** Sales channel for the product (ONLINE, IN_STORE) */
@@ -994,6 +1032,26 @@ export enum StoreCurrency {
   Tzs = 'TZS',
   Ugx = 'UGX'
 }
+
+export type StoreOverview = {
+  __typename?: 'StoreOverview';
+  averageOrderValue: Scalars['Float']['output'];
+  collections: Scalars['Int']['output'];
+  collectionsSubtext: Scalars['String']['output'];
+  conversionRate: Scalars['Float']['output'];
+  conversionRateGrowth: Scalars['Float']['output'];
+  customers: Scalars['Int']['output'];
+  customersSubtext: Scalars['String']['output'];
+  orderValueGrowth: Scalars['Float']['output'];
+  ordersSubtext: Scalars['String']['output'];
+  productsSubtext: Scalars['String']['output'];
+  recentActivities: Array<RecentActivity>;
+  recentOrders: Array<RecentOrder>;
+  revenue: Scalars['Float']['output'];
+  revenueGrowth: Scalars['Float']['output'];
+  totalOrders: Scalars['Int']['output'];
+  totalProducts: Scalars['Int']['output'];
+};
 
 /** The type of store (PHYSICAL_GOODS, REAL_ESTATE, VEHICLES) */
 export enum StoreType {
@@ -1235,6 +1293,7 @@ export type ResolversTypes = {
   MediaType: MediaType;
   MediaUpdateInput: MediaUpdateInput;
   Mutation: ResolverTypeWrapper<{}>;
+  OrderStatus: OrderStatus;
   Product: ResolverTypeWrapper<Product>;
   ProductCreateInput: ProductCreateInput;
   ProductFiltersInput: ProductFiltersInput;
@@ -1246,11 +1305,14 @@ export type ResolversTypes = {
   ProductVariant: ResolverTypeWrapper<ProductVariant>;
   ProductVariantInput: ProductVariantInput;
   Query: ResolverTypeWrapper<{}>;
+  RecentActivity: ResolverTypeWrapper<RecentActivity>;
+  RecentOrder: ResolverTypeWrapper<RecentOrder>;
   SalesChannel: SalesChannel;
   SortOrder: SortOrder;
   Store: ResolverTypeWrapper<Store>;
   StoreCreateInput: StoreCreateInput;
   StoreCurrency: StoreCurrency;
+  StoreOverview: ResolverTypeWrapper<StoreOverview>;
   StoreType: StoreType;
   StoreUpdateInput: StoreUpdateInput;
   String: ResolverTypeWrapper<Scalars['String']['output']>;
@@ -1311,8 +1373,11 @@ export type ResolversParentTypes = {
   ProductVariant: ProductVariant;
   ProductVariantInput: ProductVariantInput;
   Query: {};
+  RecentActivity: RecentActivity;
+  RecentOrder: RecentOrder;
   Store: Store;
   StoreCreateInput: StoreCreateInput;
+  StoreOverview: StoreOverview;
   StoreUpdateInput: StoreUpdateInput;
   String: Scalars['String']['output'];
   Tag: Tag;
@@ -1557,9 +1622,29 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   storeCategories?: Resolver<Array<ResolversTypes['Category']>, ParentType, ContextType, RequireFields<QueryStoreCategoriesArgs, 'skip' | 'storeId' | 'take'>>;
   storeCollections?: Resolver<Array<ResolversTypes['Collection']>, ParentType, ContextType, RequireFields<QueryStoreCollectionsArgs, 'skip' | 'storeId' | 'take'>>;
   storeCustomers?: Resolver<Array<ResolversTypes['Customer']>, ParentType, ContextType, RequireFields<QueryStoreCustomersArgs, 'skip' | 'storeId' | 'take'>>;
+  storeOverview?: Resolver<ResolversTypes['StoreOverview'], ParentType, ContextType, RequireFields<QueryStoreOverviewArgs, 'storeId'>>;
   storeTags?: Resolver<Array<ResolversTypes['Tag']>, ParentType, ContextType, RequireFields<QueryStoreTagsArgs, 'skip' | 'storeId' | 'take'>>;
   tag?: Resolver<ResolversTypes['Tag'], ParentType, ContextType, RequireFields<QueryTagArgs, 'id'>>;
   user?: Resolver<ResolversTypes['User'], ParentType, ContextType, RequireFields<QueryUserArgs, 'id'>>;
+};
+
+export type RecentActivityResolvers<ContextType = any, ParentType extends ResolversParentTypes['RecentActivity'] = ResolversParentTypes['RecentActivity']> = {
+  details?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  message?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  timestamp?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
+  type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  userId?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  userName?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
+export type RecentOrderResolvers<ContextType = any, ParentType extends ResolversParentTypes['RecentOrder'] = ResolversParentTypes['RecentOrder']> = {
+  customerName?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  isNew?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  status?: Resolver<ResolversTypes['OrderStatus'], ParentType, ContextType>;
+  total?: Resolver<ResolversTypes['Float'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
 export type StoreResolvers<ContextType = any, ParentType extends ResolversParentTypes['Store'] = ResolversParentTypes['Store']> = {
@@ -1590,6 +1675,26 @@ export type StoreResolvers<ContextType = any, ParentType extends ResolversParent
   updatedAt?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   weightUnit?: Resolver<ResolversTypes['WeightUnit'], ParentType, ContextType>;
   whatsApp?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
+export type StoreOverviewResolvers<ContextType = any, ParentType extends ResolversParentTypes['StoreOverview'] = ResolversParentTypes['StoreOverview']> = {
+  averageOrderValue?: Resolver<ResolversTypes['Float'], ParentType, ContextType>;
+  collections?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  collectionsSubtext?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  conversionRate?: Resolver<ResolversTypes['Float'], ParentType, ContextType>;
+  conversionRateGrowth?: Resolver<ResolversTypes['Float'], ParentType, ContextType>;
+  customers?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  customersSubtext?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  orderValueGrowth?: Resolver<ResolversTypes['Float'], ParentType, ContextType>;
+  ordersSubtext?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  productsSubtext?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  recentActivities?: Resolver<Array<ResolversTypes['RecentActivity']>, ParentType, ContextType>;
+  recentOrders?: Resolver<Array<ResolversTypes['RecentOrder']>, ParentType, ContextType>;
+  revenue?: Resolver<ResolversTypes['Float'], ParentType, ContextType>;
+  revenueGrowth?: Resolver<ResolversTypes['Float'], ParentType, ContextType>;
+  totalOrders?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  totalProducts?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
@@ -1637,7 +1742,10 @@ export type Resolvers<ContextType = any> = {
   ProductOptionValue?: ProductOptionValueResolvers<ContextType>;
   ProductVariant?: ProductVariantResolvers<ContextType>;
   Query?: QueryResolvers<ContextType>;
+  RecentActivity?: RecentActivityResolvers<ContextType>;
+  RecentOrder?: RecentOrderResolvers<ContextType>;
   Store?: StoreResolvers<ContextType>;
+  StoreOverview?: StoreOverviewResolvers<ContextType>;
   Tag?: TagResolvers<ContextType>;
   User?: UserResolvers<ContextType>;
 };

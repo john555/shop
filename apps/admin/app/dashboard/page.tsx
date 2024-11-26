@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { useTheme } from 'next-themes';
 import {
   Package,
   Users,
@@ -51,6 +50,8 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Checkbox } from '@/components/ui/checkbox';
+import { useOverview } from '@/admin/hooks/overview';
+import { useStore } from '@/admin/hooks/store';
 
 interface DashboardCard {
   id: string;
@@ -107,7 +108,9 @@ interface OrderStatusBadgeProps {
 }
 
 export default function DashboardOverview() {
-  const { theme } = useTheme();
+  const { store } = useStore();
+  const { overview, loading } = useOverview({ storeId: store?.id });
+  console.log({ overview });
   const [sections, setSections] = useState<DashboardSection[]>([
     {
       id: 'stats',
@@ -300,6 +303,10 @@ export default function DashboardOverview() {
     );
   };
 
+  if (!overview && loading) {
+    return <>Loading...</>;
+  }
+
   return (
     <div className="p-6 space-y-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -387,7 +394,7 @@ export default function DashboardOverview() {
       {!hasData && (
         <Card>
           <CardHeader>
-            <CardTitle>Let's Get Your Store Up and Running!</CardTitle>
+            <CardTitle>Let&apos;s Get Your Store Up and Running!</CardTitle>
             <CardDescription>
               Take the first steps to launch your successful online business.
               Start by setting up these key areas:
@@ -436,7 +443,7 @@ export default function DashboardOverview() {
               </EmptyPlaceholderIcon>
               <EmptyPlaceholderTitle>No recent activity</EmptyPlaceholderTitle>
               <EmptyPlaceholderDescription>
-                Your store's activity will be displayed here as you use the
+                Your store&apos;s activity will be displayed here as you use the
                 platform.
               </EmptyPlaceholderDescription>
             </EmptyPlaceholder>
@@ -695,8 +702,8 @@ export default function DashboardOverview() {
                             No recent activity
                           </EmptyPlaceholderTitle>
                           <EmptyPlaceholderDescription>
-                            Your store's activity will be displayed here as you
-                            use the platform.
+                            Your store&apos;s activity will be displayed here as
+                            you use the platform.
                           </EmptyPlaceholderDescription>
                         </EmptyPlaceholder>
                       )}

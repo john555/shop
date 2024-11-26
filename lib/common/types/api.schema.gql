@@ -451,6 +451,19 @@ type Mutation {
   updateUser(input: UserUpdateInput!): User!
 }
 
+"""Order Status"""
+enum OrderStatus {
+  CANCELLED
+  DELIVERED
+  DRAFT
+  FULFILLED
+  PAID
+  PENDING
+  PROCESSING
+  REFUNDED
+  SHIPPED
+}
+
 """Product model"""
 type Product {
   available: Int!
@@ -641,9 +654,27 @@ type Query {
   storeCategories(cursor: String, skip: Int! = 0, sortOrder: SortOrder, storeId: String!, take: Int! = 25): [Category!]!
   storeCollections(cursor: String, skip: Int! = 0, sortOrder: SortOrder, storeId: String!, take: Int! = 25): [Collection!]!
   storeCustomers(cursor: String, skip: Int! = 0, sortOrder: SortOrder, storeId: String!, take: Int! = 25): [Customer!]!
+  storeOverview(storeId: String!): StoreOverview!
   storeTags(cursor: String, skip: Int! = 0, sortOrder: SortOrder, storeId: String!, take: Int! = 25): [Tag!]!
   tag(id: ID!): Tag!
   user(id: String!): User!
+}
+
+type RecentActivity {
+  details: String
+  message: String!
+  timestamp: DateTime!
+  type: String!
+  userId: String!
+  userName: String!
+}
+
+type RecentOrder {
+  customerName: String!
+  id: String!
+  isNew: Boolean!
+  status: OrderStatus!
+  total: Float!
 }
 
 """Sales channel for the product (ONLINE, IN_STORE)"""
@@ -748,6 +779,25 @@ enum StoreCurrency {
   SSP
   TZS
   UGX
+}
+
+type StoreOverview {
+  averageOrderValue: Float!
+  collections: Int!
+  collectionsSubtext: String!
+  conversionRate: Float!
+  conversionRateGrowth: Float!
+  customers: Int!
+  customersSubtext: String!
+  orderValueGrowth: Float!
+  ordersSubtext: String!
+  productsSubtext: String!
+  recentActivities: [RecentActivity!]!
+  recentOrders: [RecentOrder!]!
+  revenue: Float!
+  revenueGrowth: Float!
+  totalOrders: Int!
+  totalProducts: Int!
 }
 
 """The type of store (PHYSICAL_GOODS, REAL_ESTATE, VEHICLES)"""
