@@ -225,7 +225,7 @@ model Store {
   orderSuffix String?
 
   // Relations
-  owner            User              @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  owner            User                   @relation(fields: [ownerId], references: [id], onDelete: Cascade)
   ownerId          String
   products         Product[]
   propertyListings PropertyListing[]
@@ -234,6 +234,8 @@ model Store {
   collections      Collection[]
   tags             Tag[]
   customers        Customer[]
+  orders           Order[]
+  paymentProviders StorePaymentProvider[]
 
   // Timestamps
   createdAt DateTime @default(now()) @db.Timestamp(6)
@@ -246,25 +248,25 @@ model Store {
 }
 
 model Product {
-  id             String         @id @default(cuid())
+  id             String           @id @default(cuid())
   title          String
-  description    String?       
-  slug           String        
-  status         ProductStatus  @default(DRAFT)
+  description    String?
+  slug           String
+  status         ProductStatus    @default(DRAFT)
   seoTitle       String?
   seoDescription String?
-  trackInventory Boolean        @default(false)
+  trackInventory Boolean          @default(false)
   salesChannels  SalesChannel[]
   storeId        String
-  store          Store          @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  store          Store            @relation(fields: [storeId], references: [id], onDelete: Cascade)
   categoryId     String?
-  category       Category?      @relation(fields: [categoryId], references: [id])
+  category       Category?        @relation(fields: [categoryId], references: [id])
   variants       ProductVariant[]
   options        ProductOption[]
   collections    Collection[]
   tags           Tag[]
-  createdAt      DateTime       @default(now())
-  updatedAt      DateTime       @updatedAt
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
 
   @@unique([storeId, slug])
   @@index([storeId])
@@ -588,9 +590,511 @@ model Customer {
   store           Store    @relation(fields: [storeId], references: [id])
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
+  Order           Order[]
 
   @@unique([storeId, email])
   @@unique([storeId, phoneNumber])
   @@index([storeId])
   @@map("customers")
+}
+
+// --------- Enums ---------
+enum OrderStatus {
+  DRAFT
+  PENDING
+  PAID
+  PROCESSING
+  SHIPPED
+  DELIVERED
+  FULFILLED
+  CANCELLED
+  REFUNDED
+}
+
+enum PaymentMethod {
+  CASH
+  CARD
+  MOBILE_MONEY
+  BANK_TRANSFER
+  MANUAL
+  OTHER
+}
+
+enum PaymentStatus {
+  PENDING
+  COMPLETED
+  FAILED
+  REFUNDED
+}
+
+enum PaymentProvider {
+  STRIPE
+  MPESA
+  AIRTEL_MONEY
+  MANUAL
+}
+
+enum FulfillmentType {
+  PICKUP
+  DELIVERY
+  SHIPPING
+}
+
+enum ShippingStatus {
+  PENDING
+  PROCESSING
+  SHIPPED
+  IN_TRANSIT
+  OUT_FOR_DELIVERY
+  DELIVERED
+  FAILED
+  RETURNED
+  CANCELLED
+}
+
+enum TaxCalculationType {
+  INCLUSIVE
+  EXCLUSIVE
+}
+
+enum DiscountType {
+  PERCENTAGE
+  FIXED_AMOUNT
+  FREE_SHIPPING
+}
+
+enum OrderEventType {
+  STATUS_CHANGED
+  PAYMENT_RECEIVED
+  PAYMENT_FAILED
+  REFUND_ISSUED
+  SHIPMENT_CREATED
+  SHIPMENT_UPDATED
+  NOTE_ADDED
+  DISCOUNT_APPLIED
+  ITEM_ADDED
+  ITEM_REMOVED
+  ITEM_UPDATED
+}
+
+// --------- Core Order Models ---------
+model Order {
+  id          String      @id @default(cuid())
+  orderNumber String      @unique
+  status      OrderStatus @default(DRAFT)
+
+  // Customer information snapshot
+  customerId    String?
+  customer      Customer? @relation(fields: [customerId], references: [id])
+  customerEmail String?
+  customerPhone String?
+  customerName  String?
+
+  // Store & Admin data
+  storeId     String
+  store       Store  @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  createdById String
+  updatedById String
+
+  // Fulfillment details
+  fulfillmentType FulfillmentType @default(PICKUP)
+
+  // Shipping information
+  shippingStatus  ShippingStatus?
+  shippingCarrier String?
+  trackingNumber  String?
+  trackingUrl     String?
+  shippingAddress Json?
+  shippingCost    Decimal?        @db.Decimal(10, 2)
+  shippingTax     Decimal?        @db.Decimal(10, 2)
+
+  // Dates
+  estimatedDeliveryDate DateTime?
+  actualDeliveryDate    DateTime?
+
+  // Currency information
+  currency       StoreCurrency
+  currencySymbol String
+  currencyRate   Decimal?      @db.Decimal(10, 4)
+
+  // Tax calculation
+  taxCalculationType TaxCalculationType @default(EXCLUSIVE)
+
+  // Amounts
+  subtotal Decimal @db.Decimal(10, 2)
+  discount Decimal @db.Decimal(10, 2)
+  tax      Decimal @db.Decimal(10, 2)
+  total    Decimal @db.Decimal(10, 2)
+
+  // Payment tracking
+  paymentStatus PaymentStatus @default(PENDING)
+  totalPaid     Decimal       @default(0) @db.Decimal(10, 2)
+  balance       Decimal       @default(0) @db.Decimal(10, 2)
+
+  // Channel & Source
+  salesChannel  SalesChannel @default(IN_STORE)
+  posTerminalId String?
+
+  // Security & Tracking
+  ipAddress String?
+  userAgent String?
+  tags      String[]
+
+  // Flags
+  requiresShipping  Boolean @default(true)
+  isPriceOverridden Boolean @default(false)
+
+  // Relations
+  items     OrderItem[]
+  payments  OrderPayment[]
+  refunds   OrderRefund[]
+  notes     OrderNote[]
+  shipments OrderShipment[]
+  taxes     OrderTax[]
+  discounts OrderDiscount[]
+  events    OrderEvent[]
+  giftCards OrderGiftCard[]
+
+  // Processing Timestamps
+  processedAt  DateTime?
+  shippedAt    DateTime?
+  deliveredAt  DateTime?
+  cancelledAt  DateTime?
+  cancelReason String?
+  fulfilledAt  DateTime?
+  createdAt    DateTime  @default(now()) @db.Timestamp(6)
+  updatedAt    DateTime  @updatedAt @db.Timestamp(6)
+
+  @@index([storeId])
+  @@index([customerId])
+  @@index([orderNumber])
+  @@map("orders")
+}
+
+// --------- Order Items ---------
+model OrderItem {
+  id      String @id @default(cuid())
+  orderId String
+  order   Order  @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  // Product Variant reference
+  variantId String?
+
+  // Product snapshot
+  title        String
+  description  String?
+  sku          String?
+  categoryId   String?
+  categoryName String?
+  slug         String?
+
+  // Pricing
+  unitPrice      Decimal  @db.Decimal(10, 2)
+  compareAtPrice Decimal? @db.Decimal(10, 2)
+  quantity       Int
+  subtotal       Decimal  @db.Decimal(10, 2)
+  discount       Decimal  @db.Decimal(10, 2)
+  discountReason String?
+  tax            Decimal  @db.Decimal(10, 2)
+  total          Decimal  @db.Decimal(10, 2)
+
+  // Custom item
+  isCustom       Boolean @default(false)
+  customItemNote String?
+
+  // Relations
+  shipments OrderShipmentItem[]
+  taxes     OrderItemTax[]
+  discounts OrderItemDiscount[]
+
+  // Timestamps
+  createdAt DateTime @default(now()) @db.Timestamp(6)
+  updatedAt DateTime @updatedAt @db.Timestamp(6)
+
+  @@index([orderId])
+  @@map("order_items")
+}
+
+// --------- Payment Models ---------
+model OrderPayment {
+  id      String @id @default(cuid())
+  orderId String
+  order   Order  @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  // Payment method
+  method   PaymentMethod
+  provider PaymentProvider
+
+  // Amount details
+  amount Decimal       @db.Decimal(10, 2)
+  fee    Decimal       @default(0) @db.Decimal(10, 2)
+  status PaymentStatus
+
+  // Provider details
+  providerTransactionId String?
+  providerResponse      Json?
+
+  // Mobile Money specific
+  phoneNumber String?
+  accountName String?
+
+  // Card specific
+  cardBrand       String?
+  cardLast4       String?
+  cardExpiryMonth Int?
+  cardExpiryYear  Int?
+
+  // Bank Transfer specific
+  bankName          String?
+  accountNumber     String?
+  transferReference String?
+
+  // Cash specific
+  receivedAmount Decimal? @db.Decimal(10, 2)
+  changeAmount   Decimal? @db.Decimal(10, 2)
+
+  // Metadata
+  metadata Json?
+
+  // Error handling
+  errorCode    String?
+  errorMessage String?
+
+  // Refund reference
+  refundId String?
+  isRefund Boolean @default(false)
+
+  // Receipt
+  receiptNumber String?
+  receiptUrl    String?
+
+  // Admin tracking
+  processedById String
+  notes         String?
+
+  // Timestamps
+  processedAt DateTime?
+  createdAt   DateTime  @default(now()) @db.Timestamp(6)
+  updatedAt   DateTime  @updatedAt @db.Timestamp(6)
+
+  @@index([orderId])
+  @@index([providerTransactionId])
+  @@map("order_payments")
+}
+
+model StorePaymentProvider {
+  id      String @id @default(cuid())
+  storeId String
+  store   Store  @relation(fields: [storeId], references: [id], onDelete: Cascade)
+
+  provider PaymentProvider
+  isActive Boolean         @default(true)
+
+  // Provider specific configuration
+  config Json
+
+  // Timestamps
+  createdAt DateTime @default(now()) @db.Timestamp(6)
+  updatedAt DateTime @updatedAt @db.Timestamp(6)
+
+  @@unique([storeId, provider])
+  @@index([storeId])
+  @@map("store_payment_providers")
+}
+
+model OrderRefund {
+  id      String @id @default(cuid())
+  orderId String
+  order   Order  @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  amount Decimal @db.Decimal(10, 2)
+  reason String
+
+  // Payment details
+  paymentId             String?
+  method                PaymentMethod
+  provider              PaymentProvider
+  providerTransactionId String?
+  providerResponse      Json?
+
+  status PaymentStatus @default(PENDING)
+
+  // Admin tracking
+  processedById String
+  notes         String?
+
+  // Timestamps
+  processedAt DateTime?
+  createdAt   DateTime  @default(now()) @db.Timestamp(6)
+  updatedAt   DateTime  @updatedAt @db.Timestamp(6)
+
+  @@index([orderId])
+  @@map("order_refunds")
+}
+
+// --------- Shipping Models ---------
+model OrderShipment {
+  id      String @id @default(cuid())
+  orderId String
+  order   Order  @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  shippingStatus ShippingStatus
+  carrier        String
+  trackingNumber String?
+  trackingUrl    String?
+
+  // Dates
+  shippedAt         DateTime?
+  estimatedDelivery DateTime?
+  actualDelivery    DateTime?
+
+  // Items in this shipment
+  items OrderShipmentItem[]
+
+  // Notes
+  notes String?
+
+  // Timestamps
+  createdAt DateTime @default(now()) @db.Timestamp(6)
+  updatedAt DateTime @updatedAt @db.Timestamp(6)
+
+  @@index([orderId])
+  @@map("order_shipments")
+}
+
+model OrderShipmentItem {
+  id          String        @id @default(cuid())
+  shipmentId  String
+  shipment    OrderShipment @relation(fields: [shipmentId], references: [id], onDelete: Cascade)
+  orderItemId String
+  orderItem   OrderItem     @relation(fields: [orderItemId], references: [id])
+  quantity    Int // How many of the item are in this shipment
+
+  // Timestamps
+  createdAt DateTime @default(now()) @db.Timestamp(6)
+  updatedAt DateTime @updatedAt @db.Timestamp(6)
+
+  @@index([shipmentId])
+  @@index([orderItemId])
+  @@map("order_shipment_items")
+}
+
+// --------- Tax Models ---------
+model OrderTax {
+  id      String @id @default(cuid())
+  orderId String
+  order   Order  @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  name   String // e.g., "VAT", "Sales Tax"
+  rate   Decimal @db.Decimal(5, 2)
+  amount Decimal @db.Decimal(10, 2)
+
+  // Relations
+  itemTaxes OrderItemTax[]
+
+  // Timestamps
+  createdAt DateTime @default(now()) @db.Timestamp(6)
+  updatedAt DateTime @updatedAt @db.Timestamp(6)
+
+  @@index([orderId])
+  @@map("order_taxes")
+}
+
+model OrderItemTax {
+  id          String    @id @default(cuid())
+  orderTaxId  String
+  orderTax    OrderTax  @relation(fields: [orderTaxId], references: [id], onDelete: Cascade)
+  orderItemId String
+  orderItem   OrderItem @relation(fields: [orderItemId], references: [id])
+  amount      Decimal   @db.Decimal(10, 2)
+
+  @@index([orderTaxId])
+  @@index([orderItemId])
+  @@map("order_item_taxes")
+}
+
+// --------- Discount Models ---------
+model OrderDiscount {
+  id      String @id @default(cuid())
+  orderId String
+  order   Order  @relation(fields: [orderId], references: [id])
+
+  type   DiscountType
+  title  String
+  code   String? // If from a discount code
+  value  Decimal      @db.Decimal(10, 2) // Percentage or amount
+  amount Decimal      @db.Decimal(10, 2) // Actual discount amount
+
+  // Relations
+  itemDiscounts OrderItemDiscount[]
+
+  // Timestamps
+  createdAt DateTime @default(now()) @db.Timestamp(6)
+  updatedAt DateTime @updatedAt @db.Timestamp(6)
+
+  @@index([orderId])
+  @@map("order_discounts")
+}
+
+model OrderItemDiscount {
+  id          String        @id @default(cuid())
+  discountId  String
+  discount    OrderDiscount @relation(fields: [discountId], references: [id])
+  orderItemId String
+  orderItem   OrderItem     @relation(fields: [orderItemId], references: [id])
+  amount      Decimal       @db.Decimal(10, 2)
+
+  @@index([discountId])
+  @@index([orderItemId])
+  @@map("order_item_discounts")
+}
+
+// --------- Event & Notes Models ---------
+model OrderEvent {
+  id      String @id @default(cuid())
+  orderId String
+  order   Order  @relation(fields: [orderId], references: [id])
+
+  type        OrderEventType
+  description String
+  data        Json? // Additional event data
+  createdById String
+
+  createdAt DateTime @default(now()) @db.Timestamp(6)
+
+  @@index([orderId])
+  @@map("order_events")
+}
+
+model OrderNote {
+  id          String @id @default(cuid())
+  orderId     String
+  order       Order  @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  note        String
+  createdById String // User who added the note
+
+  // Timestamps
+  createdAt DateTime @default(now()) @db.Timestamp(6)
+  updatedAt DateTime @updatedAt @db.Timestamp(6)
+
+  @@index([orderId])
+  @@map("order_notes")
+}
+
+// --------- Gift Card Model ---------
+model OrderGiftCard {
+  id      String @id @default(cuid())
+  orderId String
+  order   Order  @relation(fields: [orderId], references: [id])
+
+  code      String    @unique
+  amount    Decimal   @db.Decimal(10, 2)
+  balance   Decimal   @db.Decimal(10, 2)
+  expiresAt DateTime?
+
+  createdAt DateTime @default(now()) @db.Timestamp(6)
+  updatedAt DateTime @updatedAt @db.Timestamp(6)
+
+  @@index([orderId])
+  @@map("order_gift_cards")
 }
