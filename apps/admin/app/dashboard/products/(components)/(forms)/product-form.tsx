@@ -53,6 +53,7 @@ import { useCollections } from '@/admin/hooks/collection';
 import MediaInput from '@/components/media-input';
 import { ProductStatusBadge } from '../(ui)/product-status-badge';
 import { VariantsCard } from './variants-card';
+import Link from 'next/link';
 
 function generateSlug(title: string): string {
   return title
@@ -183,7 +184,10 @@ export function ProductForm() {
     if (!store?.id) return;
 
     if (product) {
-      const updatedProduct = await updateProduct({ ...data });
+      const updatedProduct = await updateProduct({
+        ...data,
+        variants: undefined,
+      });
       form.reset(getInitialValues(updatedProduct));
     } else {
       const createdProduct = await createProduct({
@@ -192,6 +196,10 @@ export function ProductForm() {
         slug,
         storeId: store.id,
         price: data.price || 0,
+        options: data?.options?.map((o) => ({
+          name: o.name,
+          values: o.values,
+        })),
       });
       router.push(`${DASHBOARD_PAGE_LINK}/products/${createdProduct.id}`);
     }
@@ -515,7 +523,25 @@ export function ProductForm() {
                   )}
                 </CardContent>
               </Card>
-              <VariantsCard form={form} />
+              {isEditMode ? (
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Variants</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <Button variant="link" asChild className="p-0 text-muted-foreground">
+                      <Link
+                        href={`/dashboard/products/${id}/variants`}
+                      >
+                        Edit Variants
+                      </Link>
+                    </Button>
+                  </CardContent>
+                </Card>
+              ) : (
+                <VariantsCard form={form} />
+              )}
+
               <Card>
                 <CardHeader>
                   <CardTitle>SEO</CardTitle>
