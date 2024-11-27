@@ -53,6 +53,8 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { useOverview } from '@/admin/hooks/overview';
 import { useStore } from '@/admin/hooks/store';
 import { OrderStatus } from '@/types/api';
+import { formatPrice } from '@/common/currency';
+import { OrderStatusBadge } from './orders/(components)/(ui)/order-status-badge';
 
 interface DashboardCard {
   id: string;
@@ -81,7 +83,9 @@ interface OrderStatusBadgeProps {
 
 export default function DashboardOverview() {
   const { store, loading: storeLoading } = useStore();
-  const { overview, loading: overviewLoading } = useOverview({ storeId: store?.id });
+  const { overview, loading: overviewLoading } = useOverview({
+    storeId: store?.id,
+  });
   const loading = storeLoading || overviewLoading;
   const [sections, setSections] = useState<DashboardSection[]>([
     {
@@ -503,8 +507,12 @@ export default function DashboardOverview() {
                                   </Badge>
                                 )}
                               </TableCell>
-                              <TableCell>{order.customerName}</TableCell>
-                              <TableCell>${order.total.toFixed(2)}</TableCell>
+                              <TableCell>
+                                {order.customerName || 'No Customer'}
+                              </TableCell>
+                              <TableCell>
+                                {formatPrice(order.total, store)}
+                              </TableCell>
                               <TableCell>
                                 <OrderStatusBadge status={order.status} />
                               </TableCell>
@@ -646,27 +654,5 @@ function StatsCard({
         <p className="text-xs text-muted-foreground">{description}</p>
       </CardContent>
     </Card>
-  );
-}
-
-function OrderStatusBadge({ status }: OrderStatusBadgeProps) {
-  let color: string;
-  switch (status) {
-    case OrderStatus.Fulfilled:
-      color = 'bg-green-500 hover:bg-green-600';
-      break;
-    case OrderStatus.Processing:
-      color = 'bg-blue-500 hover:bg-blue-600';
-      break;
-    case OrderStatus.Shipped:
-      color = 'bg-purple-500 hover:bg-purple-600';
-      break;
-    default:
-      color = 'bg-gray-500 hover:bg-gray-600';
-  }
-  return (
-    <Badge className={`${color} text-white`}>
-      {status.charAt(0).toUpperCase() + status.slice(1)}
-    </Badge>
   );
 }

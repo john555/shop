@@ -27,6 +27,12 @@ const CUSTOMER_FIELDS = `
   phoneNumber
   marketingEmails
   marketingSMS
+  billingAddress {
+    address {
+      id,
+      country
+    }
+  }
   notes
   storeId
   createdAt

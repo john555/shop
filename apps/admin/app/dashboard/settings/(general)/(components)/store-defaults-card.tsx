@@ -29,7 +29,7 @@ import {
 } from '@/components/ui/form';
 import { currencyLabels } from '@/common/constants/currency';
 import { TIMEZONES } from '@/common/constants/timezone';
-import { formatCurrency } from '@/common/currency';
+import { formatPrice } from '@/common/currency';
 
 export function StoreDefaultsCard() {
   const { store } = useStore();
@@ -102,7 +102,7 @@ export function StoreDefaultsCard() {
                   <SelectContent>
                     <SelectItem value={CurrencyPosition.BeforeAmount}>
                       Before amount (e.g.,{' '}
-                      {formatCurrency(1000, {
+                      {formatPrice(1000, {
                         currencyPosition: CurrencyPosition.BeforeAmount,
                         showCurrencyCode,
                         currencySymbol,
@@ -112,7 +112,7 @@ export function StoreDefaultsCard() {
                     </SelectItem>
                     <SelectItem value={CurrencyPosition.AfterAmount}>
                       After amount (e.g.,{' '}
-                      {formatCurrency(1000, {
+                      {formatPrice(1000, {
                          currencyPosition: CurrencyPosition.AfterAmount,
                         showCurrencyCode,
                         currencySymbol,
@@ -145,7 +145,7 @@ export function StoreDefaultsCard() {
 
           <div className="text-sm text-muted-foreground">
             Example:{' '}
-            {formatCurrency(1000, {
+            {formatPrice(1000, {
               currencyPosition,
               showCurrencyCode,
               currencySymbol,
