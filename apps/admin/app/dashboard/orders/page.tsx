@@ -1,7 +1,9 @@
+import { DASHBOARD_PAGE_LINK } from "@/common/constants"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Search } from "lucide-react"
+import { Plus, Search } from "lucide-react"
+import Link from "next/link"
 
 const orders = [
   { id: "ORD001", customer: "John Doe", date: "2023-05-01", total: 150.00, status: "Completed" },
@@ -16,6 +18,11 @@ export default function OrdersPage() {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h1 className="text-3xl font-bold">Orders</h1>
+        <Button asChild>
+          <Link href={`${DASHBOARD_PAGE_LINK}/orders/create`}>
+            <Plus className="mr-2 h-4 w-4" /> Create an Order
+          </Link>
+        </Button>
       </div>
       <div className="flex items-center space-x-2">
         <div className="relative flex-1">

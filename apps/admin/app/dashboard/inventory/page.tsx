@@ -1,7 +1,9 @@
+import { DASHBOARD_PAGE_LINK } from "@/common/constants"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Plus, Search } from "lucide-react"
+import Link from "next/link"
 
 const inventory = [
   { id: 1, name: "Wireless Earbuds", sku: "WE001", stock: 120, reorderPoint: 20 },
@@ -16,8 +18,10 @@ export default function InventoryPage() {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h1 className="text-3xl font-bold">Inventory</h1>
-        <Button>
-          <Plus className="mr-2 h-4 w-4" /> Add Product
+        <Button asChild>
+          <Link href={`${DASHBOARD_PAGE_LINK}/products/create`}>
+            <Plus className="mr-2 h-4 w-4" /> Add Product
+          </Link>
         </Button>
       </div>
       <div className="flex items-center space-x-2">
