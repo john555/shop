@@ -428,6 +428,7 @@ type Mutation {
   createCategory(input: CategoryCreateInput!): Category!
   createCollection(input: CollectionCreateInput!): Collection!
   createCustomer(input: CustomerCreateInput!): Customer!
+  createDraftOrder(input: OrderCreateInput!): Order!
   createMedia(input: MediaCreateInput!): Media!
   createProduct(input: ProductCreateInput!): Product!
   createStore(input: StoreCreateInput!): Store!
@@ -465,7 +466,100 @@ type Mutation {
   updateUser(input: UserUpdateInput!): User!
 }
 
-"""Order Status"""
+"""Order model"""
+type Order {
+  cancelledAt: DateTime
+  createdAt: DateTime!
+  currency: StoreCurrency!
+  currencySymbol: String!
+  customer: Customer
+  customerId: String
+  customerNotes: String
+  deliveredAt: DateTime
+  discountAmount: Float!
+
+  """Formatted order number with prefix/suffix"""
+  formattedOrderNumber: String!
+  id: ID!
+  items: [OrderItem!]!
+
+  """Raw order number without prefix/suffix"""
+  orderNumber: String!
+  paidAt: DateTime
+  paymentStatus: PaymentStatus!
+  privateNotes: String
+  shipmentStatus: ShipmentStatus!
+  shippedAt: DateTime
+  shippingAmount: Float!
+  status: OrderStatus!
+  store: Store!
+  storeId: String!
+  subtotalAmount: Float!
+  taxAmount: Float!
+  totalAmount: Float!
+  trackingNumber: String
+  trackingUrl: String
+  updatedAt: DateTime!
+}
+
+type OrderCounts {
+  cancelled: Int!
+  delivered: Int!
+  draft: Int!
+  pending: Int!
+  processing: Int!
+  shipped: Int!
+  total: Int!
+}
+
+input OrderCreateInput {
+  customerId: String
+  customerNotes: String
+  items: [OrderItemInput!]!
+  privateNotes: String
+  storeId: String!
+}
+
+input OrderFiltersInput {
+  customerId: String
+  endDate: DateTime
+  maxAmount: Float
+  minAmount: Float
+  paymentStatus: [PaymentStatus!]
+  searchQuery: String
+  shipmentStatus: [ShipmentStatus!]
+  startDate: DateTime
+  status: [OrderStatus!]
+}
+
+"""Order item model"""
+type OrderItem {
+  discountAmount: Float!
+  id: ID!
+  productId: String!
+  quantity: Int!
+  sku: String
+  subtotal: Float!
+  taxAmount: Float!
+  title: String!
+  totalAmount: Float!
+  unitPrice: Float!
+  variantId: String!
+  variantName: String!
+}
+
+input OrderItemInput {
+  productId: String!
+  quantity: Int!
+  variantId: String!
+}
+
+type OrderStats {
+  counts: OrderCounts!
+  totals: OrderTotals!
+}
+
+"""Status of the order"""
 enum OrderStatus {
   CANCELLED
   DELIVERED
@@ -476,6 +570,21 @@ enum OrderStatus {
   PROCESSING
   REFUNDED
   SHIPPED
+}
+
+type OrderTotals {
+  discounts: Float!
+  orders: Float!
+  shipping: Float!
+  tax: Float!
+}
+
+"""Status of the payment"""
+enum PaymentStatus {
+  COMPLETED
+  FAILED
+  PENDING
+  REFUNDED
 }
 
 """Product model"""
@@ -659,8 +768,11 @@ type Query {
   me: User!
   media(id: ID!): Media
   mediaByOwner(cursor: String, ownerId: String!, ownerType: MediaOwnerType!, skip: Int! = 0, sortOrder: SortOrder, take: Int! = 25): [Media!]!
+  myStoreOrderStats(storeId: String!): OrderStats!
+  myStoreOrders(cursor: String, filters: OrderFiltersInput, skip: Int! = 0, sortOrder: SortOrder, storeId: String!, take: Int! = 25): [Order!]!
   myStoreProducts(cursor: String, filters: ProductFiltersInput, skip: Int! = 0, sortOrder: SortOrder, storeId: String!, take: Int! = 25): [Product!]!
   myStores(cursor: String, skip: Int! = 0, sortOrder: SortOrder, take: Int! = 25): [Store!]!
+  order(id: String!): Order
   ownerAddresses(ownerId: String!, ownerType: AddressOwnerType!): [AddressOnOwner!]!
   product(id: String!): Product
   productBySlug(slug: String!, storeId: String!): Product
@@ -695,6 +807,15 @@ type RecentOrder {
 enum SalesChannel {
   IN_STORE
   ONLINE
+}
+
+"""Status of the shipment"""
+enum ShipmentStatus {
+  DELIVERED
+  FAILED
+  PENDING
+  PROCESSING
+  SHIPPED
 }
 
 enum SortOrder {

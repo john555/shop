@@ -17,6 +17,7 @@ import { AuthorizationModule } from '../authorization/authorization.module';
 import { CustomerModule } from '../customer/customer.module';
 import { AddressOnOwnerModule } from '../address-on-owner/address-on-owner.module';
 import { OverviewModule } from '../overview/overview.module';
+import { OrderModule } from '../order/order.module';
 
 @Module({
   imports: [
@@ -57,6 +58,7 @@ import { OverviewModule } from '../overview/overview.module';
     CustomerModule,
     AddressOnOwnerModule,
     OverviewModule,
+    OrderModule,
   ],
   providers: [],
 })

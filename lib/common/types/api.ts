@@ -418,6 +418,7 @@ export type Mutation = {
   createCategory: Category;
   createCollection: Collection;
   createCustomer: Customer;
+  createDraftOrder: Order;
   createMedia: Media;
   createProduct: Product;
   createStore: Store;
@@ -495,6 +496,11 @@ export type MutationCreateCollectionArgs = {
 
 export type MutationCreateCustomerArgs = {
   input: CustomerCreateInput;
+};
+
+
+export type MutationCreateDraftOrderArgs = {
+  input: OrderCreateInput;
 };
 
 
@@ -625,7 +631,102 @@ export type MutationUpdateUserArgs = {
   input: UserUpdateInput;
 };
 
-/** Order Status */
+/** Order model */
+export type Order = {
+  __typename?: 'Order';
+  cancelledAt?: Maybe<Scalars['DateTime']['output']>;
+  createdAt: Scalars['DateTime']['output'];
+  currency: StoreCurrency;
+  currencySymbol: Scalars['String']['output'];
+  customer?: Maybe<Customer>;
+  customerId?: Maybe<Scalars['String']['output']>;
+  customerNotes?: Maybe<Scalars['String']['output']>;
+  deliveredAt?: Maybe<Scalars['DateTime']['output']>;
+  discountAmount: Scalars['Float']['output'];
+  /** Formatted order number with prefix/suffix */
+  formattedOrderNumber: Scalars['String']['output'];
+  id: Scalars['ID']['output'];
+  items: Array<OrderItem>;
+  /** Raw order number without prefix/suffix */
+  orderNumber: Scalars['String']['output'];
+  paidAt?: Maybe<Scalars['DateTime']['output']>;
+  paymentStatus: PaymentStatus;
+  privateNotes?: Maybe<Scalars['String']['output']>;
+  shipmentStatus: ShipmentStatus;
+  shippedAt?: Maybe<Scalars['DateTime']['output']>;
+  shippingAmount: Scalars['Float']['output'];
+  status: OrderStatus;
+  store: Store;
+  storeId: Scalars['String']['output'];
+  subtotalAmount: Scalars['Float']['output'];
+  taxAmount: Scalars['Float']['output'];
+  totalAmount: Scalars['Float']['output'];
+  trackingNumber?: Maybe<Scalars['String']['output']>;
+  trackingUrl?: Maybe<Scalars['String']['output']>;
+  updatedAt: Scalars['DateTime']['output'];
+};
+
+export type OrderCounts = {
+  __typename?: 'OrderCounts';
+  cancelled: Scalars['Int']['output'];
+  delivered: Scalars['Int']['output'];
+  draft: Scalars['Int']['output'];
+  pending: Scalars['Int']['output'];
+  processing: Scalars['Int']['output'];
+  shipped: Scalars['Int']['output'];
+  total: Scalars['Int']['output'];
+};
+
+export type OrderCreateInput = {
+  customerId?: InputMaybe<Scalars['String']['input']>;
+  customerNotes?: InputMaybe<Scalars['String']['input']>;
+  items: Array<OrderItemInput>;
+  privateNotes?: InputMaybe<Scalars['String']['input']>;
+  storeId: Scalars['String']['input'];
+};
+
+export type OrderFiltersInput = {
+  customerId?: InputMaybe<Scalars['String']['input']>;
+  endDate?: InputMaybe<Scalars['DateTime']['input']>;
+  maxAmount?: InputMaybe<Scalars['Float']['input']>;
+  minAmount?: InputMaybe<Scalars['Float']['input']>;
+  paymentStatus?: InputMaybe<Array<PaymentStatus>>;
+  searchQuery?: InputMaybe<Scalars['String']['input']>;
+  shipmentStatus?: InputMaybe<Array<ShipmentStatus>>;
+  startDate?: InputMaybe<Scalars['DateTime']['input']>;
+  status?: InputMaybe<Array<OrderStatus>>;
+};
+
+/** Order item model */
+export type OrderItem = {
+  __typename?: 'OrderItem';
+  discountAmount: Scalars['Float']['output'];
+  id: Scalars['ID']['output'];
+  productId: Scalars['String']['output'];
+  quantity: Scalars['Int']['output'];
+  sku?: Maybe<Scalars['String']['output']>;
+  subtotal: Scalars['Float']['output'];
+  taxAmount: Scalars['Float']['output'];
+  title: Scalars['String']['output'];
+  totalAmount: Scalars['Float']['output'];
+  unitPrice: Scalars['Float']['output'];
+  variantId: Scalars['String']['output'];
+  variantName: Scalars['String']['output'];
+};
+
+export type OrderItemInput = {
+  productId: Scalars['String']['input'];
+  quantity: Scalars['Int']['input'];
+  variantId: Scalars['String']['input'];
+};
+
+export type OrderStats = {
+  __typename?: 'OrderStats';
+  counts: OrderCounts;
+  totals: OrderTotals;
+};
+
+/** Status of the order */
 export enum OrderStatus {
   Cancelled = 'CANCELLED',
   Delivered = 'DELIVERED',
@@ -636,6 +737,22 @@ export enum OrderStatus {
   Processing = 'PROCESSING',
   Refunded = 'REFUNDED',
   Shipped = 'SHIPPED'
+}
+
+export type OrderTotals = {
+  __typename?: 'OrderTotals';
+  discounts: Scalars['Float']['output'];
+  orders: Scalars['Float']['output'];
+  shipping: Scalars['Float']['output'];
+  tax: Scalars['Float']['output'];
+};
+
+/** Status of the payment */
+export enum PaymentStatus {
+  Completed = 'COMPLETED',
+  Failed = 'FAILED',
+  Pending = 'PENDING',
+  Refunded = 'REFUNDED'
 }
 
 /** Product model */
@@ -804,8 +921,11 @@ export type Query = {
   me: User;
   media?: Maybe<Media>;
   mediaByOwner: Array<Media>;
+  myStoreOrderStats: OrderStats;
+  myStoreOrders: Array<Order>;
   myStoreProducts: Array<Product>;
   myStores: Array<Store>;
+  order?: Maybe<Order>;
   ownerAddresses: Array<AddressOnOwner>;
   product?: Maybe<Product>;
   productBySlug?: Maybe<Product>;
@@ -856,6 +976,21 @@ export type QueryMediaByOwnerArgs = {
 };
 
 
+export type QueryMyStoreOrderStatsArgs = {
+  storeId: Scalars['String']['input'];
+};
+
+
+export type QueryMyStoreOrdersArgs = {
+  cursor?: InputMaybe<Scalars['String']['input']>;
+  filters?: InputMaybe<OrderFiltersInput>;
+  skip?: Scalars['Int']['input'];
+  sortOrder?: InputMaybe<SortOrder>;
+  storeId: Scalars['String']['input'];
+  take?: Scalars['Int']['input'];
+};
+
+
 export type QueryMyStoreProductsArgs = {
   cursor?: InputMaybe<Scalars['String']['input']>;
   filters?: InputMaybe<ProductFiltersInput>;
@@ -871,6 +1006,11 @@ export type QueryMyStoresArgs = {
   skip?: Scalars['Int']['input'];
   sortOrder?: InputMaybe<SortOrder>;
   take?: Scalars['Int']['input'];
+};
+
+
+export type QueryOrderArgs = {
+  id: Scalars['String']['input'];
 };
 
 
@@ -969,6 +1109,15 @@ export type RecentOrder = {
 export enum SalesChannel {
   InStore = 'IN_STORE',
   Online = 'ONLINE'
+}
+
+/** Status of the shipment */
+export enum ShipmentStatus {
+  Delivered = 'DELIVERED',
+  Failed = 'FAILED',
+  Pending = 'PENDING',
+  Processing = 'PROCESSING',
+  Shipped = 'SHIPPED'
 }
 
 export enum SortOrder {
@@ -1310,7 +1459,16 @@ export type ResolversTypes = {
   MediaType: MediaType;
   MediaUpdateInput: MediaUpdateInput;
   Mutation: ResolverTypeWrapper<{}>;
+  Order: ResolverTypeWrapper<Order>;
+  OrderCounts: ResolverTypeWrapper<OrderCounts>;
+  OrderCreateInput: OrderCreateInput;
+  OrderFiltersInput: OrderFiltersInput;
+  OrderItem: ResolverTypeWrapper<OrderItem>;
+  OrderItemInput: OrderItemInput;
+  OrderStats: ResolverTypeWrapper<OrderStats>;
   OrderStatus: OrderStatus;
+  OrderTotals: ResolverTypeWrapper<OrderTotals>;
+  PaymentStatus: PaymentStatus;
   Product: ResolverTypeWrapper<Product>;
   ProductCreateInput: ProductCreateInput;
   ProductFiltersInput: ProductFiltersInput;
@@ -1325,6 +1483,7 @@ export type ResolversTypes = {
   RecentActivity: ResolverTypeWrapper<RecentActivity>;
   RecentOrder: ResolverTypeWrapper<RecentOrder>;
   SalesChannel: SalesChannel;
+  ShipmentStatus: ShipmentStatus;
   SortOrder: SortOrder;
   Store: ResolverTypeWrapper<Store>;
   StoreCreateInput: StoreCreateInput;
@@ -1381,6 +1540,14 @@ export type ResolversParentTypes = {
   MediaCreateInput: MediaCreateInput;
   MediaUpdateInput: MediaUpdateInput;
   Mutation: {};
+  Order: Order;
+  OrderCounts: OrderCounts;
+  OrderCreateInput: OrderCreateInput;
+  OrderFiltersInput: OrderFiltersInput;
+  OrderItem: OrderItem;
+  OrderItemInput: OrderItemInput;
+  OrderStats: OrderStats;
+  OrderTotals: OrderTotals;
   Product: Product;
   ProductCreateInput: ProductCreateInput;
   ProductFiltersInput: ProductFiltersInput;
@@ -1541,6 +1708,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   createCategory?: Resolver<ResolversTypes['Category'], ParentType, ContextType, RequireFields<MutationCreateCategoryArgs, 'input'>>;
   createCollection?: Resolver<ResolversTypes['Collection'], ParentType, ContextType, RequireFields<MutationCreateCollectionArgs, 'input'>>;
   createCustomer?: Resolver<ResolversTypes['Customer'], ParentType, ContextType, RequireFields<MutationCreateCustomerArgs, 'input'>>;
+  createDraftOrder?: Resolver<ResolversTypes['Order'], ParentType, ContextType, RequireFields<MutationCreateDraftOrderArgs, 'input'>>;
   createMedia?: Resolver<ResolversTypes['Media'], ParentType, ContextType, RequireFields<MutationCreateMediaArgs, 'input'>>;
   createProduct?: Resolver<ResolversTypes['Product'], ParentType, ContextType, RequireFields<MutationCreateProductArgs, 'input'>>;
   createStore?: Resolver<ResolversTypes['Store'], ParentType, ContextType, RequireFields<MutationCreateStoreArgs, 'input'>>;
@@ -1568,6 +1736,79 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   updateStore?: Resolver<ResolversTypes['Store'], ParentType, ContextType, RequireFields<MutationUpdateStoreArgs, 'input'>>;
   updateTag?: Resolver<ResolversTypes['Tag'], ParentType, ContextType, RequireFields<MutationUpdateTagArgs, 'input'>>;
   updateUser?: Resolver<ResolversTypes['User'], ParentType, ContextType, RequireFields<MutationUpdateUserArgs, 'input'>>;
+};
+
+export type OrderResolvers<ContextType = any, ParentType extends ResolversParentTypes['Order'] = ResolversParentTypes['Order']> = {
+  cancelledAt?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  createdAt?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
+  currency?: Resolver<ResolversTypes['StoreCurrency'], ParentType, ContextType>;
+  currencySymbol?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  customer?: Resolver<Maybe<ResolversTypes['Customer']>, ParentType, ContextType>;
+  customerId?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  customerNotes?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  deliveredAt?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  discountAmount?: Resolver<ResolversTypes['Float'], ParentType, ContextType>;
+  formattedOrderNumber?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  items?: Resolver<Array<ResolversTypes['OrderItem']>, ParentType, ContextType>;
+  orderNumber?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  paidAt?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  paymentStatus?: Resolver<ResolversTypes['PaymentStatus'], ParentType, ContextType>;
+  privateNotes?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  shipmentStatus?: Resolver<ResolversTypes['ShipmentStatus'], ParentType, ContextType>;
+  shippedAt?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  shippingAmount?: Resolver<ResolversTypes['Float'], ParentType, ContextType>;
+  status?: Resolver<ResolversTypes['OrderStatus'], ParentType, ContextType>;
+  store?: Resolver<ResolversTypes['Store'], ParentType, ContextType>;
+  storeId?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  subtotalAmount?: Resolver<ResolversTypes['Float'], ParentType, ContextType>;
+  taxAmount?: Resolver<ResolversTypes['Float'], ParentType, ContextType>;
+  totalAmount?: Resolver<ResolversTypes['Float'], ParentType, ContextType>;
+  trackingNumber?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  trackingUrl?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  updatedAt?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
+export type OrderCountsResolvers<ContextType = any, ParentType extends ResolversParentTypes['OrderCounts'] = ResolversParentTypes['OrderCounts']> = {
+  cancelled?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  delivered?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  draft?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  pending?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  processing?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  shipped?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  total?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
+export type OrderItemResolvers<ContextType = any, ParentType extends ResolversParentTypes['OrderItem'] = ResolversParentTypes['OrderItem']> = {
+  discountAmount?: Resolver<ResolversTypes['Float'], ParentType, ContextType>;
+  id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  productId?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  quantity?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  sku?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  subtotal?: Resolver<ResolversTypes['Float'], ParentType, ContextType>;
+  taxAmount?: Resolver<ResolversTypes['Float'], ParentType, ContextType>;
+  title?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  totalAmount?: Resolver<ResolversTypes['Float'], ParentType, ContextType>;
+  unitPrice?: Resolver<ResolversTypes['Float'], ParentType, ContextType>;
+  variantId?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  variantName?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
+export type OrderStatsResolvers<ContextType = any, ParentType extends ResolversParentTypes['OrderStats'] = ResolversParentTypes['OrderStats']> = {
+  counts?: Resolver<ResolversTypes['OrderCounts'], ParentType, ContextType>;
+  totals?: Resolver<ResolversTypes['OrderTotals'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
+export type OrderTotalsResolvers<ContextType = any, ParentType extends ResolversParentTypes['OrderTotals'] = ResolversParentTypes['OrderTotals']> = {
+  discounts?: Resolver<ResolversTypes['Float'], ParentType, ContextType>;
+  orders?: Resolver<ResolversTypes['Float'], ParentType, ContextType>;
+  shipping?: Resolver<ResolversTypes['Float'], ParentType, ContextType>;
+  tax?: Resolver<ResolversTypes['Float'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
 export type ProductResolvers<ContextType = any, ParentType extends ResolversParentTypes['Product'] = ResolversParentTypes['Product']> = {
@@ -1637,8 +1878,11 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   me?: Resolver<ResolversTypes['User'], ParentType, ContextType>;
   media?: Resolver<Maybe<ResolversTypes['Media']>, ParentType, ContextType, RequireFields<QueryMediaArgs, 'id'>>;
   mediaByOwner?: Resolver<Array<ResolversTypes['Media']>, ParentType, ContextType, RequireFields<QueryMediaByOwnerArgs, 'ownerId' | 'ownerType' | 'skip' | 'take'>>;
+  myStoreOrderStats?: Resolver<ResolversTypes['OrderStats'], ParentType, ContextType, RequireFields<QueryMyStoreOrderStatsArgs, 'storeId'>>;
+  myStoreOrders?: Resolver<Array<ResolversTypes['Order']>, ParentType, ContextType, RequireFields<QueryMyStoreOrdersArgs, 'skip' | 'storeId' | 'take'>>;
   myStoreProducts?: Resolver<Array<ResolversTypes['Product']>, ParentType, ContextType, RequireFields<QueryMyStoreProductsArgs, 'skip' | 'storeId' | 'take'>>;
   myStores?: Resolver<Array<ResolversTypes['Store']>, ParentType, ContextType, RequireFields<QueryMyStoresArgs, 'skip' | 'take'>>;
+  order?: Resolver<Maybe<ResolversTypes['Order']>, ParentType, ContextType, RequireFields<QueryOrderArgs, 'id'>>;
   ownerAddresses?: Resolver<Array<ResolversTypes['AddressOnOwner']>, ParentType, ContextType, RequireFields<QueryOwnerAddressesArgs, 'ownerId' | 'ownerType'>>;
   product?: Resolver<Maybe<ResolversTypes['Product']>, ParentType, ContextType, RequireFields<QueryProductArgs, 'id'>>;
   productBySlug?: Resolver<Maybe<ResolversTypes['Product']>, ParentType, ContextType, RequireFields<QueryProductBySlugArgs, 'slug' | 'storeId'>>;
@@ -1762,6 +2006,11 @@ export type Resolvers<ContextType = any> = {
   DateTime?: GraphQLScalarType;
   Media?: MediaResolvers<ContextType>;
   Mutation?: MutationResolvers<ContextType>;
+  Order?: OrderResolvers<ContextType>;
+  OrderCounts?: OrderCountsResolvers<ContextType>;
+  OrderItem?: OrderItemResolvers<ContextType>;
+  OrderStats?: OrderStatsResolvers<ContextType>;
+  OrderTotals?: OrderTotalsResolvers<ContextType>;
   Product?: ProductResolvers<ContextType>;
   ProductOption?: ProductOptionResolvers<ContextType>;
   ProductOptionValue?: ProductOptionValueResolvers<ContextType>;

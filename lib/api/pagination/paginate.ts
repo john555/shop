@@ -7,12 +7,14 @@ export function paginate<T>({
   cursorColumn = 'id',
   where,
   include,
+  orderBy,
 }: {
   modelDelegate: { findMany: (args: any) => PrismaPromise<T[]> };
   args?: PaginationArgs;
   cursorColumn?: 'id';
   where?: any;
   include?: any;
+  orderBy?: any;
 }) {
   return modelDelegate.findMany({
     where,
@@ -23,9 +25,11 @@ export function paginate<T>({
           [cursorColumn]: args.cursor,
         }
       : undefined,
-    orderBy: {
-      [cursorColumn]: args?.sortOrder || 'desc',
-    },
+    orderBy: cursorColumn
+      ? {
+          [cursorColumn]: args?.sortOrder || 'desc',
+        }
+      : orderBy,
     include,
   });
 }
