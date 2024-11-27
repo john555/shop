@@ -61,6 +61,7 @@ import { Customer, Product, ProductStatus } from '@/types/api';
 import { formatPrice } from '@/common/currency';
 import { useCustomers } from '@/admin/hooks/customer';
 import { DASHBOARD_PAGE_LINK } from '@/common/constants';
+import { formatAddress } from '@/common/address';
 
 const itemSchema = z.object({
   productId: z.string(),
@@ -295,9 +296,11 @@ function CustomerCard({
                   <MapPin className="h-4 w-4" />
                   Shipping Address
                 </div>
-                <p className="text-sm text-muted-foreground pl-6">
-                  {selectedCustomer.billingAddress?.address?.country}
-                </p>
+                {selectedCustomer?.billingAddress?.address ? (
+                  <p className="text-sm text-muted-foreground pl-6">
+                    {formatAddress(selectedCustomer.billingAddress.address)}
+                  </p>
+                ) : null}
               </div>
             </div>
           </div>

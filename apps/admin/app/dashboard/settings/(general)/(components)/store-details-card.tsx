@@ -15,7 +15,7 @@ import { useState } from 'react';
 import { EditProfileDialog } from './edit-profile-dialog';
 import { EditSocialMediaDialog } from './edit-social-media-dialog';
 import { AddressOwnerType, AddressType } from '@/types/api';
-import { getCountryFromCode } from '@/common/constants';
+import { formatAddress } from '@/common/address';
 import { AddressDialog } from '@/components/address-dialog';
 
 export function StoreDetailsCard() {
@@ -77,19 +77,7 @@ export function StoreDetailsCard() {
                 <div className="font-medium">Business address</div>
                 {address ? (
                   <div className="text-muted-foreground">
-                    {[
-                      address.line1,
-                      [address.line2, address.city].filter(Boolean).join(', '),
-                      address.state,
-                      [
-                        getCountryFromCode(address.country)?.name,
-                        address.zipCode,
-                      ]
-                        .filter(Boolean)
-                        .join(' '),
-                    ]
-                      .filter(Boolean)
-                      .join(', ')}
+                    {formatAddress(address)}
                   </div>
                 ) : (
                   <div className="text-muted-foreground">No address</div>
