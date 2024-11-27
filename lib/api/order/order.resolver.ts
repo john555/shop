@@ -13,10 +13,18 @@ import { OrderService } from './order.service';
 import { Store } from '../store/store.entity';
 import { Customer } from '../customer/customer.entity';
 import { OrderItem } from './order.entity';
-import { GetMyStoreOrdersArgs, OrderCreateInput, OrderFiltersInput, OrderGetArgs } from './order.dto';
+import {
+  GetMyStoreOrdersArgs,
+  OrderCreateInput,
+  OrderFiltersInput,
+  OrderGetArgs,
+} from './order.dto';
 import { AuthStore } from '../authorization/decorators/auth.decorator';
 import { AuthContext } from '../utils/auth';
 import { PaginationArgs } from '../pagination/pagination.args';
+import { getFormattedOrderNumber } from '@/common/order-number';
+import { formatPrice } from '@/common/currency';
+import { CurrencyPosition, StoreCurrency } from '@/types/api';
 
 @Resolver(() => Order)
 export class OrderResolver {
@@ -43,7 +51,7 @@ export class OrderResolver {
   ): Promise<OrderStats> {
     return this.orderService.getStoreOrderStats(args.storeId);
   }
-  
+
   @AuthStore()
   @Query(() => Order, { nullable: true })
   async order(@Args() args: OrderGetArgs): Promise<Order | null> {
@@ -82,6 +90,16 @@ export class OrderResolver {
   @ResolveField(() => String)
   async formattedOrderNumber(@Parent() order: Order): Promise<string> {
     const store = await this.orderService.findOrderStore(order.id);
-    return this.orderService.getFormattedOrderNumber(order, store);
+    return getFormattedOrderNumber(order, store);
+  }
+
+  @ResolveField(() => String)
+  async formattedTotalAmount(@Parent() order: Order): Promise<string> {
+    const store = await this.orderService.findOrderStore(order.id);
+    return formatPrice(order.totalAmount.toNumber(), {
+      ...store,
+      currency: store.currency as StoreCurrency,
+      currencyPosition: store.currencyPosition as CurrencyPosition,
+    });
   }
 }

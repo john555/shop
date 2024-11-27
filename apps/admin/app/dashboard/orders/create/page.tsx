@@ -14,6 +14,7 @@ import {
   MapPin,
 } from 'lucide-react';
 import * as z from 'zod';
+import { useRouter } from 'next/navigation';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -35,6 +36,7 @@ import {
   CommandInput,
   CommandItem,
   CommandList,
+  CommandGroup,
 } from '@/components/ui/command';
 import {
   Popover,
@@ -52,69 +54,49 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
+import { useOrder } from '@/admin/hooks/order';
+import { useStore } from '@/admin/hooks/store';
+import { useProducts } from '@/admin/hooks/product';
+import { Customer, Product, ProductStatus } from '@/types/api';
+import { formatPrice } from '@/common/currency';
+import { useCustomers } from '@/admin/hooks/customer';
+import { DASHBOARD_PAGE_LINK } from '@/common/constants';
 
-const FormSchema = z.object({
-  customerId: z.string(),
-  products: z.array(
-    z.object({
-      id: z.string(),
-      quantity: z.number().min(1),
-    })
-  ),
-  notes: z.string().optional(),
-  tags: z.array(z.string()),
+const itemSchema = z.object({
+  productId: z.string(),
+  variantId: z.string(),
+  quantity: z.number().min(1),
 });
 
+const FormSchema = z
+  .object({
+    customerId: z.string(),
+    items: z.array(itemSchema),
+    privateNotes: z.string().optional(),
+    tags: z.array(z.string()),
+  })
+  .refine(
+    (data) => {
+      if (data.items.length === 0) {
+        return false;
+      }
+
+      return true;
+    },
+    { message: 'At least one product must be added to the order.' }
+  );
+
 type FormValues = z.infer<typeof FormSchema>;
-
-interface Customer {
-  id: string;
-  name: string;
-  email: string;
-  address: string;
-  phone?: string;
-}
-
-interface Product {
-  id: string;
-  name: string;
-  price: number;
-}
 
 interface SelectedProduct extends Product {
   quantity: number;
 }
 
-const customers: Customer[] = [
-  {
-    id: '1',
-    name: 'Alice Johnson',
-    email: 'alice@example.com',
-    address: '123 Main St, Anytown, AN 12345',
-    phone: '+1 234-567-8901',
-  },
-  {
-    id: '2',
-    name: 'Bob Smith',
-    email: 'bob@example.com',
-    address: '456 Elm St, Somewhere, SW 67890',
-  },
-  {
-    id: '3',
-    name: 'Charlie Brown',
-    email: 'charlie@example.com',
-    address: '789 Oak St, Nowhere, NW 13579',
-    phone: '+1 987-654-3210',
-  },
-];
-
-const products: Product[] = [
-  { id: '1', name: 'Wireless Earbuds', price: 79.99 },
-  { id: '2', name: 'Smart Watch', price: 199.99 },
-  { id: '3', name: 'Bluetooth Speaker', price: 59.99 },
-];
-
 export default function CreateOrderPage() {
+  const router = useRouter();
+  const { store, loading } = useStore();
+  const { createDraftOrder, creating } = useOrder();
+
   const [selectedCustomer, setSelectedCustomer] =
     React.useState<Customer | null>(null);
   const [selectedProducts, setSelectedProducts] = React.useState<
@@ -125,17 +107,50 @@ export default function CreateOrderPage() {
     resolver: zodResolver(FormSchema),
     defaultValues: {
       customerId: '',
-      products: [],
-      notes: '',
+      items: [],
+      privateNotes: '',
       tags: [],
     },
   });
 
-  function onSubmit(data: FormValues) {
-    console.log(data);
-    // Here you would typically send the data to your API
+  React.useEffect(() => {
+    if (store && !loading) {
+      form.setValue(
+        'items',
+        selectedProducts.map((p) => ({
+          productId: p.id,
+          variantId: p.variants[0].id,
+          quantity: p.quantity,
+        })),
+        { shouldDirty: true, shouldValidate: true }
+      );
+    }
+  }, [selectedProducts]);
+
+  React.useEffect(() => {
+    if (selectedCustomer) {
+      form.setValue('customerId', selectedCustomer.id, {
+        shouldDirty: true,
+        shouldValidate: true,
+      });
+    }
+  }, [selectedCustomer]);
+
+  async function onSubmit(data: FormValues) {
+    try {
+      const order = await createDraftOrder({
+        storeId: store.id,
+        customerId: data.customerId,
+        items: data.items,
+        privateNotes: data.privateNotes,
+      });
+      router.push(`${DASHBOARD_PAGE_LINK}/orders/${order.id}`);
+    } catch (error) {
+      console.error('Failed to create order:', error);
+    }
   }
 
+  const disabled = creating || !store || loading || !form.formState.isValid;
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -152,7 +167,7 @@ export default function CreateOrderPage() {
             <ArrowLeft className="mr-2 h-4 w-4" />
             Back to Orders
           </Button>
-          <Button type="submit" form="create-order-form">
+          <Button type="submit" form="create-order-form" disabled={disabled}>
             Create order
           </Button>
         </div>
@@ -196,7 +211,12 @@ function CustomerCard({
   selectedCustomer,
   setSelectedCustomer,
 }: CustomerCardProps) {
+  const { store } = useStore();
+  const { customers } = useCustomers({ storeId: store?.id });
   const [open, setOpen] = React.useState(false);
+  const name = [selectedCustomer?.firstName, selectedCustomer?.lastName]
+    .filter(Boolean)
+    .join(' ');
 
   return (
     <Card>
@@ -219,14 +239,10 @@ function CustomerCard({
                     alt=""
                   />
                   <AvatarFallback>
-                    {selectedCustomer ? selectedCustomer.name.charAt(0) : '?'}
+                    {selectedCustomer ? name.charAt(0) : '?'}
                   </AvatarFallback>
                 </Avatar>
-                <span>
-                  {selectedCustomer
-                    ? selectedCustomer.name
-                    : 'Select customer...'}
-                </span>
+                <span>{selectedCustomer ? name : 'Select customer...'}</span>
               </div>
               <Search className="ml-2 h-4 w-4 shrink-0 opacity-50" />
             </Button>
@@ -244,7 +260,9 @@ function CustomerCard({
                       setOpen(false);
                     }}
                   >
-                    {customer.name}
+                    {[customer.firstName, customer.lastName]
+                      .filter(Boolean)
+                      .join(' ')}
                     <span className="ml-2 text-sm text-muted-foreground">
                       {customer.email}
                     </span>
@@ -265,9 +283,9 @@ function CustomerCard({
                 <p className="text-sm text-muted-foreground pl-6">
                   {selectedCustomer.email}
                 </p>
-                {selectedCustomer.phone && (
+                {selectedCustomer.phoneNumber && (
                   <p className="text-sm text-muted-foreground pl-6">
-                    {selectedCustomer.phone}
+                    {selectedCustomer.phoneNumber}
                   </p>
                 )}
               </div>
@@ -278,7 +296,7 @@ function CustomerCard({
                   Shipping Address
                 </div>
                 <p className="text-sm text-muted-foreground pl-6">
-                  {selectedCustomer.address}
+                  {selectedCustomer.billingAddress?.address?.country}
                 </p>
               </div>
             </div>
@@ -298,6 +316,13 @@ function ProductsCard({
   selectedProducts,
   setSelectedProducts,
 }: ProductsCardProps) {
+  const { store } = useStore();
+  const { products } = useProducts({
+    storeId: store?.id,
+    filters: {
+      status: [ProductStatus.Active],
+    },
+  });
   const [open, setOpen] = React.useState(false);
 
   const addProduct = (product: Product) => {
@@ -333,17 +358,41 @@ function ProductsCard({
               <CommandInput placeholder="Search products..." />
               <CommandEmpty>No product found.</CommandEmpty>
               <CommandList>
-                {products.map((product) => (
-                  <CommandItem
-                    key={product.id}
-                    onSelect={() => addProduct(product)}
-                  >
-                    {product.name}
-                    <span className="ml-2 text-sm text-muted-foreground">
-                      ${product.price}
-                    </span>
-                  </CommandItem>
-                ))}
+                {products.map((product) => {
+                  if (product.options.length === 0) {
+                    return (
+                      <CommandItem
+                        key={product.id}
+                        onSelect={() => addProduct(product)}
+                      >
+                        {product.title}
+                        <span className="ml-2 text-sm text-muted-foreground">
+                          {formatPrice(product.price || 0, store)}
+                        </span>
+                      </CommandItem>
+                    );
+                  }
+
+                  return (
+                    <CommandGroup key={product.id} title={product.title}>
+                      <CommandItem>{product.title}</CommandItem>
+                      {product.variants.map((variant) => (
+                        <CommandItem
+                          key={variant.id}
+                          onSelect={() =>
+                            addProduct({ ...product, variants: [variant] })
+                          }
+                          className="pl-6"
+                        >
+                          {variant.optionCombination.join(' / ')}
+                          <span className="ml-2 text-sm text-muted-foreground">
+                            {formatPrice(variant.price, store)}
+                          </span>
+                        </CommandItem>
+                      ))}
+                    </CommandGroup>
+                  );
+                })}
               </CommandList>
             </Command>
           </PopoverContent>
@@ -355,9 +404,16 @@ function ProductsCard({
               className="flex items-center justify-between space-x-4"
             >
               <div className="flex-1 space-y-1">
-                <p className="font-medium">{product.name}</p>
+                <p className="font-medium">
+                  {product.title}{' '}
+                  {product.options.length > 0 ? (
+                    <Badge variant="secondary" className="text-xs">
+                      {product.variants[0].optionCombination.join(' / ')}
+                    </Badge>
+                  ) : null}
+                </p>
                 <p className="text-sm text-muted-foreground">
-                  ${product.price}
+                  {formatPrice(product.variants[0].price || 0, store)}
                 </p>
               </div>
               <div className="flex items-center space-x-2">
@@ -391,11 +447,12 @@ interface PaymentCardProps {
 }
 
 function PaymentCard({ selectedProducts }: PaymentCardProps) {
+  const { store } = useStore();
   const subtotal = selectedProducts.reduce(
-    (sum, product) => sum + product.price * product.quantity,
+    (sum, product) => sum + product.variants[0].price * product.quantity,
     0
   );
-  const tax = subtotal * 0.1; // Assuming 10% tax
+  const tax = subtotal * 0; // Assuming 10% tax
   const total = subtotal + tax;
 
   return (
@@ -407,24 +464,32 @@ function PaymentCard({ selectedProducts }: PaymentCardProps) {
         {selectedProducts.map((product) => (
           <div key={product.id} className="flex justify-between text-sm">
             <span>
-              {product.name} (x{product.quantity})
+              {product.title}{' '}
+              {product.options.length > 0 ? (
+                <Badge variant="secondary" className="text-xs">
+                  {product.variants[0].optionCombination.join(' / ')}
+                </Badge>
+              ) : null}{' '}
+              (x{product.quantity})
             </span>
-            <span>${(product.price * product.quantity).toFixed(2)}</span>
+            <span>
+              {formatPrice(product.variants[0].price * product.quantity, store)}
+            </span>
           </div>
         ))}
         <Separator />
         <div className="flex justify-between">
           <span>Subtotal</span>
-          <span>${subtotal.toFixed(2)}</span>
+          <span>{formatPrice(subtotal, store)}</span>
         </div>
         <div className="flex justify-between">
           <span>Tax (10%)</span>
-          <span>${tax.toFixed(2)}</span>
+          <span>{formatPrice(tax, store)}</span>
         </div>
         <Separator />
         <div className="flex justify-between font-bold">
           <span>Total</span>
-          <span>${total.toFixed(2)}</span>
+          <span>{formatPrice(total, store)}</span>
         </div>
       </CardContent>
     </Card>
@@ -437,7 +502,7 @@ interface NotesCardProps {
 
 function NotesCard({ form }: NotesCardProps) {
   const [open, setOpen] = React.useState(false);
-  const notes = form.watch('notes');
+  const notes = form.watch('privateNotes');
 
   return (
     <Card>
@@ -486,7 +551,7 @@ function NotesModal({ form, setOpen }: NotesModalProps) {
     <div className="grid gap-4 py-4">
       <FormField
         control={control}
-        name="notes"
+        name="privateNotes"
         render={({ field }) => (
           <FormItem>
             <FormLabel>Notes</FormLabel>

@@ -480,6 +480,9 @@ type Order {
 
   """Formatted order number with prefix/suffix"""
   formattedOrderNumber: String!
+
+  """Formatted total amount with currency symbol"""
+  formattedTotalAmount: String!
   id: ID!
   items: [OrderItem!]!
 

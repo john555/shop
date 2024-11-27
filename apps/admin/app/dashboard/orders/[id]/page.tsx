@@ -14,6 +14,8 @@ import {
   Trash2,
   DollarSign,
 } from 'lucide-react';
+import Link from 'next/link';
+
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -45,6 +47,7 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import { toast } from '@/components/ui/use-toast';
+import { DASHBOARD_PAGE_LINK } from '@/common/constants';
 
 // Type definitions
 enum OrderStatus {
@@ -251,9 +254,11 @@ export default function OrderDetailsPage() {
           </p>
         </div>
         <div className="flex items-center space-x-2">
-          <Button variant="outline">
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Back to Orders
+          <Button variant="outline" asChild>
+            <Link href={`${DASHBOARD_PAGE_LINK}/orders`}>
+              <ArrowLeft className="mr-2 h-4 w-4" />
+              Back to Orders
+            </Link>
           </Button>
         </div>
       </div>

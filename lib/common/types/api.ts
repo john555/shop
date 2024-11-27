@@ -645,6 +645,8 @@ export type Order = {
   discountAmount: Scalars['Float']['output'];
   /** Formatted order number with prefix/suffix */
   formattedOrderNumber: Scalars['String']['output'];
+  /** Formatted total amount with currency symbol */
+  formattedTotalAmount: Scalars['String']['output'];
   id: Scalars['ID']['output'];
   items: Array<OrderItem>;
   /** Raw order number without prefix/suffix */
@@ -1749,6 +1751,7 @@ export type OrderResolvers<ContextType = any, ParentType extends ResolversParent
   deliveredAt?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   discountAmount?: Resolver<ResolversTypes['Float'], ParentType, ContextType>;
   formattedOrderNumber?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  formattedTotalAmount?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   items?: Resolver<Array<ResolversTypes['OrderItem']>, ParentType, ContextType>;
   orderNumber?: Resolver<ResolversTypes['String'], ParentType, ContextType>;

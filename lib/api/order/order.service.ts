@@ -21,6 +21,21 @@ export class OrderService {
     private readonly storeService: StoreService
   ) {}
 
+  private async validateCustomer(customerId: string | undefined, storeId: string): Promise<void> {
+    if (!customerId) return;
+
+    const customer = await this.prisma.customer.findFirst({
+      where: {
+        id: customerId,
+        storeId,
+      },
+    });
+
+    if (!customer) {
+      throw new BadRequestException(`Customer with ID ${customerId} not found in store ${storeId}`);
+    }
+  }
+
   private async generateOrderNumber(storeId: string): Promise<string> {
     const orderCount = await this.prisma.order.count({
       where: { storeId },
@@ -29,44 +44,39 @@ export class OrderService {
     return (orderCount + 1).toString().padStart(6, '0');
   }
 
-  getFormattedOrderNumber(order: Pick<Order, 'orderNumber'>, store: { orderPrefix?: string | null; orderSuffix?: string | null }): string {
-    const prefix = store.orderPrefix || '';
-    const suffix = store.orderSuffix || '';
-    return `${prefix}${order.orderNumber}${suffix}`;
-  }
-
   async createDraftOrder(input: OrderCreateInput): Promise<Order> {
     const store = await this.storeService.getStoreById(input.storeId);
     if (!store) {
       throw new BadRequestException(`Store with ID ${input.storeId} not found`);
     }
 
+    // Validate customer if provided
+    await this.validateCustomer(input.customerId, input.storeId);
+
     try {
       return await this.prisma.$transaction(async (tx) => {
         // Fetch all product variants
         const variants = await tx.productVariant.findMany({
           where: {
-            id: { in: input.items.map((item) => item.variantId) },
+            id: { in: input.items.map(item => item.variantId) },
             product: {
               storeId: input.storeId,
-              id: { in: input.items.map((item) => item.productId) },
-            },
+              id: { in: input.items.map(item => item.productId) }
+            }
           },
           include: {
             product: {
-              select: { id: true, title: true },
-            },
-          },
+              select: { id: true, title: true }
+            }
+          }
         });
 
         // Validate variants
-        const variantMap = new Map(variants.map((v) => [v.id, v]));
-        input.items.forEach((item) => {
+        const variantMap = new Map(variants.map(v => [v.id, v]));
+        input.items.forEach(item => {
           const variant = variantMap.get(item.variantId);
           if (!variant) {
-            throw new BadRequestException(
-              `Invalid variant ID: ${item.variantId}`
-            );
+            throw new BadRequestException(`Invalid variant ID: ${item.variantId}`);
           }
           if (variant.product.id !== item.productId) {
             throw new BadRequestException(
@@ -76,7 +86,7 @@ export class OrderService {
         });
 
         // Calculate order items
-        const orderItems = input.items.map((item) => {
+        const orderItems = input.items.map(item => {
           const variant = variantMap.get(item.variantId)!;
           const subtotal = variant.price.mul(item.quantity);
 
@@ -89,9 +99,9 @@ export class OrderService {
             unitPrice: variant.price,
             quantity: item.quantity,
             subtotal,
-            taxAmount: new Prisma.Decimal(0), // Tax calculation to be implemented
-            discountAmount: new Prisma.Decimal(0), // Discount calculation to be implemented
-            totalAmount: subtotal, // Will be adjusted when tax/discount is implemented
+            taxAmount: new Prisma.Decimal(0),
+            discountAmount: new Prisma.Decimal(0),
+            totalAmount: subtotal,
           };
         });
 
@@ -117,19 +127,28 @@ export class OrderService {
             discountAmount: new Prisma.Decimal(0),
             totalAmount: subtotalAmount,
             currency: store.currency,
-            currencySymbol:
-              store.currencySymbol ||
-              this.storeService.getDefaultCurrencySymbol(store.currency),
+            currencySymbol: store.currencySymbol || this.storeService.getDefaultCurrencySymbol(store.currency),
             customerNotes: input.customerNotes,
             privateNotes: input.privateNotes,
-            storeId: input.storeId,
-            customerId: input.customerId,
+            store: {
+              connect: {
+                id: input.storeId
+              }
+            },
+            ...(input.customerId ? {
+              customer: {
+                connect: {
+                  id: input.customerId
+                }
+              }
+            } : {}),
             items: {
               create: orderItems,
             },
           },
           include: {
             items: true,
+            customer: true,
           },
         });
 

@@ -106,6 +106,9 @@ export class Order implements Partial<PrismaOrder> {
   @Field(() => Float)
   totalAmount: Decimal;
 
+  @Field(() => String, { description: 'Formatted total amount with currency symbol' })
+  formattedTotalAmount?: string;
+
   @Field(() => StoreCurrency)
   currency: StoreCurrency;
 
