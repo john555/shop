@@ -29,6 +29,7 @@ import {
 } from '@/components/ui/form';
 import { currencyLabels } from '@/common/constants/currency';
 import { TIMEZONES } from '@/common/constants/timezone';
+import { formatCurrency } from '@/common/currency';
 
 export function StoreDefaultsCard() {
   const { store } = useStore();
@@ -100,10 +101,24 @@ export function StoreDefaultsCard() {
                   </FormControl>
                   <SelectContent>
                     <SelectItem value={CurrencyPosition.BeforeAmount}>
-                      Before amount (e.g., $100)
+                      Before amount (e.g.,{' '}
+                      {formatCurrency(1000, {
+                        currencyPosition: CurrencyPosition.BeforeAmount,
+                        showCurrencyCode,
+                        currencySymbol,
+                        currency,
+                      })}
+                      )
                     </SelectItem>
                     <SelectItem value={CurrencyPosition.AfterAmount}>
-                      After amount (e.g., 100$)
+                      After amount (e.g.,{' '}
+                      {formatCurrency(1000, {
+                         currencyPosition: CurrencyPosition.AfterAmount,
+                        showCurrencyCode,
+                        currencySymbol,
+                        currency,
+                      })}
+                      )
                     </SelectItem>
                   </SelectContent>
                 </Select>
@@ -130,17 +145,12 @@ export function StoreDefaultsCard() {
 
           <div className="text-sm text-muted-foreground">
             Example:{' '}
-            {currencyPosition === CurrencyPosition.BeforeAmount
-              ? showCurrencyCode
-                ? `${currency} `
-                : currencySymbol
-              : ''}
-            100
-            {currencyPosition === CurrencyPosition.AfterAmount
-              ? showCurrencyCode
-                ? ` ${currency}`
-                : currencySymbol
-              : ''}
+            {formatCurrency(1000, {
+              currencyPosition,
+              showCurrencyCode,
+              currencySymbol,
+              currency,
+            })}
           </div>
         </div>
 
@@ -228,17 +238,17 @@ export function StoreDefaultsCard() {
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
-                {TIMEZONES.map((timeZoneGroup) => (
-                  <SelectGroup key={timeZoneGroup.label}>
-                    <SelectLabel>{timeZoneGroup.label}</SelectLabel>
-                    {timeZoneGroup.timezones.map((timeZone) => (
-                      <SelectItem key={timeZone.value} value={timeZone.value}>
-                        {timeZone.label} ({timeZone.offset})
-                      </SelectItem>
-                    ))}
-                  </SelectGroup>
-                ))}
-              </SelectContent>
+                  {TIMEZONES.map((timeZoneGroup) => (
+                    <SelectGroup key={timeZoneGroup.label}>
+                      <SelectLabel>{timeZoneGroup.label}</SelectLabel>
+                      {timeZoneGroup.timezones.map((timeZone) => (
+                        <SelectItem key={timeZone.value} value={timeZone.value}>
+                          {timeZone.label} ({timeZone.offset})
+                        </SelectItem>
+                      ))}
+                    </SelectGroup>
+                  ))}
+                </SelectContent>
               </Select>
               <FormDescription>
                 Sets the time for when orders and analytics are recorded
