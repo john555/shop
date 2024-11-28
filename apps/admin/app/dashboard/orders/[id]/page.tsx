@@ -21,7 +21,6 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Separator } from '@/components/ui/separator';
 import {
@@ -59,6 +58,7 @@ import { formatPrice } from '@/common/currency';
 import { OrderStatusBadge } from '../(components)/(ui)/order-status-badge';
 import { OrderShipmentStatusBadge } from '../(components)/(ui)/order-shipment-status-badge';
 import { OrderPaymentStatusBadge } from '../(components)/(ui)/order-payment-status-badge';
+import { CancelledOrderBanner } from '../(components)/(ui)/cancelled-order-banner';
 
 const generateTimeline = (order: Order) => {
   const timeline = [
@@ -66,7 +66,7 @@ const generateTimeline = (order: Order) => {
       id: 1,
       title: 'Order Placed',
       description: 'Order has been placed successfully',
-      date: new Date(order.createdAt).toLocaleDateString(),
+      date: order.createdAt,
       icon: CreditCard,
       completed: true,
     },
@@ -74,9 +74,7 @@ const generateTimeline = (order: Order) => {
       id: 2,
       title: 'Payment Received',
       description: 'Payment for Order has been successfully processed',
-      date: order.paidAt
-        ? new Date(order.paidAt).toLocaleDateString()
-        : 'Pending',
+      date: order.paidAt ? order.paidAt : 'Pending',
       icon: CreditCard,
       completed: order.paymentStatus === PaymentStatus.Completed,
     },
@@ -87,7 +85,7 @@ const generateTimeline = (order: Order) => {
         'Order has been processed and is being prepared for shipment',
       date:
         order.shipmentStatus !== ShipmentStatus.Pending
-          ? new Date(order.updatedAt).toLocaleDateString()
+          ? order.updatedAt
           : 'Pending',
       icon: Package,
       completed: order.shipmentStatus !== ShipmentStatus.Pending,
@@ -96,9 +94,7 @@ const generateTimeline = (order: Order) => {
       id: 4,
       title: 'Order Shipped',
       description: 'Order has been shipped and is on its way',
-      date: order.shippedAt
-        ? new Date(order.shippedAt).toLocaleDateString()
-        : 'Pending',
+      date: order.shippedAt ? order.shippedAt : 'Pending',
       icon: Truck,
       completed:
         order.shipmentStatus === ShipmentStatus.Shipped ||
@@ -108,9 +104,7 @@ const generateTimeline = (order: Order) => {
       id: 5,
       title: 'Delivered',
       description: 'Order has been delivered',
-      date: order.deliveredAt
-        ? new Date(order.deliveredAt).toLocaleDateString()
-        : 'Pending',
+      date: order.deliveredAt ? order.deliveredAt : 'Pending',
       icon: CheckCircle,
       completed: order.shipmentStatus === ShipmentStatus.Delivered,
     },
@@ -191,6 +185,12 @@ export default function OrderDetailsPage() {
         </div>
       </div>
       <Separator />
+      {order.status === OrderStatus.Cancelled && (
+        <CancelledOrderBanner
+          orderNumber={order.formattedOrderNumber}
+          cancelDate={order.cancelledAt}
+        />
+      )}
       <div className="grid gap-6 md:grid-cols-2">
         <div className="space-y-6">
           <OrderItemsCard
@@ -207,7 +207,7 @@ export default function OrderDetailsPage() {
           />
           <PaymentDetailsCard
             status={order.paymentStatus}
-            total={order.totalAmount}
+            disabled={order.status === OrderStatus.Cancelled}
             formattedTotal={order.formattedTotalAmount}
             paidAt={order.paidAt}
             onUpdatePaymentStatus={handleUpdatePaymentStatus}
@@ -317,9 +317,7 @@ const OrderItemsCard: React.FC<OrderItemsCardProps> = ({
         <p><strong>Customer:</strong> ${order.customer?.firstName} ${
       order.customer?.lastName
     }</p>
-        <p><strong>Date:</strong> ${new Date(
-          order.createdAt
-        ).toLocaleDateString()}</p>
+        <p><strong>Date:</strong> ${order.createdAt}</p>
         <table>
           <thead>
             <tr>
@@ -646,8 +644,8 @@ const CustomerCard: React.FC<CustomerCardProps> = ({ customer, notes }) => {
 };
 
 interface PaymentDetailsCardProps {
+  disabled: boolean;
   status: PaymentStatus;
-  total: number;
   formattedTotal: string;
   paidAt?: string;
   onUpdatePaymentStatus: (status: PaymentStatus) => void;
@@ -655,7 +653,7 @@ interface PaymentDetailsCardProps {
 
 const PaymentDetailsCard: React.FC<PaymentDetailsCardProps> = ({
   status,
-  total,
+  disabled,
   formattedTotal,
   paidAt,
   onUpdatePaymentStatus,
@@ -677,12 +675,13 @@ const PaymentDetailsCard: React.FC<PaymentDetailsCardProps> = ({
         </div>
         {paidAt && (
           <p className="text-sm text-muted-foreground text-center">
-            Paid on: {new Date(paidAt).toLocaleString()}
+            Paid on: {paidAt}
           </p>
         )}
         <div className="flex justify-end space-x-2">
           {status !== PaymentStatus.Completed && (
             <Button
+              disabled={disabled}
               onClick={() => onUpdatePaymentStatus(PaymentStatus.Completed)}
               className="text-sm"
             >
@@ -745,12 +744,12 @@ const ShippingDetailsCard: React.FC<ShippingDetailsCardProps> = ({
         )}
         {shippedAt && (
           <p className="text-sm text-muted-foreground">
-            Shipped on: {new Date(shippedAt).toLocaleString()}
+            Shipped on: {shippedAt}
           </p>
         )}
         {deliveredAt && (
           <p className="text-sm text-muted-foreground">
-            Delivered on: {new Date(deliveredAt).toLocaleString()}
+            Delivered on: {deliveredAt}
           </p>
         )}
       </CardContent>

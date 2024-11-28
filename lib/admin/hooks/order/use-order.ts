@@ -1,5 +1,6 @@
 import { gql, useMutation, useQuery } from '@apollo/client';
 import { Order, OrderCreateInput, OrderUpdateInput } from '@/types/api';
+import { formatDatesInObject } from '@/common/date';
 
 const ORDER_FIELDS = `
   id
@@ -104,7 +105,7 @@ export function useOrder({ id }: UseOrderProps = {}) {
   const error = orderError || createError || updateError;
 
   return {
-    order: data?.order as Order | null,
+    order: formatDatesInObject(data?.order) as Order | null,
     loading,
     creating,
     updating,
