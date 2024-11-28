@@ -1,5 +1,5 @@
 import { gql, useMutation, useQuery } from '@apollo/client';
-import { Order, OrderCreateInput } from '@/types/api';
+import { Order, OrderCreateInput, OrderUpdateInput } from '@/types/api';
 
 const ORDER_FIELDS = `
   id
@@ -13,6 +13,7 @@ const ORDER_FIELDS = `
   shippingAmount
   discountAmount
   totalAmount
+  formattedTotalAmount
   currency
   currencySymbol
   customerNotes
@@ -64,6 +65,14 @@ const CREATE_DRAFT_ORDER = gql`
   }
 `;
 
+const UPDATE_ORDER = gql`
+  mutation UpdateOrder($input: OrderUpdateInput!) {
+    updateOrder(input: $input) {
+      ${ORDER_FIELDS}
+    }
+  }
+`;
+
 interface UseOrderProps {
   id?: string;
 }
@@ -80,22 +89,37 @@ export function useOrder({ id }: UseOrderProps = {}) {
   });
 
   const [createDraftOrder, { loading: creating, error: createError }] =
-    useMutation(CREATE_DRAFT_ORDER);
+    useMutation(CREATE_DRAFT_ORDER, {
+      refetchQueries: [{ query: GET_ORDER, variables: { id } }],
+    });
 
+  const [updateOrder, { loading: updating, error: updateError }] = useMutation(
+    UPDATE_ORDER,
+    {
+      refetchQueries: [{ query: GET_ORDER, variables: { id } }],
+    }
+  );
 
   // Combine error states
-  const error = orderError || createError;
+  const error = orderError || createError || updateError;
 
   return {
     order: data?.order as Order | null,
     loading,
     creating,
+    updating,
     error,
     createDraftOrder: async (input: OrderCreateInput) => {
       const response = await createDraftOrder({
         variables: { input },
       });
       return response.data.createDraftOrder as Order;
+    },
+    updateOrder: async (input: Omit<OrderUpdateInput, 'id'>) => {
+      const response = await updateOrder({
+        variables: { input: { ...input, id } },
+      });
+      return response.data.updateOrder as Order;
     },
     refetch,
   };

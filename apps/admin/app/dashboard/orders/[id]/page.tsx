@@ -12,10 +12,7 @@ import {
   Printer,
   MoreHorizontal,
   Trash2,
-  DollarSign,
 } from 'lucide-react';
-import Link from 'next/link';
-
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -47,202 +44,135 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import { toast } from '@/components/ui/use-toast';
-import { DASHBOARD_PAGE_LINK } from '@/common/constants';
+import {
+  Customer,
+  Order,
+  OrderStatus,
+  OrderUpdateInput,
+  PaymentStatus,
+  ShipmentStatus,
+} from '@/types/api';
+import { useOrder } from '@/admin/hooks/order';
+import { useParams } from 'next/navigation';
+import { useStore } from '@/admin/hooks/store';
+import { formatPrice } from '@/common/currency';
+import { OrderStatusBadge } from '../(components)/(ui)/order-status-badge';
+import { OrderShipmentStatusBadge } from '../(components)/(ui)/order-shipment-status-badge';
+import { OrderPaymentStatusBadge } from '../(components)/(ui)/order-payment-status-badge';
 
-// Type definitions
-enum OrderStatus {
-  InTransit = 'In Transit',
-  // Add other order statuses as needed
-}
-
-enum PaymentStatus {
-  Pending = 'Pending',
-  Paid = 'Paid',
-  Failed = 'Failed',
-}
-
-enum FulfillmentStatus {
-  Pending = 'Pending',
-  Processing = 'Processing',
-  Fulfilled = 'Fulfilled',
-  Cancelled = 'Cancelled',
-}
-
-enum DeliveryStatus {
-  NotShipped = 'Not Shipped',
-  Shipped = 'Shipped',
-  OutForDelivery = 'Out for Delivery',
-  Delivered = 'Delivered',
-}
-
-interface Order {
-  id: string;
-  status: OrderStatus;
-  paymentStatus: PaymentStatus;
-  paymentMethod: string;
-  lastFourDigits: string;
-  customer: {
-    name: string;
-    email: string;
-    avatar: string;
-    address: string;
-  };
-  items: Array<{
-    id: number;
-    name: string;
-    quantity: number;
-    price: number;
-  }>;
-  total: number;
-  timeline: Array<{
-    id: number;
-    title: string;
-    description: string;
-    date: string;
-    icon: React.ElementType;
-    completed: boolean;
-  }>;
-  fulfillmentStatus: FulfillmentStatus;
-  deliveryStatus: DeliveryStatus;
-}
-
-// Mock data for the order
-const orderData: Order = {
-  id: 'ORD-12345',
-  status: OrderStatus.InTransit,
-  paymentStatus: PaymentStatus.Pending,
-  paymentMethod: 'Credit Card',
-  lastFourDigits: '4242',
-  customer: {
-    name: 'Alice Johnson',
-    email: 'alice@example.com',
-    avatar: 'https://i.pravatar.cc/150?img=1',
-    address: '123 Main St, Anytown, AN 12345',
-  },
-  items: [
-    { id: 1, name: 'Wireless Earbuds', quantity: 1, price: 79.99 },
-    { id: 2, name: 'Smart Watch', quantity: 1, price: 199.99 },
-  ],
-  total: 279.98,
-  timeline: [
+const generateTimeline = (order: Order) => {
+  const timeline = [
     {
       id: 1,
       title: 'Order Placed',
-      description: 'Your order has been placed successfully',
-      date: '2023-06-01',
+      description: 'Order has been placed successfully',
+      date: new Date(order.createdAt).toLocaleDateString(),
       icon: CreditCard,
       completed: true,
     },
     {
       id: 2,
       title: 'Payment Received',
-      description: 'Payment for your order has been successfully processed',
-      date: '2023-06-01',
+      description: 'Payment for Order has been successfully processed',
+      date: order.paidAt
+        ? new Date(order.paidAt).toLocaleDateString()
+        : 'Pending',
       icon: CreditCard,
-      completed: false,
+      completed: order.paymentStatus === PaymentStatus.Completed,
     },
     {
       id: 3,
       title: 'Order Processed',
       description:
-        'Your order has been processed and is being prepared for shipment',
-      date: '2023-06-02',
+        'Order has been processed and is being prepared for shipment',
+      date:
+        order.shipmentStatus !== ShipmentStatus.Pending
+          ? new Date(order.updatedAt).toLocaleDateString()
+          : 'Pending',
       icon: Package,
-      completed: false,
+      completed: order.shipmentStatus !== ShipmentStatus.Pending,
     },
     {
       id: 4,
       title: 'Order Shipped',
-      description: 'Your order has been shipped and is on its way',
-      date: '2023-06-03',
+      description: 'Order has been shipped and is on its way',
+      date: order.shippedAt
+        ? new Date(order.shippedAt).toLocaleDateString()
+        : 'Pending',
       icon: Truck,
-      completed: false,
+      completed:
+        order.shipmentStatus === ShipmentStatus.Shipped ||
+        order.shipmentStatus === ShipmentStatus.Delivered,
     },
     {
       id: 5,
-      title: 'Out for Delivery',
-      description: 'Your order is out for delivery',
-      date: '2023-06-04',
-      icon: Truck,
-      completed: false,
-    },
-    {
-      id: 6,
       title: 'Delivered',
-      description: 'Your order has been delivered',
-      date: 'Estimated: 2023-06-05',
+      description: 'Order has been delivered',
+      date: order.deliveredAt
+        ? new Date(order.deliveredAt).toLocaleDateString()
+        : 'Pending',
       icon: CheckCircle,
-      completed: false,
+      completed: order.shipmentStatus === ShipmentStatus.Delivered,
     },
-  ],
-  fulfillmentStatus: FulfillmentStatus.Pending,
-  deliveryStatus: DeliveryStatus.NotShipped,
+  ];
+
+  return timeline;
 };
 
 export default function OrderDetailsPage() {
-  const [activeStep, setActiveStep] = React.useState(1);
-  const [paymentStatus, setPaymentStatus] = React.useState<PaymentStatus>(
-    orderData.paymentStatus
-  );
-  const [fulfillmentStatus, setFulfillmentStatus] =
-    React.useState<FulfillmentStatus>(orderData.fulfillmentStatus);
-  const [deliveryStatus, setDeliveryStatus] = React.useState<DeliveryStatus>(
-    orderData.deliveryStatus
-  );
-  const [timeline, setTimeline] = React.useState(orderData.timeline);
+  const { id } = useParams();
+  const {
+    order,
+    loading: loadingOrder,
+    updateOrder,
+  } = useOrder({
+    id: id.toString(),
+  });
+  const loading = loadingOrder;
 
-  const handleConfirmPayment = React.useCallback(() => {
-    setPaymentStatus(PaymentStatus.Paid);
-    setActiveStep(2);
-    updateTimeline(2);
-    toast({
-      title: 'Payment Confirmed',
-      description: 'The payment for this order has been confirmed.',
-    });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  const handleUpdatePaymentStatus = async (newStatus: PaymentStatus) => {
+    if (!order) return;
 
-  const handleDeliveryStatusChange = React.useCallback(
-    (newStatus: DeliveryStatus) => {
-      setDeliveryStatus(newStatus);
-      let step = 3;
-      switch (newStatus) {
-        case DeliveryStatus.Shipped:
-          step = 4;
-          break;
-        case DeliveryStatus.OutForDelivery:
-          step = 5;
-          break;
-        case DeliveryStatus.Delivered:
-          step = 6;
-          setFulfillmentStatus(FulfillmentStatus.Fulfilled);
-          break;
-        default:
-          step = 3;
-      }
-      setActiveStep(step);
-      updateTimeline(step);
-      toast({
-        title: 'Delivery Status Updated',
-        description: `The delivery status has been updated to ${newStatus}.`,
+    try {
+      await updateOrder({
+        paymentStatus: newStatus,
       });
-    },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    []
-  );
+      toast({
+        title: 'Payment Status Updated',
+        description: `The payment status has been updated to ${newStatus}.`,
+      });
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description: 'Failed to update payment status. Please try again.',
+        variant: 'destructive',
+      });
+    }
+  };
 
-  const updateTimeline = React.useCallback((step: number) => {
-    setTimeline((prevTimeline) =>
-      prevTimeline.map((item, index) => {
-        if (index < step) {
-          return { ...item, completed: true };
-        }
-        return item;
-      })
-    );
-  }, []);
+  const handleUpdateShipmentStatus = async (newStatus: ShipmentStatus) => {
+    if (!order) return;
 
-  return (
+    try {
+      await updateOrder({
+        shipmentStatus: newStatus,
+      });
+      toast({
+        title: 'Shipment Status Updated',
+        description: `The shipment status has been updated to ${newStatus}.`,
+      });
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description: 'Failed to update shipment status. Please try again.',
+        variant: 'destructive',
+      });
+    }
+  };
+
+  if (!order && loading) return null;
+
+  return order ? (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div className="space-y-1">
@@ -250,15 +180,13 @@ export default function OrderDetailsPage() {
             Order Details
           </h2>
           <p className="text-sm text-muted-foreground">
-            View details for order {orderData.id}
+            View details for order {order.formattedOrderNumber}
           </p>
         </div>
         <div className="flex items-center space-x-2">
-          <Button variant="outline" asChild>
-            <Link href={`${DASHBOARD_PAGE_LINK}/orders`}>
-              <ArrowLeft className="mr-2 h-4 w-4" />
-              Back to Orders
-            </Link>
+          <Button variant="outline">
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            Back to Orders
           </Button>
         </div>
       </div>
@@ -266,68 +194,49 @@ export default function OrderDetailsPage() {
       <div className="grid gap-6 md:grid-cols-2">
         <div className="space-y-6">
           <OrderItemsCard
-            items={orderData.items}
-            total={orderData.total}
-            paymentStatus={paymentStatus}
-            fulfillmentStatus={fulfillmentStatus}
-            deliveryStatus={deliveryStatus}
-            onUpdateDeliveryStatus={handleDeliveryStatusChange}
+            order={order}
+            onUpdateShipmentStatus={handleUpdateShipmentStatus}
+            updateOrder={updateOrder}
           />
-          <TimelineCard timeline={timeline} activeStep={activeStep} />
+          <TimelineCard timeline={generateTimeline(order)} />
         </div>
         <div className="space-y-6">
-          <PaymentDetailsCard
-            paymentStatus={paymentStatus}
-            paymentMethod={orderData.paymentMethod}
-            lastFourDigits={orderData.lastFourDigits}
-            total={orderData.total}
-            onConfirmPayment={handleConfirmPayment}
+          <CustomerCard
+            customer={order.customer ?? undefined}
+            notes={order.customerNotes ?? undefined}
           />
-          <CustomerCard customer={orderData.customer} />
+          <PaymentDetailsCard
+            status={order.paymentStatus}
+            total={order.totalAmount}
+            formattedTotal={order.formattedTotalAmount}
+            paidAt={order.paidAt}
+            onUpdatePaymentStatus={handleUpdatePaymentStatus}
+          />
+          <ShippingDetailsCard
+            status={order.shipmentStatus}
+            trackingNumber={order.trackingNumber ?? undefined}
+            trackingUrl={order.trackingUrl ?? undefined}
+            shippedAt={order.shippedAt}
+            deliveredAt={order.deliveredAt}
+          />
         </div>
       </div>
     </div>
-  );
+  ) : null;
 }
 
 interface OrderItemsCardProps {
-  items: Array<{ id: number; name: string; quantity: number; price: number }>;
-  total: number;
-  paymentStatus: PaymentStatus;
-  fulfillmentStatus: FulfillmentStatus;
-  deliveryStatus: DeliveryStatus;
-  onUpdateDeliveryStatus: (status: DeliveryStatus) => void;
+  order: Order;
+  updateOrder: (input: Omit<OrderUpdateInput, 'id'>) => Promise<Order>;
+  onUpdateShipmentStatus: (status: ShipmentStatus) => void;
 }
 
 const OrderItemsCard: React.FC<OrderItemsCardProps> = ({
-  items,
-  total,
-  paymentStatus,
-  fulfillmentStatus,
-  deliveryStatus,
-  onUpdateDeliveryStatus,
+  order,
+  updateOrder,
+  onUpdateShipmentStatus,
 }) => {
-  const taxRate = 0.1; // 10% tax rate
-  const subtotal = total;
-  const tax = subtotal * taxRate;
-  const totalWithTax = subtotal + tax;
-
-  const getNextDeliveryStatus = React.useCallback(
-    (currentStatus: DeliveryStatus): DeliveryStatus | null => {
-      const statuses = [
-        DeliveryStatus.NotShipped,
-        DeliveryStatus.Shipped,
-        DeliveryStatus.OutForDelivery,
-        DeliveryStatus.Delivered,
-      ];
-      const currentIndex = statuses.indexOf(currentStatus);
-      return currentIndex < statuses.length - 1
-        ? statuses[currentIndex + 1]
-        : null;
-    },
-    []
-  );
-
+  const { store } = useStore();
   const handlePrintInvoice = React.useCallback(() => {
     const printContent = `
       <!DOCTYPE html>
@@ -335,7 +244,7 @@ const OrderItemsCard: React.FC<OrderItemsCardProps> = ({
       <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Invoice for Order ${orderData.id}</title>
+        <title>Invoice for Order ${order.formattedOrderNumber}</title>
         <style>
           body {
             font-family: Arial, sans-serif;
@@ -397,16 +306,20 @@ const OrderItemsCard: React.FC<OrderItemsCardProps> = ({
       <body>
         <div class="store-details">
           <img src="/placeholder.svg?height=100&width=200" alt="Store Logo" class="store-logo">
-          <h2>Your Store Name</h2>
+          <h2>${store?.name || 'Your Store Name'}</h2>
           <p>123 Store Street, City, State, ZIP</p>
-          <p>Phone: (123) 456-7890</p>
-          <p>Email: contact@yourstore.com</p>
+          <p>Phone: ${store?.phone || '(123) 456-7890'}</p>
+          <p>Email: ${store?.email || 'contact@yourstore.com'}</p>
         </div>
         <h1>Invoice <span style="float: right;">Order ${
-          orderData.id
+          order.formattedOrderNumber
         }</span></h1>
-        <p><strong>Customer:</strong> ${orderData.customer.name}</p>
-        <p><strong>Date:</strong> ${new Date().toLocaleDateString()}</p>
+        <p><strong>Customer:</strong> ${order.customer?.firstName} ${
+      order.customer?.lastName
+    }</p>
+        <p><strong>Date:</strong> ${new Date(
+          order.createdAt
+        ).toLocaleDateString()}</p>
         <table>
           <thead>
             <tr>
@@ -417,14 +330,14 @@ const OrderItemsCard: React.FC<OrderItemsCardProps> = ({
             </tr>
           </thead>
           <tbody>
-            ${items
+            ${order.items
               .map(
                 (item) => `
               <tr>
-                <td>${item.name}</td>
+                <td>${item.title} (${item.variantName})</td>
                 <td>${item.quantity}</td>
-                <td>$${item.price.toFixed(2)}</td>
-                <td>$${(item.quantity * item.price).toFixed(2)}</td>
+                <td>${formatPrice(item.unitPrice, store)}</td>
+                <td>${formatPrice(item.totalAmount, store)}</td>
               </tr>
             `
               )
@@ -432,9 +345,11 @@ const OrderItemsCard: React.FC<OrderItemsCardProps> = ({
           </tbody>
         </table>
         <div class="total">
-          <p>Subtotal: $${subtotal.toFixed(2)}</p>
-          <p>Tax (10%): $${tax.toFixed(2)}</p>
-          <p>Total: $${totalWithTax.toFixed(2)}</p>
+          <p>Subtotal: ${formatPrice(order.subtotalAmount, store)}</p>
+          <p>Tax: ${formatPrice(order.taxAmount, store)}</p>
+          <p>Shipping: ${formatPrice(order.shippingAmount, store)}</p>
+          <p>Discount: ${formatPrice(order.discountAmount, store)}</p>
+          <p>Total: ${formatPrice(order.totalAmount, store)}</p>
         </div>
         <div class="footer">
           Thank you for your business!
@@ -451,7 +366,7 @@ const OrderItemsCard: React.FC<OrderItemsCardProps> = ({
     } else {
       console.error('Failed to open print window');
     }
-  }, [items, subtotal, tax, totalWithTax]);
+  }, [order, store]);
 
   return (
     <Card>
@@ -488,12 +403,17 @@ const OrderItemsCard: React.FC<OrderItemsCardProps> = ({
                   </AlertDialogTitle>
                   <AlertDialogDescription>
                     This action cannot be undone. This will permanently cancel
-                    the order and remove it from our servers.
+                    the order.
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
                   <AlertDialogCancel>Cancel</AlertDialogCancel>
-                  <AlertDialogAction className="bg-red-600 hover:bg-red-700">
+                  <AlertDialogAction
+                    className="bg-red-600 hover:bg-red-700"
+                    onClick={() =>
+                      updateOrder({ status: OrderStatus.Cancelled })
+                    }
+                  >
                     Yes, cancel order
                   </AlertDialogAction>
                 </AlertDialogFooter>
@@ -504,16 +424,23 @@ const OrderItemsCard: React.FC<OrderItemsCardProps> = ({
       </CardHeader>
       <CardContent className="pt-2">
         <ul className="divide-y divide-gray-200 dark:divide-gray-700">
-          {items.map((item) => (
+          {order.items.map((item) => (
             <li
               key={item.id}
               className="py-2 flex justify-between items-center text-sm"
             >
               <div className="flex items-center space-x-2">
-                <p className="font-medium">{item.name}</p>
+                <p className="font-medium">
+                  {item.title}{' '}
+                  {item.variantName !== 'Default'
+                    ? `(${item.variantName})`
+                    : ''}
+                </p>
                 <p className="text-muted-foreground">x{item.quantity}</p>
               </div>
-              <p className="font-medium">${item.price.toFixed(2)}</p>
+              <p className="font-medium">
+                {formatPrice(item.totalAmount, store)}
+              </p>
             </li>
           ))}
         </ul>
@@ -521,83 +448,63 @@ const OrderItemsCard: React.FC<OrderItemsCardProps> = ({
         <div className="space-y-1 text-sm">
           <div className="flex justify-between">
             <p>Subtotal</p>
-            <p>${subtotal.toFixed(2)}</p>
+            <p>{formatPrice(order.subtotalAmount, store)}</p>
           </div>
           <div className="flex justify-between">
-            <p>Tax (10%)</p>
-            <p>${tax.toFixed(2)}</p>
+            <p>Tax</p>
+            <p>{formatPrice(order.taxAmount, store)}</p>
+          </div>
+          <div className="flex justify-between">
+            <p>Shipping</p>
+            <p>{formatPrice(order.shippingAmount, store)}</p>
+          </div>
+          <div className="flex justify-between">
+            <p>Discount</p>
+            <p>{formatPrice(order.discountAmount, store)}</p>
           </div>
           <div className="flex justify-between font-semibold">
             <p>Total</p>
-            <p>${totalWithTax.toFixed(2)}</p>
+            <p>{formatPrice(order.totalAmount, store)}</p>
           </div>
         </div>
         <div className="flex flex-col space-y-2 mt-4">
           <div className="flex justify-between items-center text-sm">
+            <p>Order Status:</p>
+            <OrderStatusBadge status={order.status} />
+          </div>
+          <div className="flex justify-between items-center text-sm">
             <p>Payment Status:</p>
-            <Badge
-              variant={
-                paymentStatus === PaymentStatus.Paid
-                  ? 'secondary'
-                  : paymentStatus === PaymentStatus.Pending
-                  ? 'outline'
-                  : paymentStatus === PaymentStatus.Failed
-                  ? 'destructive'
-                  : 'default'
-              }
-              className="text-sm"
-            >
-              {paymentStatus}
-            </Badge>
+            <OrderPaymentStatusBadge status={order.paymentStatus} />
           </div>
           <div className="flex justify-between items-center text-sm">
-            <p>Fulfillment Status:</p>
-            <Badge
-              variant={
-                fulfillmentStatus === FulfillmentStatus.Fulfilled
-                  ? 'secondary'
-                  : fulfillmentStatus === FulfillmentStatus.Processing
-                  ? 'outline'
-                  : fulfillmentStatus === FulfillmentStatus.Cancelled
-                  ? 'destructive'
-                  : 'default'
-              }
-              className="text-sm"
-            >
-              {fulfillmentStatus}
-            </Badge>
+            <p>Shipment Status:</p>
+            <OrderShipmentStatusBadge status={order.shipmentStatus} />
           </div>
-          <div className="flex justify-between items-center text-sm">
-            <p>Delivery Status:</p>
-            <Badge
-              variant={
-                deliveryStatus === DeliveryStatus.Delivered
-                  ? 'secondary'
-                  : deliveryStatus === DeliveryStatus.OutForDelivery
-                  ? 'outline'
-                  : deliveryStatus === DeliveryStatus.Shipped
-                  ? 'secondary'
-                  : deliveryStatus === DeliveryStatus.NotShipped
-                  ? 'outline'
-                  : 'default'
-              }
-              className="text-sm"
-            >
-              {deliveryStatus}
-            </Badge>
-          </div>
-          {paymentStatus === PaymentStatus.Paid &&
-            deliveryStatus !== DeliveryStatus.Delivered && (
+          {order.paymentStatus === PaymentStatus.Completed &&
+            order.shipmentStatus !== ShipmentStatus.Delivered && (
               <Button
                 onClick={() => {
-                  const nextStatus = getNextDeliveryStatus(deliveryStatus);
-                  if (nextStatus) onUpdateDeliveryStatus(nextStatus);
+                  const nextStatus =
+                    order.shipmentStatus === ShipmentStatus.Pending
+                      ? ShipmentStatus.Processing
+                      : order.shipmentStatus === ShipmentStatus.Processing
+                      ? ShipmentStatus.Shipped
+                      : order.shipmentStatus === ShipmentStatus.Shipped
+                      ? ShipmentStatus.Delivered
+                      : null;
+                  if (nextStatus) onUpdateShipmentStatus(nextStatus);
                 }}
                 className="self-end mt-2"
                 size="sm"
               >
                 <Truck className="mr-2 h-4 w-4" />
-                {getNextDeliveryStatus(deliveryStatus)}
+                {order.shipmentStatus === ShipmentStatus.Pending
+                  ? 'Process'
+                  : order.shipmentStatus === ShipmentStatus.Processing
+                  ? 'Ship'
+                  : order.shipmentStatus === ShipmentStatus.Shipped
+                  ? 'Mark as Delivered'
+                  : 'Update Status'}
               </Button>
             )}
         </div>
@@ -606,56 +513,42 @@ const OrderItemsCard: React.FC<OrderItemsCardProps> = ({
   );
 };
 
-interface TimelineItem {
-  id: number;
-  title: string;
-  description: string;
-  date: string;
-  icon: React.ElementType;
-  completed: boolean;
-}
-
 interface TimelineCardProps {
-  timeline: TimelineItem[];
-  activeStep: number;
+  timeline: Array<{
+    id: number;
+    title: string;
+    description: string;
+    date: string;
+    icon: React.ElementType;
+    completed: boolean;
+  }>;
 }
 
-const TimelineCard: React.FC<TimelineCardProps> = ({
-  timeline,
-  activeStep,
-}) => {
-  const reversedTimeline = React.useMemo(
-    () => [...timeline].reverse(),
-    [timeline]
-  );
+const TimelineCard: React.FC<TimelineCardProps> = ({ timeline }) => {
   return (
     <Card>
       <CardHeader>
         <CardTitle>Order Timeline</CardTitle>
-        <CardDescription>Track your order status</CardDescription>
+        <CardDescription>Track Order status</CardDescription>
       </CardHeader>
       <CardContent>
         <ol className="relative border-l border-gray-200 dark:border-gray-700">
-          {reversedTimeline.map((step, index) => (
+          {timeline.map((step, index) => (
             <li
               key={step.id}
-              className={`ml-6 ${
-                index !== reversedTimeline.length - 1 ? 'mb-10' : ''
-              }`}
+              className={`ml-6 ${index !== timeline.length - 1 ? 'mb-10' : ''}`}
             >
               <span
                 className={`absolute flex items-center justify-center w-8 h-8 rounded-full -left-4 ring-4 ${
-                  reversedTimeline.length - 1 - index < activeStep
+                  step.completed
                     ? 'bg-green-500 ring-green-100 dark:bg-green-900 dark:ring-green-900/20'
-                    : reversedTimeline.length - 1 - index === activeStep
-                    ? 'bg-primary ring-primary/20'
                     : 'bg-gray-100 ring-white dark:bg-gray-700 dark:ring-gray-900'
                 }`}
               >
                 {step.icon && (
                   <step.icon
                     className={`w-5 h-5 ${
-                      reversedTimeline.length - 1 - index <= activeStep
+                      step.completed
                         ? 'text-white'
                         : 'text-gray-500 dark:text-gray-400'
                     }`}
@@ -664,13 +557,13 @@ const TimelineCard: React.FC<TimelineCardProps> = ({
               </span>
               <h3
                 className={`flex items-center mb-1 text-lg font-semibold ${
-                  reversedTimeline.length - 1 - index <= activeStep
+                  step.completed
                     ? 'text-gray-900 dark:text-white'
                     : 'text-gray-500 dark:text-gray-400'
                 }`}
               >
                 {step.title}
-                {reversedTimeline.length - 1 - index < activeStep && (
+                {step.completed && (
                   <span className="bg-green-100 text-green-800 text-sm font-medium mr-2 px-2.5 py-0.5 rounded dark:bg-green-900 dark:text-green-300 ml-3">
                     Completed
                   </span>
@@ -691,15 +584,13 @@ const TimelineCard: React.FC<TimelineCardProps> = ({
 };
 
 interface CustomerCardProps {
-  customer: {
-    name: string;
-    email: string;
-    avatar: string;
-    address: string;
-  };
+  customer?: Customer;
+  notes?: string;
 }
 
-const CustomerCard: React.FC<CustomerCardProps> = ({ customer }) => {
+const CustomerCard: React.FC<CustomerCardProps> = ({ customer, notes }) => {
+  if (!customer) return null;
+
   return (
     <Card>
       <CardHeader>
@@ -708,11 +599,19 @@ const CustomerCard: React.FC<CustomerCardProps> = ({ customer }) => {
       <CardContent className="space-y-4">
         <div className="flex items-center space-x-4">
           <Avatar className="h-16 w-16">
-            <AvatarImage src={customer.avatar} alt={customer.name} />
-            <AvatarFallback>{customer.name.charAt(0)}</AvatarFallback>
+            <AvatarImage
+              src={undefined}
+              alt={`${customer.firstName} ${customer.lastName}`}
+            />
+            <AvatarFallback>
+              {customer.firstName?.[0]}
+              {customer.lastName?.[0]}
+            </AvatarFallback>
           </Avatar>
           <div>
-            <p className="font-medium">{customer.name}</p>
+            <p className="font-medium">
+              {customer.firstName} {customer.lastName}
+            </p>
             <p className="text-sm text-muted-foreground">{customer.email}</p>
           </div>
         </div>
@@ -723,34 +622,43 @@ const CustomerCard: React.FC<CustomerCardProps> = ({ customer }) => {
             <span className="font-medium">Contact Information</span>
           </div>
           <p className="text-sm text-muted-foreground">{customer.email}</p>
+          {customer.phoneNumber && (
+            <p className="text-sm text-muted-foreground">
+              {customer.phoneNumber}
+            </p>
+          )}
         </div>
-        <Separator />
-        <div className="space-y-1">
-          <div className="flex items-center text-sm">
-            <MapPin className="mr-2 h-4 w-4" />
-            <span className="font-medium">Shipping Address</span>
-          </div>
-          <p className="text-sm text-muted-foreground">{customer.address}</p>
-        </div>
+        {notes && (
+          <>
+            <Separator />
+            <div className="space-y-1">
+              <div className="flex items-center text-sm">
+                <MapPin className="mr-2 h-4 w-4" />
+                <span className="font-medium">Customer Notes</span>
+              </div>
+              <p className="text-sm text-muted-foreground">{notes}</p>
+            </div>
+          </>
+        )}
       </CardContent>
     </Card>
   );
 };
 
 interface PaymentDetailsCardProps {
-  paymentStatus: PaymentStatus;
-  paymentMethod: string;
-  lastFourDigits: string;
+  status: PaymentStatus;
   total: number;
-  onConfirmPayment: () => void;
+  formattedTotal: string;
+  paidAt?: string;
+  onUpdatePaymentStatus: (status: PaymentStatus) => void;
 }
 
 const PaymentDetailsCard: React.FC<PaymentDetailsCardProps> = ({
-  paymentStatus,
-  paymentMethod,
-  lastFourDigits,
+  status,
   total,
-  onConfirmPayment,
+  formattedTotal,
+  paidAt,
+  onUpdatePaymentStatus,
 }) => {
   return (
     <Card>
@@ -760,46 +668,91 @@ const PaymentDetailsCard: React.FC<PaymentDetailsCardProps> = ({
       <CardContent className="space-y-4">
         <div className="flex justify-between items-center">
           <span className="text-sm font-medium">Status</span>
-          <Badge
-            variant={
-              paymentStatus === PaymentStatus.Paid
-                ? 'secondary'
-                : paymentStatus === PaymentStatus.Pending
-                ? 'outline'
-                : paymentStatus === PaymentStatus.Failed
-                ? 'destructive'
-                : 'default'
-            }
-            className="text-sm"
-          >
-            {paymentStatus}
-          </Badge>
-        </div>
-        <Separator />
-        <div className="space-y-1">
-          <div className="flex items-center justify-between text-sm">
-            <span className="font-medium">Payment Method</span>
-            <span>{paymentMethod}</span>
-          </div>
-          <div className="flex items-center justify-between text-sm">
-            <span className="font-medium">Card Number</span>
-            <span>**** **** **** {lastFourDigits}</span>
-          </div>
+          <OrderPaymentStatusBadge status={status} />
         </div>
         <Separator />
         <div className="flex justify-between items-center font-semibold">
           <span>Total Amount</span>
-          <span>${total.toFixed(2)}</span>
+          <span>{formattedTotal}</span>
         </div>
-        {paymentStatus === PaymentStatus.Pending && (
-          <Button onClick={onConfirmPayment} className="w-full mt-4">
-            <DollarSign className="mr-2 h-4 w-4" />
-            Confirm Payment
-          </Button>
+        {paidAt && (
+          <p className="text-sm text-muted-foreground text-center">
+            Paid on: {new Date(paidAt).toLocaleString()}
+          </p>
         )}
-        <p className="text-sm text-muted-foreground text-center">
-          Last updated: {new Date().toLocaleString()}
-        </p>
+        <div className="flex justify-end space-x-2">
+          {status !== PaymentStatus.Completed && (
+            <Button
+              onClick={() => onUpdatePaymentStatus(PaymentStatus.Completed)}
+              className="text-sm"
+            >
+              Mark as Paid
+            </Button>
+          )}
+          {status === PaymentStatus.Completed && (
+            <Button
+              onClick={() => onUpdatePaymentStatus(PaymentStatus.Pending)}
+              variant="outline"
+              className="text-sm"
+            >
+              Mark as Pending
+            </Button>
+          )}
+        </div>
+      </CardContent>
+    </Card>
+  );
+};
+
+interface ShippingDetailsCardProps {
+  status: ShipmentStatus;
+  trackingNumber?: string;
+  trackingUrl?: string;
+  shippedAt?: string;
+  deliveredAt?: string;
+}
+
+const ShippingDetailsCard: React.FC<ShippingDetailsCardProps> = ({
+  status,
+  trackingNumber,
+  trackingUrl,
+  shippedAt,
+  deliveredAt,
+}) => {
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Shipping Details</CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <div className="flex justify-between items-center">
+          <span className="text-sm font-medium">Status</span>
+          <OrderShipmentStatusBadge status={status} />
+        </div>
+        {(trackingNumber || shippedAt || deliveredAt) && <Separator />}
+        {trackingNumber && (
+          <div className="space-y-1">
+            <p className="text-sm font-medium">Tracking Number</p>
+            <p className="text-sm text-muted-foreground">{trackingNumber}</p>
+            {trackingUrl && (
+              <Button variant="link" className="p-0" asChild>
+                <a href={trackingUrl} target="_blank" rel="noopener noreferrer">
+                  Track Package
+                </a>
+              </Button>
+            )}
+          </div>
+        )}
+        {shippedAt && (
+          <p className="text-sm text-muted-foreground">
+            Shipped on: {new Date(shippedAt).toLocaleString()}
+          </p>
+        )}
+        {deliveredAt && (
+          <p className="text-sm text-muted-foreground">
+            Delivered on: {new Date(deliveredAt).toLocaleString()}
+          </p>
+        )}
       </CardContent>
     </Card>
   );

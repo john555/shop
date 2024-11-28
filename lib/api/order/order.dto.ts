@@ -121,3 +121,96 @@ export class GetMyStoreOrdersArgs {
   @IsString()
   storeId: string;
 }
+
+@InputType()
+export class OrderItemUpdateInput {
+  @Field(() => String)
+  @IsString()
+  id: string;
+
+  @Field(() => Int)
+  @IsNumber()
+  @Min(1)
+  quantity: number;
+}
+
+@InputType()
+export class OrderItemCreateInput {
+  @Field(() => String)
+  @IsString()
+  productId: string;
+
+  @Field(() => String)
+  @IsString()
+  variantId: string;
+
+  @Field(() => Int)
+  @IsNumber()
+  @Min(1)
+  quantity: number;
+}
+
+@InputType()
+export class OrderUpdateInput {
+  @Field(() => String)
+  @IsString()
+  id: string;
+
+  @Field(() => OrderStatus, { nullable: true })
+  @IsOptional()
+  @IsEnum(OrderStatus)
+  status?: OrderStatus;
+
+  @Field(() => PaymentStatus, { nullable: true })
+  @IsOptional()
+  @IsEnum(PaymentStatus)
+  paymentStatus?: PaymentStatus;
+
+  @Field(() => ShipmentStatus, { nullable: true })
+  @IsOptional()
+  @IsEnum(ShipmentStatus)
+  shipmentStatus?: ShipmentStatus;
+
+  @Field(() => String, { nullable: true })
+  @IsOptional()
+  @IsString()
+  customerId?: string;
+
+  @Field(() => String, { nullable: true })
+  @IsOptional()
+  @IsString()
+  customerNotes?: string;
+
+  @Field(() => String, { nullable: true })
+  @IsOptional()
+  @IsString()
+  privateNotes?: string;
+
+  @Field(() => String, { nullable: true })
+  @IsOptional()
+  @IsString()
+  trackingNumber?: string;
+
+  @Field(() => String, { nullable: true })
+  @IsOptional()
+  @IsString()
+  trackingUrl?: string;
+
+  @Field(() => [OrderItemUpdateInput], { nullable: true })
+  @IsOptional()
+  @ValidateNested({ each: true })
+  @Type(() => OrderItemUpdateInput)
+  updateItems?: OrderItemUpdateInput[];
+
+  @Field(() => [String], { nullable: true })
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  removeItems?: string[];
+
+  @Field(() => [OrderItemCreateInput], { nullable: true })
+  @IsOptional()
+  @ValidateNested({ each: true })
+  @Type(() => OrderItemCreateInput)
+  addItems?: OrderItemCreateInput[];
+}

@@ -459,6 +459,7 @@ type Mutation {
   updateCollection(input: CollectionUpdateInput!): Collection!
   updateCustomer(input: CustomerUpdateInput!): Customer!
   updateMedia(input: MediaUpdateInput!): Media!
+  updateOrder(input: OrderUpdateInput!): Order!
   updatePassword(input: UserPasswordUpdateInput!): User!
   updateProduct(input: ProductUpdateInput!): Product!
   updateStore(input: StoreUpdateInput!): Store!
@@ -551,10 +552,21 @@ type OrderItem {
   variantName: String!
 }
 
+input OrderItemCreateInput {
+  productId: String!
+  quantity: Int!
+  variantId: String!
+}
+
 input OrderItemInput {
   productId: String!
   quantity: Int!
   variantId: String!
+}
+
+input OrderItemUpdateInput {
+  id: String!
+  quantity: Int!
 }
 
 type OrderStats {
@@ -580,6 +592,21 @@ type OrderTotals {
   orders: Float!
   shipping: Float!
   tax: Float!
+}
+
+input OrderUpdateInput {
+  addItems: [OrderItemCreateInput!]
+  customerId: String
+  customerNotes: String
+  id: String!
+  paymentStatus: PaymentStatus
+  privateNotes: String
+  removeItems: [String!]
+  shipmentStatus: ShipmentStatus
+  status: OrderStatus
+  trackingNumber: String
+  trackingUrl: String
+  updateItems: [OrderItemUpdateInput!]
 }
 
 """Status of the payment"""

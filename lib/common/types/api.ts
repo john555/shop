@@ -445,6 +445,7 @@ export type Mutation = {
   updateCollection: Collection;
   updateCustomer: Customer;
   updateMedia: Media;
+  updateOrder: Order;
   updatePassword: User;
   updateProduct: Product;
   updateStore: Store;
@@ -607,6 +608,11 @@ export type MutationUpdateMediaArgs = {
 };
 
 
+export type MutationUpdateOrderArgs = {
+  input: OrderUpdateInput;
+};
+
+
 export type MutationUpdatePasswordArgs = {
   input: UserPasswordUpdateInput;
 };
@@ -716,10 +722,21 @@ export type OrderItem = {
   variantName: Scalars['String']['output'];
 };
 
+export type OrderItemCreateInput = {
+  productId: Scalars['String']['input'];
+  quantity: Scalars['Int']['input'];
+  variantId: Scalars['String']['input'];
+};
+
 export type OrderItemInput = {
   productId: Scalars['String']['input'];
   quantity: Scalars['Int']['input'];
   variantId: Scalars['String']['input'];
+};
+
+export type OrderItemUpdateInput = {
+  id: Scalars['String']['input'];
+  quantity: Scalars['Int']['input'];
 };
 
 export type OrderStats = {
@@ -747,6 +764,21 @@ export type OrderTotals = {
   orders: Scalars['Float']['output'];
   shipping: Scalars['Float']['output'];
   tax: Scalars['Float']['output'];
+};
+
+export type OrderUpdateInput = {
+  addItems?: InputMaybe<Array<OrderItemCreateInput>>;
+  customerId?: InputMaybe<Scalars['String']['input']>;
+  customerNotes?: InputMaybe<Scalars['String']['input']>;
+  id: Scalars['String']['input'];
+  paymentStatus?: InputMaybe<PaymentStatus>;
+  privateNotes?: InputMaybe<Scalars['String']['input']>;
+  removeItems?: InputMaybe<Array<Scalars['String']['input']>>;
+  shipmentStatus?: InputMaybe<ShipmentStatus>;
+  status?: InputMaybe<OrderStatus>;
+  trackingNumber?: InputMaybe<Scalars['String']['input']>;
+  trackingUrl?: InputMaybe<Scalars['String']['input']>;
+  updateItems?: InputMaybe<Array<OrderItemUpdateInput>>;
 };
 
 /** Status of the payment */
@@ -1013,6 +1045,7 @@ export type QueryMyStoresArgs = {
 
 export type QueryOrderArgs = {
   id: Scalars['String']['input'];
+  storeId: Scalars['String']['input'];
 };
 
 
@@ -1466,10 +1499,13 @@ export type ResolversTypes = {
   OrderCreateInput: OrderCreateInput;
   OrderFiltersInput: OrderFiltersInput;
   OrderItem: ResolverTypeWrapper<OrderItem>;
+  OrderItemCreateInput: OrderItemCreateInput;
   OrderItemInput: OrderItemInput;
+  OrderItemUpdateInput: OrderItemUpdateInput;
   OrderStats: ResolverTypeWrapper<OrderStats>;
   OrderStatus: OrderStatus;
   OrderTotals: ResolverTypeWrapper<OrderTotals>;
+  OrderUpdateInput: OrderUpdateInput;
   PaymentStatus: PaymentStatus;
   Product: ResolverTypeWrapper<Product>;
   ProductCreateInput: ProductCreateInput;
@@ -1547,9 +1583,12 @@ export type ResolversParentTypes = {
   OrderCreateInput: OrderCreateInput;
   OrderFiltersInput: OrderFiltersInput;
   OrderItem: OrderItem;
+  OrderItemCreateInput: OrderItemCreateInput;
   OrderItemInput: OrderItemInput;
+  OrderItemUpdateInput: OrderItemUpdateInput;
   OrderStats: OrderStats;
   OrderTotals: OrderTotals;
+  OrderUpdateInput: OrderUpdateInput;
   Product: Product;
   ProductCreateInput: ProductCreateInput;
   ProductFiltersInput: ProductFiltersInput;
@@ -1733,6 +1772,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   updateCollection?: Resolver<ResolversTypes['Collection'], ParentType, ContextType, RequireFields<MutationUpdateCollectionArgs, 'input'>>;
   updateCustomer?: Resolver<ResolversTypes['Customer'], ParentType, ContextType, RequireFields<MutationUpdateCustomerArgs, 'input'>>;
   updateMedia?: Resolver<ResolversTypes['Media'], ParentType, ContextType, RequireFields<MutationUpdateMediaArgs, 'input'>>;
+  updateOrder?: Resolver<ResolversTypes['Order'], ParentType, ContextType, RequireFields<MutationUpdateOrderArgs, 'input'>>;
   updatePassword?: Resolver<ResolversTypes['User'], ParentType, ContextType, RequireFields<MutationUpdatePasswordArgs, 'input'>>;
   updateProduct?: Resolver<ResolversTypes['Product'], ParentType, ContextType, RequireFields<MutationUpdateProductArgs, 'input'>>;
   updateStore?: Resolver<ResolversTypes['Store'], ParentType, ContextType, RequireFields<MutationUpdateStoreArgs, 'input'>>;
@@ -1885,7 +1925,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   myStoreOrders?: Resolver<Array<ResolversTypes['Order']>, ParentType, ContextType, RequireFields<QueryMyStoreOrdersArgs, 'skip' | 'storeId' | 'take'>>;
   myStoreProducts?: Resolver<Array<ResolversTypes['Product']>, ParentType, ContextType, RequireFields<QueryMyStoreProductsArgs, 'skip' | 'storeId' | 'take'>>;
   myStores?: Resolver<Array<ResolversTypes['Store']>, ParentType, ContextType, RequireFields<QueryMyStoresArgs, 'skip' | 'take'>>;
-  order?: Resolver<Maybe<ResolversTypes['Order']>, ParentType, ContextType, RequireFields<QueryOrderArgs, 'id'>>;
+  order?: Resolver<Maybe<ResolversTypes['Order']>, ParentType, ContextType, RequireFields<QueryOrderArgs, 'id' | 'storeId'>>;
   ownerAddresses?: Resolver<Array<ResolversTypes['AddressOnOwner']>, ParentType, ContextType, RequireFields<QueryOwnerAddressesArgs, 'ownerId' | 'ownerType'>>;
   product?: Resolver<Maybe<ResolversTypes['Product']>, ParentType, ContextType, RequireFields<QueryProductArgs, 'id'>>;
   productBySlug?: Resolver<Maybe<ResolversTypes['Product']>, ParentType, ContextType, RequireFields<QueryProductBySlugArgs, 'slug' | 'storeId'>>;

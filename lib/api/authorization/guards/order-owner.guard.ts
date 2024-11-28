@@ -8,7 +8,7 @@ import { GqlExecutionContext } from '@nestjs/graphql';
 import { AuthorizationService } from '../authorization.service';
 
 @Injectable()
-export class StoreOwnerGuard implements CanActivate {
+export class OrderOwnerGuard implements CanActivate {
   constructor(private readonly authService: AuthorizationService) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
@@ -20,27 +20,29 @@ export class StoreOwnerGuard implements CanActivate {
       throw new UnauthorizedException('User not authenticated');
     }
 
-    // Extract storeId from args
-    const storeId = this.getStoreId(ctx);
-    if (!storeId) {
-      throw new UnauthorizedException('Store ID not provided');
+    const orderId = this.getOrderId(ctx);
+    if (!orderId) {
+      throw new UnauthorizedException('Order ID not provided');
     }
 
-    const hasAccess = await this.authService.canAccessStore(userId, storeId);
+    const hasAccess = await this.authService.canAccessOrder(
+      userId,
+      orderId
+    );
     if (!hasAccess) {
-      throw new UnauthorizedException('Not authorized to access this store');
+      throw new UnauthorizedException('Not authorized to access this order');
     }
 
     return true;
   }
 
-  private getStoreId(ctx: GqlExecutionContext): string | undefined {
+  private getOrderId(ctx: GqlExecutionContext): string | undefined {
     const args = ctx.getArgs();
     return (
-      args.storeId ||
-      args.input?.storeId ||
+      args.orderId ||
       args.id ||
       args.input?.id ||
+      args.input?.orderId ||
       undefined
     );
   }

@@ -11,6 +11,7 @@ import { BulkCollectionOwnerGuard } from '../guards/bulk-collection-owner.guard'
 import { CustomerOwnerGuard } from '../guards/customer-owner.guard';
 import { BulkCustomerOwnerGuard } from '../guards/bulk-customer-owner.guard';
 import { StoreCustomerGuard } from '../guards/store-customer.guard';
+import { OrderOwnerGuard } from '../guards/order-owner.guard';
 
 export function Auth(...guards: any[]) {
   return applyDecorators(UseGuards(JwtAuthGuard, ...guards));
@@ -27,6 +28,7 @@ export const AuthBulkCollections = () => Auth(BulkCollectionOwnerGuard);
 export const AuthCustomer = () => Auth(CustomerOwnerGuard);
 export const AuthBulkCustomers = () => Auth(BulkCustomerOwnerGuard);
 export const AuthStoreCustomers = () => Auth(StoreCustomerGuard);
+export const AuthOrder = () => Auth(OrderOwnerGuard);
 
 // Example composite guard for operations requiring both store and customer access
 export const AuthStoreAndCustomer = () =>

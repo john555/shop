@@ -18,8 +18,9 @@ import {
   OrderCreateInput,
   OrderFiltersInput,
   OrderGetArgs,
+  OrderUpdateInput,
 } from './order.dto';
-import { AuthStore } from '../authorization/decorators/auth.decorator';
+import { AuthOrder, AuthStore } from '../authorization/decorators/auth.decorator';
 import { AuthContext } from '../utils/auth';
 import { PaginationArgs } from '../pagination/pagination.args';
 import { getFormattedOrderNumber } from '@/common/order-number';
@@ -47,12 +48,11 @@ export class OrderResolver {
   @Query(() => OrderStats)
   async myStoreOrderStats(
     @Args() args: GetMyStoreOrdersArgs,
-    @Context() ctx: AuthContext
   ): Promise<OrderStats> {
     return this.orderService.getStoreOrderStats(args.storeId);
   }
 
-  @AuthStore()
+  @AuthOrder()
   @Query(() => Order, { nullable: true })
   async order(@Args() args: OrderGetArgs): Promise<Order | null> {
     return this.orderService.findById(args.id);
@@ -72,6 +72,20 @@ export class OrderResolver {
     }
   }
 
+  @AuthOrder()
+  @Mutation(() => Order)
+  async updateOrder(
+    @Args('input') input: OrderUpdateInput,
+    @Context() ctx: AuthContext
+  ): Promise<Order> {
+    try {
+      return await this.orderService.update(input);
+    } catch (error) {
+      this.logger.error('Failed to update order:', error);
+      throw error;
+    }
+  }
+  
   @ResolveField(() => Store)
   async store(@Parent() order: Order): Promise<Store> {
     return this.orderService.findOrderStore(order.id);

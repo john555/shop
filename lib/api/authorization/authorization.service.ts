@@ -60,6 +60,22 @@ export class AuthorizationService {
     return customer?.store?.ownerId === userId;
   }
 
+  async canAccessOrder(
+    userId: string,
+    orderId: string
+  ): Promise<boolean> {
+    const order = await this.prisma.order.findUnique({
+      where: { id: orderId },
+      select: {
+        store: {
+          select: { ownerId: true },
+        },
+      },
+    });
+
+    return order?.store?.ownerId === userId;
+  }
+
   // Bulk authorization methods
   async validateBulkStoreAccess(
     userId: string,

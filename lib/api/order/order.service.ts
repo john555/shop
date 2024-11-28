@@ -1,4 +1,9 @@
-import { Injectable, Logger, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  Logger,
+  BadRequestException,
+  NotFoundException,
+} from '@nestjs/common';
 import { PrismaService } from '@/api/prisma/prisma.service';
 import { StoreService } from '../store/store.service';
 import {
@@ -8,7 +13,11 @@ import {
   ShipmentStatus,
   Prisma,
 } from '@prisma/client';
-import { OrderCreateInput, OrderFiltersInput } from './order.dto';
+import {
+  OrderCreateInput,
+  OrderFiltersInput,
+  OrderUpdateInput,
+} from './order.dto';
 import { paginate } from '@/api/pagination/paginate';
 import { PaginationArgs } from '@/api/pagination/pagination.args';
 
@@ -21,7 +30,10 @@ export class OrderService {
     private readonly storeService: StoreService
   ) {}
 
-  private async validateCustomer(customerId: string | undefined, storeId: string): Promise<void> {
+  private async validateCustomer(
+    customerId: string | undefined,
+    storeId: string
+  ): Promise<void> {
     if (!customerId) return;
 
     const customer = await this.prisma.customer.findFirst({
@@ -32,7 +44,9 @@ export class OrderService {
     });
 
     if (!customer) {
-      throw new BadRequestException(`Customer with ID ${customerId} not found in store ${storeId}`);
+      throw new BadRequestException(
+        `Customer with ID ${customerId} not found in store ${storeId}`
+      );
     }
   }
 
@@ -58,25 +72,27 @@ export class OrderService {
         // Fetch all product variants
         const variants = await tx.productVariant.findMany({
           where: {
-            id: { in: input.items.map(item => item.variantId) },
+            id: { in: input.items.map((item) => item.variantId) },
             product: {
               storeId: input.storeId,
-              id: { in: input.items.map(item => item.productId) }
-            }
+              id: { in: input.items.map((item) => item.productId) },
+            },
           },
           include: {
             product: {
-              select: { id: true, title: true }
-            }
-          }
+              select: { id: true, title: true },
+            },
+          },
         });
 
         // Validate variants
-        const variantMap = new Map(variants.map(v => [v.id, v]));
-        input.items.forEach(item => {
+        const variantMap = new Map(variants.map((v) => [v.id, v]));
+        input.items.forEach((item) => {
           const variant = variantMap.get(item.variantId);
           if (!variant) {
-            throw new BadRequestException(`Invalid variant ID: ${item.variantId}`);
+            throw new BadRequestException(
+              `Invalid variant ID: ${item.variantId}`
+            );
           }
           if (variant.product.id !== item.productId) {
             throw new BadRequestException(
@@ -86,7 +102,7 @@ export class OrderService {
         });
 
         // Calculate order items
-        const orderItems = input.items.map(item => {
+        const orderItems = input.items.map((item) => {
           const variant = variantMap.get(item.variantId)!;
           const subtotal = variant.price.mul(item.quantity);
 
@@ -127,21 +143,25 @@ export class OrderService {
             discountAmount: new Prisma.Decimal(0),
             totalAmount: subtotalAmount,
             currency: store.currency,
-            currencySymbol: store.currencySymbol || this.storeService.getDefaultCurrencySymbol(store.currency),
+            currencySymbol:
+              store.currencySymbol ||
+              this.storeService.getDefaultCurrencySymbol(store.currency),
             customerNotes: input.customerNotes,
             privateNotes: input.privateNotes,
             store: {
               connect: {
-                id: input.storeId
-              }
+                id: input.storeId,
+              },
             },
-            ...(input.customerId ? {
-              customer: {
-                connect: {
-                  id: input.customerId
+            ...(input.customerId
+              ? {
+                  customer: {
+                    connect: {
+                      id: input.customerId,
+                    },
+                  },
                 }
-              }
-            } : {}),
+              : {}),
             items: {
               create: orderItems,
             },
@@ -207,29 +227,77 @@ export class OrderService {
       const where: Prisma.OrderWhereInput = {
         storeId,
         ...(filters?.status && { status: { in: filters.status } }),
-        ...(filters?.paymentStatus && { paymentStatus: { in: filters.paymentStatus } }),
-        ...(filters?.shipmentStatus && { shipmentStatus: { in: filters.shipmentStatus } }),
+        ...(filters?.paymentStatus && {
+          paymentStatus: { in: filters.paymentStatus },
+        }),
+        ...(filters?.shipmentStatus && {
+          shipmentStatus: { in: filters.shipmentStatus },
+        }),
         ...(filters?.customerId && { customerId: filters.customerId }),
         ...(filters?.searchQuery && {
           OR: [
-            { orderNumber: { contains: filters.searchQuery, mode: 'insensitive' } },
-            { customerNotes: { contains: filters.searchQuery, mode: 'insensitive' } },
-            { privateNotes: { contains: filters.searchQuery, mode: 'insensitive' } },
-            { customer: {
-              OR: [
-                { firstName: { contains: filters.searchQuery, mode: 'insensitive' } },
-                { lastName: { contains: filters.searchQuery, mode: 'insensitive' } },
-                { email: { contains: filters.searchQuery, mode: 'insensitive' } },
-              ]
-            }},
-            { items: {
-              some: {
+            {
+              orderNumber: {
+                contains: filters.searchQuery,
+                mode: 'insensitive',
+              },
+            },
+            {
+              customerNotes: {
+                contains: filters.searchQuery,
+                mode: 'insensitive',
+              },
+            },
+            {
+              privateNotes: {
+                contains: filters.searchQuery,
+                mode: 'insensitive',
+              },
+            },
+            {
+              customer: {
                 OR: [
-                  { title: { contains: filters.searchQuery, mode: 'insensitive' } },
-                  { sku: { contains: filters.searchQuery, mode: 'insensitive' } },
-                ]
-              }
-            }}
+                  {
+                    firstName: {
+                      contains: filters.searchQuery,
+                      mode: 'insensitive',
+                    },
+                  },
+                  {
+                    lastName: {
+                      contains: filters.searchQuery,
+                      mode: 'insensitive',
+                    },
+                  },
+                  {
+                    email: {
+                      contains: filters.searchQuery,
+                      mode: 'insensitive',
+                    },
+                  },
+                ],
+              },
+            },
+            {
+              items: {
+                some: {
+                  OR: [
+                    {
+                      title: {
+                        contains: filters.searchQuery,
+                        mode: 'insensitive',
+                      },
+                    },
+                    {
+                      sku: {
+                        contains: filters.searchQuery,
+                        mode: 'insensitive',
+                      },
+                    },
+                  ],
+                },
+              },
+            },
           ],
         }),
         ...(filters?.minAmount && {
@@ -266,35 +334,28 @@ export class OrderService {
 
   async getStoreOrderStats(storeId: string) {
     try {
-      const [
-        total,
-        draft,
-        pending,
-        processing,
-        shipped,
-        delivered,
-        cancelled
-      ] = await Promise.all([
-        this.prisma.order.count({ where: { storeId } }),
-        this.prisma.order.count({ where: { storeId, status: 'DRAFT' } }),
-        this.prisma.order.count({ where: { storeId, status: 'PENDING' } }),
-        this.prisma.order.count({ where: { storeId, status: 'PROCESSING' } }),
-        this.prisma.order.count({ where: { storeId, status: 'SHIPPED' } }),
-        this.prisma.order.count({ where: { storeId, status: 'DELIVERED' } }),
-        this.prisma.order.count({ where: { storeId, status: 'CANCELLED' } })
-      ]);
+      const [total, draft, pending, processing, shipped, delivered, cancelled] =
+        await Promise.all([
+          this.prisma.order.count({ where: { storeId } }),
+          this.prisma.order.count({ where: { storeId, status: 'DRAFT' } }),
+          this.prisma.order.count({ where: { storeId, status: 'PENDING' } }),
+          this.prisma.order.count({ where: { storeId, status: 'PROCESSING' } }),
+          this.prisma.order.count({ where: { storeId, status: 'SHIPPED' } }),
+          this.prisma.order.count({ where: { storeId, status: 'DELIVERED' } }),
+          this.prisma.order.count({ where: { storeId, status: 'CANCELLED' } }),
+        ]);
 
       const totals = await this.prisma.order.aggregate({
-        where: { 
+        where: {
           storeId,
-          status: { not: 'DRAFT' }
+          status: { not: 'DRAFT' },
         },
         _sum: {
           totalAmount: true,
           taxAmount: true,
           shippingAmount: true,
-          discountAmount: true
-        }
+          discountAmount: true,
+        },
       });
 
       return {
@@ -305,18 +366,282 @@ export class OrderService {
           processing,
           shipped,
           delivered,
-          cancelled
+          cancelled,
         },
         totals: {
           orders: totals._sum.totalAmount?.toNumber() || 0,
           tax: totals._sum.taxAmount?.toNumber() || 0,
           shipping: totals._sum.shippingAmount?.toNumber() || 0,
-          discounts: totals._sum.discountAmount?.toNumber() || 0
-        }
+          discounts: totals._sum.discountAmount?.toNumber() || 0,
+        },
       };
     } catch (error) {
-      this.logger.error(`Error fetching order stats for store ${storeId}:`, error);
+      this.logger.error(
+        `Error fetching order stats for store ${storeId}:`,
+        error
+      );
       throw error;
+    }
+  }
+
+  private determineOrderStatus(
+    currentStatus: OrderStatus,
+    paymentStatus?: PaymentStatus,
+    shipmentStatus?: ShipmentStatus
+  ): OrderStatus | undefined {
+    // Don't change status if order is a draft or refunded
+    if (
+      [OrderStatus.DRAFT, OrderStatus.REFUNDED].includes(currentStatus as any)
+    ) {
+      return undefined;
+    }
+
+    // Payment status transitions
+    if (paymentStatus === PaymentStatus.COMPLETED) {
+      return OrderStatus.PROCESSING;
+    }
+    if (paymentStatus === PaymentStatus.PENDING) {
+      return OrderStatus.PENDING;
+    }
+
+    // Shipment status transitions
+    if (shipmentStatus === ShipmentStatus.SHIPPED) {
+      return OrderStatus.SHIPPED;
+    }
+    if (shipmentStatus === ShipmentStatus.DELIVERED) {
+      return OrderStatus.DELIVERED;
+    }
+
+    return undefined;
+  }
+
+  async update(input: OrderUpdateInput): Promise<Order> {
+    const existingOrder = await this.findById(input.id);
+    if (!existingOrder) {
+      throw new NotFoundException(`Order with ID ${input.id} not found`);
+    }
+
+    // Determine new order status based on payment/shipment status changes
+    const determinedStatus = this.determineOrderStatus(
+      existingOrder.status,
+      input.paymentStatus,
+      input.shipmentStatus
+    );
+
+    // Combine explicitly set status with determined status
+    const newStatus = input.status || determinedStatus;
+
+    // Validate status transitions if there's a status change
+    if (newStatus && newStatus !== existingOrder.status) {
+      this.validateStatusTransition(existingOrder.status, newStatus);
+    }
+
+    // Validate customer if provided
+    if (input.customerId) {
+      await this.validateCustomer(input.customerId, existingOrder.storeId);
+    }
+
+    try {
+      return await this.prisma.$transaction(async (tx) => {
+        // Handle item updates
+        if (input.updateItems?.length) {
+          await Promise.all(
+            input.updateItems.map((item) =>
+              tx.orderItem.update({
+                where: {
+                  id: item.id,
+                  orderId: input.id,
+                },
+                data: {
+                  quantity: item.quantity,
+                },
+              })
+            )
+          );
+        }
+
+        // Handle item removals
+        if (input.removeItems?.length) {
+          await tx.orderItem.deleteMany({
+            where: {
+              id: { in: input.removeItems },
+              orderId: input.id,
+            },
+          });
+        }
+
+        // Handle new items
+        if (input.addItems?.length) {
+          // Fetch and validate new variants
+          const variants = await tx.productVariant.findMany({
+            where: {
+              id: { in: input.addItems.map((item) => item.variantId) },
+              product: {
+                storeId: existingOrder.storeId,
+                id: { in: input.addItems.map((item) => item.productId) },
+              },
+            },
+            include: {
+              product: {
+                select: { id: true, title: true },
+              },
+            },
+          });
+
+          // Validate variants
+          const variantMap = new Map(variants.map((v) => [v.id, v]));
+          input.addItems.forEach((item) => {
+            const variant = variantMap.get(item.variantId);
+            if (!variant) {
+              throw new BadRequestException(
+                `Invalid variant ID: ${item.variantId}`
+              );
+            }
+            if (variant.product.id !== item.productId) {
+              throw new BadRequestException(
+                `Variant ${item.variantId} does not belong to product ${item.productId}`
+              );
+            }
+          });
+
+          // Create new items
+          const newOrderItems = input.addItems.map((item) => {
+            const variant = variantMap.get(item.variantId)!;
+            const subtotal = variant.price.mul(item.quantity);
+
+            return {
+              productId: item.productId,
+              variantId: item.variantId,
+              title: variant.product.title,
+              variantName: variant.optionCombination.join(' / '),
+              sku: variant.sku,
+              unitPrice: variant.price,
+              quantity: item.quantity,
+              subtotal,
+              taxAmount: new Prisma.Decimal(0),
+              discountAmount: new Prisma.Decimal(0),
+              totalAmount: subtotal,
+              orderId: input.id,
+            };
+          });
+
+          await tx.orderItem.createMany({
+            data: newOrderItems,
+          });
+        }
+
+        // Calculate new totals
+        const updatedItems = await tx.orderItem.findMany({
+          where: { orderId: input.id },
+        });
+
+        const subtotalAmount = updatedItems.reduce(
+          (sum, item) => sum.add(item.subtotal),
+          new Prisma.Decimal(0)
+        );
+
+        // Prepare timestamp updates
+        const timestampUpdates: Prisma.OrderUpdateInput = {};
+        if (
+          (input.status === OrderStatus.CANCELLED ||
+            newStatus === OrderStatus.CANCELLED) &&
+          !existingOrder.cancelledAt
+        ) {
+          timestampUpdates.cancelledAt = new Date();
+        }
+        if (
+          input.paymentStatus === PaymentStatus.COMPLETED &&
+          !existingOrder.paidAt
+        ) {
+          timestampUpdates.paidAt = new Date();
+        }
+        if (input.paymentStatus === PaymentStatus.PENDING) {
+          timestampUpdates.paidAt = null;
+        }
+        if (
+          input.shipmentStatus === ShipmentStatus.SHIPPED &&
+          !existingOrder.shippedAt
+        ) {
+          timestampUpdates.shippedAt = new Date();
+        }
+        if (
+          input.shipmentStatus === ShipmentStatus.DELIVERED &&
+          !existingOrder.deliveredAt
+        ) {
+          timestampUpdates.deliveredAt = new Date();
+        }
+
+        // Prepare customer update
+        const customerUpdate: Prisma.OrderUpdateInput = input.customerId
+          ? {
+              customer: {
+                connect: { id: input.customerId },
+              },
+            }
+          : {};
+
+        // Update the order
+        const updatedOrder = await tx.order.update({
+          where: { id: input.id },
+          data: {
+            // Use determined or explicitly set status
+            ...(newStatus && { status: newStatus }),
+            ...(input.paymentStatus && { paymentStatus: input.paymentStatus }),
+            ...(input.shipmentStatus && {
+              shipmentStatus: input.shipmentStatus,
+            }),
+            ...(input.customerNotes !== undefined && {
+              customerNotes: input.customerNotes,
+            }),
+            ...(input.privateNotes !== undefined && {
+              privateNotes: input.privateNotes,
+            }),
+            ...(input.trackingNumber !== undefined && {
+              trackingNumber: input.trackingNumber,
+            }),
+            ...(input.trackingUrl !== undefined && {
+              trackingUrl: input.trackingUrl,
+            }),
+            subtotalAmount,
+            totalAmount: subtotalAmount,
+            ...timestampUpdates,
+            ...customerUpdate,
+          },
+          include: {
+            items: true,
+            customer: true,
+          },
+        });
+
+        return updatedOrder;
+      });
+    } catch (error) {
+      this.logger.error(`Failed to update order ${input.id}:`, error);
+      throw error;
+    }
+  }
+
+  private validateStatusTransition(
+    currentStatus: OrderStatus,
+    newStatus: OrderStatus
+  ) {
+    // Define valid status transitions
+    const validTransitions: Record<OrderStatus, OrderStatus[]> = {
+      [OrderStatus.DRAFT]: [OrderStatus.PENDING, OrderStatus.CANCELLED],
+      [OrderStatus.PENDING]: [OrderStatus.PROCESSING, OrderStatus.CANCELLED],
+      [OrderStatus.PROCESSING]: [OrderStatus.SHIPPED, OrderStatus.CANCELLED],
+      [OrderStatus.SHIPPED]: [OrderStatus.DELIVERED, OrderStatus.CANCELLED],
+      [OrderStatus.DELIVERED]: [OrderStatus.CANCELLED],
+      [OrderStatus.CANCELLED]: [], // No transitions allowed from cancelled
+      [OrderStatus.REFUNDED]: [], // No transitions allowed from refunded
+      [OrderStatus.PAID]: [],
+      [OrderStatus.FULFILLED]: [],
+    };
+
+    if (!validTransitions[currentStatus].includes(newStatus)) {
+      throw new BadRequestException(
+        `Invalid status transition from ${currentStatus} to ${newStatus}`
+      );
     }
   }
 }
