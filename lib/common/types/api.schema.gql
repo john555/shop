@@ -817,9 +817,9 @@ type Query {
 }
 
 type RecentActivity {
+  createdAt: DateTime!
   description: String!
   id: String!
-  timestamp: DateTime!
   title: String!
   type: ActivityType!
   user: ActivityUser

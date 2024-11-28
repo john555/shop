@@ -125,7 +125,7 @@ export class OverviewService {
         type: ActivityType.PRODUCT_ADDED,
         title: 'New product added',
         description: product.title,
-        timestamp: product.createdAt,
+        createdAt: product.createdAt,
         user: product.store.owner
           ? {
               name: `${product.store.owner.firstName} ${product.store.owner.lastName}`.trim(),
@@ -138,7 +138,7 @@ export class OverviewService {
         type: ActivityType.COLLECTION_CREATED,
         title: 'Collection created',
         description: collection.name,
-        timestamp: collection.createdAt,
+        createdAt: collection.createdAt,
         user: collection.store.owner
           ? {
               name: `${collection.store.owner.firstName} ${collection.store.owner.lastName}`.trim(),
@@ -151,13 +151,13 @@ export class OverviewService {
         type: ActivityType.CUSTOMER_REGISTERED,
         title: 'New customer registered',
         description: `${customer.firstName} ${customer.lastName}`.trim(),
-        timestamp: customer.createdAt,
+        createdAt: customer.createdAt,
       })),
     ];
 
     // Sort by timestamp descending and take the most recent 5
     return allActivities
-      .sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime())
+      .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
       .slice(0, 5);
   }
 

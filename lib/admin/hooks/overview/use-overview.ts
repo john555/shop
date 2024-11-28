@@ -7,6 +7,7 @@ import {
   Users,
 } from 'lucide-react';
 import { StoreOverview, ActivityType, RecentActivity } from '@/types/api';
+import { formatDatesInObject } from '@/common/date';
 
 const STORE_OVERVIEW_QUERY = gql`
   query StoreOverview($storeId: String!) {
@@ -37,7 +38,7 @@ const STORE_OVERVIEW_QUERY = gql`
         type
         title
         description
-        timestamp
+        createdAt
         user {
           name
           avatar
@@ -102,7 +103,7 @@ export function useOverview({
             icon: getActivityIcon(activity.type),
             title: activity.title,
             description: activity.description,
-            timestamp: new Date(activity.timestamp).toISOString(),
+            createdAt: activity.createdAt,
             user: activity.user,
           })
         ),
@@ -110,7 +111,7 @@ export function useOverview({
     : null;
 
   return {
-    overview,
+    overview: formatDatesInObject(overview),
     loading,
     error,
     refetch,

@@ -35,7 +35,7 @@ interface Activity {
   icon: React.ReactNode;
   title: string;
   description: string;
-  timestamp: string;
+  createdAt: string;
   type: 'product' | 'customer' | 'order' | 'collection';
   user?: {
     name: string;
@@ -49,7 +49,7 @@ const activityData: Activity[] = [
     icon: <Package className="h-4 w-4" />,
     title: 'New product added',
     description: 'Wireless Earbuds X1000',
-    timestamp: '2 hours ago',
+    createdAt: '2 hours ago',
     type: 'product',
     user: {
       name: 'Emily Johnson',
@@ -61,7 +61,7 @@ const activityData: Activity[] = [
     icon: <FolderOpen className="h-4 w-4" />,
     title: 'Collection created',
     description: 'Summer Essentials 2024',
-    timestamp: '5 hours ago',
+    createdAt: '5 hours ago',
     type: 'collection',
     user: {
       name: 'Michael Chen',
@@ -73,7 +73,7 @@ const activityData: Activity[] = [
     icon: <Users className="h-4 w-4" />,
     title: 'New customer registered',
     description: 'johndoe@example.com',
-    timestamp: '1 day ago',
+    createdAt: '1 day ago',
     type: 'customer',
   },
   {
@@ -81,7 +81,7 @@ const activityData: Activity[] = [
     icon: <ShoppingCart className="h-4 w-4" />,
     title: 'New order received',
     description: 'Order #1234 - $250.00',
-    timestamp: '1 day ago',
+    createdAt: '1 day ago',
     type: 'order',
     user: {
       name: 'Sarah Thompson',
@@ -93,7 +93,7 @@ const activityData: Activity[] = [
     icon: <Package className="h-4 w-4" />,
     title: 'Product updated',
     description: 'Smart Watch Pro - Price changed',
-    timestamp: '2 days ago',
+    createdAt: '2 days ago',
     type: 'product',
     user: {
       name: 'Alex Rodriguez',
@@ -105,7 +105,7 @@ const activityData: Activity[] = [
     icon: <ShoppingCart className="h-4 w-4" />,
     title: 'Order shipped',
     description: 'Order #1235 - Shipped via FedEx',
-    timestamp: '3 days ago',
+    createdAt: '3 days ago',
     type: 'order',
     user: {
       name: 'Lisa Wang',
@@ -117,7 +117,7 @@ const activityData: Activity[] = [
     icon: <Users className="h-4 w-4" />,
     title: 'Customer support ticket resolved',
     description: 'Ticket #5678 - Product return inquiry',
-    timestamp: '4 days ago',
+    createdAt: '4 days ago',
     type: 'customer',
     user: {
       name: 'David Brown',
@@ -238,7 +238,7 @@ export default function ActivityPage() {
                       </>
                     )}
                     <span className="text-xs text-muted-foreground">
-                      {activity.timestamp}
+                      {activity.createdAt}
                     </span>
                   </div>
                 </div>

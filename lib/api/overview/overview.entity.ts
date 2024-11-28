@@ -50,7 +50,7 @@ export class RecentActivity {
   description: string;
 
   @Field(() => Date)
-  timestamp: Date;
+  createdAt: Date;
 
   @Field(() => ActivityUser, { nullable: true })
   user?: ActivityUser;

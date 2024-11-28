@@ -1045,7 +1045,6 @@ export type QueryMyStoresArgs = {
 
 export type QueryOrderArgs = {
   id: Scalars['String']['input'];
-  storeId: Scalars['String']['input'];
 };
 
 
@@ -1123,9 +1122,9 @@ export type QueryUserArgs = {
 
 export type RecentActivity = {
   __typename?: 'RecentActivity';
+  createdAt: Scalars['DateTime']['output'];
   description: Scalars['String']['output'];
   id: Scalars['String']['output'];
-  timestamp: Scalars['DateTime']['output'];
   title: Scalars['String']['output'];
   type: ActivityType;
   user?: Maybe<ActivityUser>;
@@ -1925,7 +1924,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   myStoreOrders?: Resolver<Array<ResolversTypes['Order']>, ParentType, ContextType, RequireFields<QueryMyStoreOrdersArgs, 'skip' | 'storeId' | 'take'>>;
   myStoreProducts?: Resolver<Array<ResolversTypes['Product']>, ParentType, ContextType, RequireFields<QueryMyStoreProductsArgs, 'skip' | 'storeId' | 'take'>>;
   myStores?: Resolver<Array<ResolversTypes['Store']>, ParentType, ContextType, RequireFields<QueryMyStoresArgs, 'skip' | 'take'>>;
-  order?: Resolver<Maybe<ResolversTypes['Order']>, ParentType, ContextType, RequireFields<QueryOrderArgs, 'id' | 'storeId'>>;
+  order?: Resolver<Maybe<ResolversTypes['Order']>, ParentType, ContextType, RequireFields<QueryOrderArgs, 'id'>>;
   ownerAddresses?: Resolver<Array<ResolversTypes['AddressOnOwner']>, ParentType, ContextType, RequireFields<QueryOwnerAddressesArgs, 'ownerId' | 'ownerType'>>;
   product?: Resolver<Maybe<ResolversTypes['Product']>, ParentType, ContextType, RequireFields<QueryProductArgs, 'id'>>;
   productBySlug?: Resolver<Maybe<ResolversTypes['Product']>, ParentType, ContextType, RequireFields<QueryProductBySlugArgs, 'slug' | 'storeId'>>;
@@ -1940,9 +1939,9 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
 };
 
 export type RecentActivityResolvers<ContextType = any, ParentType extends ResolversParentTypes['RecentActivity'] = ResolversParentTypes['RecentActivity']> = {
+  createdAt?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   description?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  timestamp?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   title?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   type?: Resolver<ResolversTypes['ActivityType'], ParentType, ContextType>;
   user?: Resolver<Maybe<ResolversTypes['ActivityUser']>, ParentType, ContextType>;

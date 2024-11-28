@@ -2,14 +2,13 @@
 
 import { useEffect, useState } from 'react';
 import { useTheme } from 'next-themes';
+import { usePathname, useRouter } from 'next/navigation';
+import Link from 'next/link';
 import {
   Bell,
-  Laptop,
   Menu,
-  Moon,
   Search,
   ShoppingCart,
-  Sun,
   Users,
   X,
   Package,
@@ -19,7 +18,6 @@ import {
   Settings,
   Activity,
 } from 'lucide-react';
-import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -48,11 +46,9 @@ import { useIsMobile } from '@/components/hooks/use-mobile';
 import { useCurrentUser } from '@/common/hooks/auth';
 import { SignInRequired } from '../(auth)/(components)/sign-in-required';
 import { CreateStoreRequired } from './(components)/create-store-required';
-import { usePathname, useRouter } from 'next/navigation';
 import { DASHBOARD_SETTINGS_LINK, THEMES } from '@/common/constants';
 import { updateUser } from '@/common/actions/user';
 import { Theme } from '@/types/api';
-import { cn } from '@/lib/utils';
 import { ApolloProvider } from '@apollo/client';
 import { client } from '@/common/apollo';
 
@@ -75,20 +71,23 @@ const dummySearchResults = {
   ],
 };
 
-const navLinks = [
+interface NavLink {
+  href: string;
+  icon: React.ElementType;
+  label: string;
+  children?: NavLink[];
+}
+
+const navLinks: NavLink[] = [
   { href: '/dashboard', icon: LayoutDashboard, label: 'Overview' },
-  { href: '/dashboard/products', icon: Package, label: 'Products' },
   {
-    href: '/dashboard/collections',
-    icon: List,
-    label: 'Collections',
-    paddingLeft: 'pl-8',
-  },
-  {
-    href: '/dashboard/inventory',
-    icon: Box,
-    label: 'Inventory',
-    paddingLeft: 'pl-8',
+    href: '/dashboard/products',
+    icon: Package,
+    label: 'Products',
+    children: [
+      { href: '/dashboard/collections', icon: List, label: 'Collections' },
+      // { href: '/dashboard/inventory', icon: Box, label: 'Inventory' },
+    ],
   },
   { href: '/dashboard/orders', icon: ShoppingCart, label: 'Orders' },
   { href: '/dashboard/customers', icon: Users, label: 'Customers' },
@@ -101,7 +100,7 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   const isMobile = useIsMobile();
-  const [activeTheme, setActiveTheme] = useState<Theme>(Theme.System);
+  const [_, setActiveTheme] = useState<Theme>(Theme.System);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -117,8 +116,7 @@ export default function DashboardLayout({
     if (!user) return;
     setTheme(user.theme.toLocaleLowerCase());
     setActiveTheme(user.theme);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user]);
+  }, [user, setTheme]);
 
   const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
 
@@ -139,10 +137,8 @@ export default function DashboardLayout({
 
   const handleClick = () => {
     if (pathname !== DASHBOARD_SETTINGS_LINK) {
-      // Save the current page to local storage
       localStorage.setItem('checkpoint', window.location.pathname);
     }
-    // Navigate to the new page
     router.push('/dashboard/settings');
   };
 
@@ -150,8 +146,56 @@ export default function DashboardLayout({
     if (!user) return;
     setTheme(value.toLocaleLowerCase());
     setActiveTheme(value);
-
     await updateUser({ id: user.id, theme: value });
+  };
+
+  const isLinkActive = (link: NavLink): boolean => {
+    if (pathname === link.href) return true;
+    if (link.children) {
+      return link.children.some((child) => isLinkActive(child));
+    }
+    return false;
+  };
+
+  const shouldShowChildren = (link: NavLink): boolean => {
+    return (
+      isLinkActive(link) ||
+      (link.children && link.children.some((child) => isLinkActive(child))) ||
+      false
+    );
+  };
+
+  const renderNavLink = (link: NavLink, depth = 0) => {
+    const hasChildren = link.children && link.children.length > 0;
+    const isActive = pathname === link.href;
+    const isChildActive =
+      hasChildren && link?.children?.some((child) => isLinkActive(child));
+    const showChildren = shouldShowChildren(link);
+
+    return (
+      <div key={link.href} className={`${depth > 0 ? 'ml-4' : ''}`}>
+        <Button
+          variant={isActive && !isChildActive ? 'secondary' : 'ghost'}
+          className={`w-full justify-start ${
+            isActive && !isChildActive ? 'bg-primary/10 text-primary' : ''
+          }`}
+        >
+          <Link href={link.href} className="flex items-center w-full">
+            <link.icon
+              className={`mr-3 h-4 w-4 flex-shrink-0 ${
+                isActive && !isChildActive ? 'text-primary' : ''
+              }`}
+            />
+            <span className="text-left">{link.label}</span>
+          </Link>
+        </Button>
+        {hasChildren && showChildren && (
+          <div className="mt-2 space-y-2">
+            {link?.children?.map((child) => renderNavLink(child, depth + 1))}
+          </div>
+        )}
+      </div>
+    );
   };
 
   if (isSigningOut) {
@@ -204,27 +248,25 @@ export default function DashboardLayout({
             </div>
             <div className="flex flex-col justify-between h-full overflow-y-auto">
               <nav className="flex-1 space-y-2 p-4">
-                {navLinks.map(({ href, icon: Icon, label, paddingLeft }) => (
-                  <Button
-                    key={href}
-                    variant="ghost"
-                    className={`w-full justify-start ${paddingLeft || ''}`}
-                    asChild
-                  >
-                    <Link href={href}>
-                      <Icon className="mr-2 h-4 w-4" />
-                      {label}
-                    </Link>
-                  </Button>
-                ))}
+                {navLinks.map((link) => renderNavLink(link))}
               </nav>
               <div className="p-4">
                 <Button
-                  variant="ghost"
-                  className="w-full justify-start"
+                  variant={
+                    pathname === '/dashboard/settings' ? 'secondary' : 'ghost'
+                  }
+                  className={`w-full justify-start ${
+                    pathname === '/dashboard/settings'
+                      ? 'bg-primary/10 text-primary'
+                      : ''
+                  }`}
                   onClick={handleClick}
                 >
-                  <Settings className="mr-2 h-4 w-4" />
+                  <Settings
+                    className={`mr-2 h-4 w-4 ${
+                      pathname === '/dashboard/settings' ? 'text-primary' : ''
+                    }`}
+                  />
                   Settings
                 </Button>
               </div>
@@ -409,7 +451,7 @@ export default function DashboardLayout({
           </header>
 
           {/* Page content */}
-          <main className="flex-1 overflow-x-hidden overflow-y-auto bg-background  p-6">
+          <main className="flex-1 overflow-x-hidden overflow-y-auto bg-background p-6">
             {children}
           </main>
         </div>

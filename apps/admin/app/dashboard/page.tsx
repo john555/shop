@@ -77,10 +77,6 @@ interface StatsCardProps {
   linkHref: string;
 }
 
-interface OrderStatusBadgeProps {
-  status: OrderStatus;
-}
-
 export default function DashboardOverview() {
   const { store, loading: storeLoading } = useStore();
   const { overview, loading: overviewLoading } = useOverview({
@@ -594,7 +590,7 @@ export default function DashboardOverview() {
                                 )}
                               </div>
                               <div className="text-xs text-muted-foreground whitespace-nowrap">
-                                {activity.timestamp}
+                                {activity.createdAt}
                               </div>
                             </div>
                           ))}
