@@ -1,87 +1,90 @@
-import { ArgsType, Field, ID, InputType } from '@nestjs/graphql';
+import { Field, InputType, ArgsType } from '@nestjs/graphql';
+import { StoreType } from '@prisma/client';
 import {
-  IsNotEmpty,
-  IsOptional,
   IsString,
+  IsOptional,
+  IsEnum,
   MaxLength,
-  Matches,
   MinLength,
+  Matches,
 } from 'class-validator';
 
 @ArgsType()
 export class CategoryGetArgs {
-  @Field(() => ID)
-  @IsString()
-  @IsNotEmpty()
-  id!: string;
-}
-
-@ArgsType()
-export class GetCategoryBySlugArgs {
   @Field(() => String)
   @IsString()
-  @IsNotEmpty()
-  slug!: string;
-
-  @Field(() => ID)
-  @IsString()
-  @IsNotEmpty()
-  storeId!: string;
+  id: string;
 }
 
 @InputType()
 export class CategoryCreateInput {
   @Field(() => String)
-  @IsNotEmpty()
   @IsString()
   @MinLength(2)
-  name!: string;
+  @MaxLength(100)
+  name: string;
 
   @Field(() => String)
-  @IsNotEmpty()
   @IsString()
-  @MaxLength(50)
   @Matches(/^[a-z0-9-]+$/, {
     message: 'Slug can only contain lowercase letters, numbers, and hyphens',
   })
-  slug!: string;
+  @MaxLength(100)
+  slug: string;
 
   @Field(() => String, { nullable: true })
-  @IsString()
   @IsOptional()
+  @IsString()
+  @MaxLength(2000)
   description?: string;
 
-  @Field(() => ID)
-  @IsString()
-  @IsNotEmpty()
-  storeId!: string;
-
-  @Field(() => ID, { nullable: true })
-  @IsString()
+  @Field(() => String, { nullable: true })
   @IsOptional()
+  @IsString()
   parentId?: string;
+
+  @Field(() => StoreType)
+  @IsEnum(StoreType)
+  storeType: StoreType;
 }
 
 @InputType()
 export class CategoryUpdateInput {
-  @Field(() => ID)
+  @Field(() => String)
   @IsString()
-  @IsNotEmpty()
-  id!: string;
+  id: string;
 
   @Field(() => String, { nullable: true })
-  @IsString()
   @IsOptional()
+  @IsString()
   @MinLength(2)
+  @MaxLength(100)
   name?: string;
 
   @Field(() => String, { nullable: true })
-  @IsString()
   @IsOptional()
+  @IsString()
+  @Matches(/^[a-z0-9-]+$/, {
+    message: 'Slug can only contain lowercase letters, numbers, and hyphens',
+  })
+  @MaxLength(100)
+  slug?: string;
+
+  @Field(() => String, { nullable: true })
+  @IsOptional()
+  @IsString()
+  @MaxLength(2000)
   description?: string;
 
-  @Field(() => ID, { nullable: true })
-  @IsString()
+  @Field(() => String, { nullable: true })
   @IsOptional()
+  @IsString()
   parentId?: string;
+}
+
+@ArgsType()
+export class GetCategoriesByStoreTypeArgs {
+  @Field(() => StoreType)
+  @IsEnum(StoreType)
+  storeType: StoreType;
 }

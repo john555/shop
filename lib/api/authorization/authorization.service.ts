@@ -22,17 +22,6 @@ export class AuthorizationService {
     return product?.store?.ownerId === userId;
   }
 
-  async canAccessCategory(
-    userId: string,
-    categoryId: string
-  ): Promise<boolean> {
-    const category = await this.prisma.category.findUnique({
-      where: { id: categoryId },
-      select: { store: { select: { ownerId: true } } },
-    });
-    return category?.store?.ownerId === userId;
-  }
-
   async canAccessCollection(
     userId: string,
     collectionId: string
@@ -136,37 +125,6 @@ export class AuthorizationService {
     if (unauthorizedIds.length > 0) {
       throw new UnauthorizedException(
         `Not authorized to access products: ${unauthorizedIds.join(', ')}`
-      );
-    }
-  }
-
-  async validateBulkCategoryAccess(
-    userId: string,
-    categoryIds: string[]
-  ): Promise<void> {
-    const categories = await this.prisma.category.findMany({
-      where: { id: { in: categoryIds } },
-      select: {
-        id: true,
-        store: { select: { ownerId: true } },
-      },
-    });
-
-    if (categories.length !== categoryIds.length) {
-      const foundIds = new Set(categories.map((category) => category.id));
-      const missingIds = categoryIds.filter((id) => !foundIds.has(id));
-      throw new UnauthorizedException(
-        `Categories not found: ${missingIds.join(', ')}`
-      );
-    }
-
-    const unauthorizedIds = categories
-      .filter((category) => category.store.ownerId !== userId)
-      .map((category) => category.id);
-
-    if (unauthorizedIds.length > 0) {
-      throw new UnauthorizedException(
-        `Not authorized to access categories: ${unauthorizedIds.join(', ')}`
       );
     }
   }

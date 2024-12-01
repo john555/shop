@@ -66,8 +66,24 @@ const FETCH_STORE_QUERY = gql`
         name
         slug
         description
-        updatedAt
-        createdAt
+        children {
+          id
+          name
+          slug
+          description
+          children {
+            id
+            name
+            slug
+            description
+            children {
+              id
+              name
+              slug
+              description
+            }
+          }
+        }
       }
       addresses {
         id
@@ -92,7 +108,12 @@ const FETCH_STORE_QUERY = gql`
 `;
 
 export function useStore() {
-  const { loading, error: loadingError, data,  refetch: refetchStore, } = useQuery(FETCH_STORE_QUERY);
+  const {
+    loading,
+    error: loadingError,
+    data,
+    refetch: refetchStore,
+  } = useQuery(FETCH_STORE_QUERY);
   const [updateStore, { loading: updatingStore, error: updateError }] =
     useMutation(UPDATE_STORE, {
       refetchQueries: [FETCH_STORE_QUERY],

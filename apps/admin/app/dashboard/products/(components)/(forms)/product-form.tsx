@@ -38,7 +38,7 @@ import {
 import { Checkbox } from '@/components/ui/checkbox';
 import { useStore } from '@/admin/hooks/store';
 import { useProduct } from '@/admin/hooks/product/use-product';
-import { Category, Product, ProductStatus, SalesChannel } from '@/types/api';
+import { Product, ProductStatus, SalesChannel } from '@/types/api';
 import { useParams, useRouter } from 'next/navigation';
 import { DASHBOARD_PAGE_LINK } from '@/common/constants';
 import {
@@ -54,6 +54,7 @@ import MediaInput from '@/components/media-input';
 import { ProductStatusBadge } from '../(ui)/product-status-badge';
 import { VariantsCard } from './variants-card';
 import Link from 'next/link';
+import { CategoryTreeSelect } from './category-tree-select';
 
 function generateSlug(title: string): string {
   return title
@@ -186,6 +187,10 @@ export function ProductForm() {
     if (product) {
       const updatedProduct = await updateProduct({
         ...data,
+        options: data?.options?.map((o) => ({
+          name: o.name,
+          values: o.values,
+        })),
         variants: undefined,
       });
       form.reset(getInitialValues(updatedProduct));
@@ -224,6 +229,8 @@ export function ProductForm() {
             product?.collections?.map((c) => c.id)
           ))
       : !isValid);
+
+  console.log({ store });
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -319,23 +326,15 @@ export function ProductForm() {
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Category</FormLabel>
-                        <Select
-                          onValueChange={field.onChange}
-                          defaultValue={field.value}
-                        >
-                          <FormControl>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Select a category" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            {store?.categories.map((category: Category) => (
-                              <SelectItem key={category.id} value={category.id}>
-                                {category.name}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
+                        <CategoryTreeSelect
+                          categories={store?.categories || []}
+                          onSelect={(category) => field.onChange(category.id)}
+                          selectedCategoryId={field.value}
+                          className="w-full"
+                        />
+                        <FormDescription>
+                          Select a category for your product.
+                        </FormDescription>
                         <FormMessage />
                       </FormItem>
                     )}
@@ -529,10 +528,12 @@ export function ProductForm() {
                     <CardTitle>Variants</CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-4">
-                    <Button variant="link" asChild className="p-0 text-muted-foreground">
-                      <Link
-                        href={`/dashboard/products/${id}/variants`}
-                      >
+                    <Button
+                      variant="link"
+                      asChild
+                      className="p-0 text-muted-foreground"
+                    >
+                      <Link href={`/dashboard/products/${id}/variants`}>
                         Edit Variants
                       </Link>
                     </Button>

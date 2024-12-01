@@ -1,5 +1,5 @@
 import { ObjectType, Field, ID } from '@nestjs/graphql';
-import { Category as CategoryModel } from '@prisma/client';
+import { Category as CategoryModel, StoreType } from '@prisma/client';
 import { Store } from '../store/store.entity';
 
 @ObjectType({ description: 'Category model' })
@@ -13,36 +13,30 @@ export class Category implements Omit<CategoryModel, 'store'> {
   @Field(() => String, { description: 'URL-friendly slug of the category' })
   slug: string;
 
-  @Field(() => String, { 
+  @Field(() => String, {
     description: 'Description of the category',
-    nullable: true 
+    nullable: true,
   })
   description: string | null;
 
-  @Field(() => ID, { 
+  @Field(() => ID, {
     description: 'ID of the parent category',
-    nullable: true 
+    nullable: true,
   })
   parentId: string | null;
 
-  @Field(() => ID, { description: 'ID of the store this category belongs to' })
-  storeId: string;
+  @Field(() => StoreType, { description: 'Type of the store' })
+  storeType: StoreType;
 
-  @Field(() => Store, { 
-    description: 'Store this category belongs to',
-    nullable: true 
-  })
-  store?: Store;
-
-  @Field(() => [Category], { 
+  @Field(() => [Category], {
     description: 'Child categories',
-    nullable: true 
+    nullable: true,
   })
   children?: Category[];
 
-  @Field(() => Category, { 
+  @Field(() => Category, {
     description: 'Parent category',
-    nullable: true 
+    nullable: true,
   })
   parent?: Category;
 

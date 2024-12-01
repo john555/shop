@@ -49,7 +49,7 @@ export class StoreService {
 
   async findById(id: string): Promise<Store | null> {
     return this.prismaService.store.findUnique({
-      where: { id }
+      where: { id },
     });
   }
 
@@ -57,9 +57,9 @@ export class StoreService {
     const owner = await this.prismaService.user.findFirst({
       where: {
         stores: {
-          some: { id: storeId }
-        }
-      }
+          some: { id: storeId },
+        },
+      },
     });
 
     if (!owner) {
@@ -71,37 +71,35 @@ export class StoreService {
 
   async findProducts(storeId: string): Promise<Product[]> {
     return this.prismaService.product.findMany({
-      where: { storeId }
+      where: { storeId },
     });
   }
 
   async findPropertyListings(storeId: string): Promise<PropertyListing[]> {
     return this.prismaService.propertyListing.findMany({
-      where: { storeId }
+      where: { storeId },
     });
   }
 
   async findVehicleListings(storeId: string): Promise<VehicleListing[]> {
     return this.prismaService.vehicleListing.findMany({
-      where: { storeId }
+      where: { storeId },
     });
   }
 
-  async findCategories(storeId: string): Promise<Category[]> {
-    return this.prismaService.category.findMany({
-      where: { storeId }
-    });
+  async findCategories(storeType: StoreType, args?: PaginationArgs): Promise<Category[]> {
+    return this.categoryService.findCategoriesByStore(storeType, args);
   }
 
   async findCollections(storeId: string): Promise<Collection[]> {
     return this.prismaService.collection.findMany({
-      where: { storeId }
+      where: { storeId },
     });
   }
 
   async findTags(storeId: string): Promise<Tag[]> {
     return this.prismaService.tag.findMany({
-      where: { storeId }
+      where: { storeId },
     });
   }
 
@@ -142,9 +140,7 @@ export class StoreService {
   }
 
   // Query Methods
-  async getStoreById(
-    id: string,
-  ): Promise<Store | null> {
+  async getStoreById(id: string): Promise<Store | null> {
     try {
       return this.prismaService.store.findUnique({
         where: { id },
@@ -155,9 +151,7 @@ export class StoreService {
     }
   }
 
-  async getStoreBySlug(
-    slug: string,
-  ): Promise<Store | null> {
+  async getStoreBySlug(slug: string): Promise<Store | null> {
     try {
       return this.prismaService.store.findUnique({
         where: { slug },
@@ -170,15 +164,13 @@ export class StoreService {
 
   async getStoresByOwnerId(
     ownerId: string,
-    args?: PaginationArgs,
-    
+    args?: PaginationArgs
   ): Promise<Store[]> {
     try {
       const stores = await paginate({
         modelDelegate: this.prismaService.store,
         args,
         where: { ownerId },
-        
       });
 
       return stores;
@@ -190,15 +182,13 @@ export class StoreService {
 
   async getStoresByType(
     type: StoreType,
-    args?: PaginationArgs,
-    
+    args?: PaginationArgs
   ): Promise<Store[]> {
     try {
       const stores = await paginate({
         modelDelegate: this.prismaService.store,
         args,
         where: { type },
-        
       });
 
       return stores;
@@ -211,36 +201,17 @@ export class StoreService {
   // Mutation Methods
   async create(input: StoreCreateData): Promise<Store> {
     try {
-      // Use transaction to ensure both store and categories are created atomically
-      return await this.prismaService.$transaction(async (tx) => {
-        // Create the store
-        const store = await tx.store.create({
-          data: {
-            ...input,
-            currencySymbol:
-              input.currencySymbol ?? DEFAULT_CURRENCY_SYMBOLS[input.currency],
-            currencyPosition:
-              input.currencyPosition ?? CurrencyPosition.BEFORE_AMOUNT,
-            showCurrencyCode: input.showCurrencyCode ?? false,
-            timeZone: input.timeZone ?? 'Africa/Nairobi',
-            orderPrefix: input.orderPrefix ?? '#',
-          },
-        });
-
-        // Generate categories based on store type
-        await this.categoryService.createStoreCategoriesFromTransaction(
-          tx,
-          store.id,
-          store.type
-        );
-
-        // Return the created store with categories
-        return tx.store.findUniqueOrThrow({
-          where: { id: store.id },
-          include: {
-            categories: true
-          }
-        });
+      return this.prismaService.store.create({
+        data: {
+          ...input,
+          currencySymbol:
+            input.currencySymbol ?? DEFAULT_CURRENCY_SYMBOLS[input.currency],
+          currencyPosition:
+            input.currencyPosition ?? CurrencyPosition.BEFORE_AMOUNT,
+          showCurrencyCode: input.showCurrencyCode ?? false,
+          timeZone: input.timeZone ?? 'Africa/Nairobi',
+          orderPrefix: input.orderPrefix ?? '#',
+        },
       });
     } catch (error) {
       this.logger.error('Error creating store:', error);
@@ -275,11 +246,7 @@ export class StoreService {
       throw error;
     }
   }
-  async update(
-    id: string,
-    input: StoreUpdateData,
-    
-  ): Promise<Store> {
+  async update(id: string, input: StoreUpdateData): Promise<Store> {
     try {
       const store = await this.getStoreById(id);
       if (!store) {
@@ -303,7 +270,6 @@ export class StoreService {
       return this.prismaService.store.update({
         where: { id },
         data: updateData,
-        
       });
     } catch (error) {
       this.logger.error(`Error updating store ${id}:`, error);
@@ -313,8 +279,7 @@ export class StoreService {
 
   async updateCurrencySettings(
     id: string,
-    settings: StoreCurrencySettings,
-    
+    settings: StoreCurrencySettings
   ): Promise<Store> {
     try {
       const store = await this.getStoreById(id);
@@ -342,7 +307,6 @@ export class StoreService {
       return this.prismaService.store.update({
         where: { id },
         data: updateData,
-        
       });
     } catch (error) {
       this.logger.error(
@@ -357,8 +321,7 @@ export class StoreService {
   async updateStoreAddress(
     storeId: string,
     type: AddressType,
-    addressData: AddressOnOwnerCreateInput,
-    
+    addressData: AddressOnOwnerCreateInput
   ): Promise<Store> {
     try {
       const store = await this.getStoreById(storeId);
@@ -380,7 +343,7 @@ export class StoreService {
         );
       }
 
-      return  updatedStore;
+      return updatedStore;
     } catch (error) {
       this.logger.error(`Error updating address for store ${storeId}:`, error);
       throw error;

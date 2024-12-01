@@ -7,18 +7,10 @@ import {
   ResolveField,
   Resolver,
 } from '@nestjs/graphql';
-import {
-  Logger,
-  NotFoundException,
-  BadRequestException,
-} from '@nestjs/common';
+import { Logger, NotFoundException, BadRequestException } from '@nestjs/common';
 import { Store } from './store.entity';
 import { StoreService } from './store.service';
-import {
-  StoreGetArgs,
-  StoreCreateInput,
-  StoreUpdateInput,
-} from './store.dto';
+import { StoreGetArgs, StoreCreateInput, StoreUpdateInput } from './store.dto';
 import { PaginationArgs } from '@/api/pagination/pagination.args';
 import { AuthContext } from '../utils/auth';
 import { AddressOwnerType } from '@prisma/client';
@@ -146,8 +138,11 @@ export class StoreResolver {
   // }
 
   @ResolveField(() => [Category])
-  async categories(@Parent() store: Store): Promise<Category[]> {
-    return this.storeService.findCategories(store.id);
+  async categories(
+    @Parent() store: Store,
+    @Args() args: PaginationArgs
+  ): Promise<Category[]> {
+    return this.storeService.findCategories(store.type, args);
   }
 
   @ResolveField(() => [Collection])

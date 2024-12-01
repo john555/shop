@@ -163,33 +163,16 @@ type Category {
 
   """ID of the parent category"""
   parentId: ID
+  products: [Product!]!
 
   """URL-friendly slug of the category"""
   slug: String!
 
-  """Store this category belongs to"""
-  store: Store
-
-  """ID of the store this category belongs to"""
-  storeId: ID!
+  """Type of the store"""
+  storeType: StoreType!
 
   """When the category was last updated"""
   updatedAt: DateTime!
-}
-
-input CategoryCreateInput {
-  description: String
-  name: String!
-  parentId: ID
-  slug: String!
-  storeId: ID!
-}
-
-input CategoryUpdateInput {
-  description: String
-  id: ID!
-  name: String
-  parentId: ID
 }
 
 """Collection model"""
@@ -425,7 +408,6 @@ type Mutation {
   bulkUpdateCollections(input: BulkCollectionUpdateInput!): Int!
   bulkUpdateProducts(input: BulkProductUpdateInput!): Int!
   createAddressOnOwner(input: AddressOnOwnerCreateInput!): AddressOnOwner!
-  createCategory(input: CategoryCreateInput!): Category!
   createCollection(input: CollectionCreateInput!): Collection!
   createCustomer(input: CustomerCreateInput!): Customer!
   createDraftOrder(input: OrderCreateInput!): Order!
@@ -434,7 +416,6 @@ type Mutation {
   createStore(input: StoreCreateInput!): Store!
   createTag(input: TagCreateInput!): Tag!
   deleteAddressOnOwner(id: String!): Boolean!
-  deleteCategory(id: String!): Boolean!
   deleteCollection(id: String!): Boolean!
   deleteCustomer(id: String!): Boolean!
   deleteMedia(id: String!): Boolean!
@@ -455,7 +436,6 @@ type Mutation {
   """Sign up new user"""
   signup(input: AuthSignupInput!): AuthSignup!
   updateAddressOnOwner(input: AddressOnOwnerUpdateInput!): AddressOnOwner!
-  updateCategory(input: CategoryUpdateInput!): Category!
   updateCollection(input: CollectionUpdateInput!): Collection!
   updateCustomer(input: CustomerUpdateInput!): Customer!
   updateMedia(input: MediaUpdateInput!): Media!
@@ -790,7 +770,8 @@ input ProductVariantInput {
 
 type Query {
   addressOnOwner(id: ID!): AddressOnOwner!
-  categoryBySlug(slug: String!, storeId: ID!): Category
+  categoriesByStoreType(storeType: StoreType!): [Category!]!
+  category(id: String!): Category
   collection(id: ID!): Collection!
   customer(id: ID!): Customer!
 
@@ -807,7 +788,6 @@ type Query {
   product(id: String!): Product
   productBySlug(slug: String!, storeId: String!): Product
   store(id: ID!): Store!
-  storeCategories(cursor: String, skip: Int! = 0, sortOrder: SortOrder, storeId: String!, take: Int! = 25): [Category!]!
   storeCollections(cursor: String, skip: Int! = 0, sortOrder: SortOrder, storeId: String!, take: Int! = 25): [Collection!]!
   storeCustomers(cursor: String, skip: Int! = 0, sortOrder: SortOrder, storeId: String!, take: Int! = 25): [Customer!]!
   storeOverview(storeId: String!): StoreOverview!
@@ -857,7 +837,7 @@ enum SortOrder {
 type Store {
   """Addresses associated with the store"""
   addresses: [AddressOnOwner!]
-  categories: [Category!]!
+  categories(cursor: String, skip: Int! = 0, sortOrder: SortOrder, take: Int! = 25): [Category!]!
   collections: [Collection!]!
 
   """When the store was created"""

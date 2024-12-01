@@ -225,12 +225,11 @@ model Store {
   orderSuffix String?
 
   // Relations
-  owner            User                   @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  owner            User              @relation(fields: [ownerId], references: [id], onDelete: Cascade)
   ownerId          String
   products         Product[]
   propertyListings PropertyListing[]
   vehicleListings  VehicleListing[]
-  categories       Category[]
   collections      Collection[]
   tags             Tag[]
   customers        Customer[]
@@ -432,10 +431,11 @@ model VehicleListing {
 }
 
 model Category {
-  id          String  @id @default(cuid())
+  id          String    @id @default(cuid())
   name        String
   slug        String
-  description String? @db.Text
+  description String?   @db.Text
+  storeType   StoreType // New field replacing storeId
 
   // Hierarchical structure
   parentId String?
@@ -443,16 +443,13 @@ model Category {
   children Category[] @relation("CategoryHierarchy")
 
   // Relations
-  store    Store     @relation(fields: [storeId], references: [id], onDelete: Cascade)
-  storeId  String
   products Product[]
 
   // Timestamps
   createdAt DateTime @default(now()) @db.Timestamp(6)
   updatedAt DateTime @updatedAt @db.Timestamp(6)
 
-  @@unique([storeId, slug])
-  @@index([storeId])
+  @@unique([storeType, slug])
   @@index([parentId])
   @@map("categories")
 }
@@ -695,53 +692,53 @@ enum OrderEventType {
 // }
 
 enum ShipmentStatus {
-  PENDING    // Not yet shipped
+  PENDING // Not yet shipped
   PROCESSING // Being prepared
-  SHIPPED    // In transit
-  DELIVERED  // Successfully delivered
-  FAILED     // Delivery failed
+  SHIPPED // In transit
+  DELIVERED // Successfully delivered
+  FAILED // Delivery failed
 }
 
 model Order {
-  id              String         @id @default(cuid())
-  orderNumber     String        // Format: {prefix}{number}{suffix}
-  status          OrderStatus    @default(DRAFT)
-  paymentStatus   PaymentStatus @default(PENDING)
-  shipmentStatus  ShipmentStatus @default(PENDING)
-  
+  id             String         @id @default(cuid())
+  orderNumber    String // Format: {prefix}{number}{suffix}
+  status         OrderStatus    @default(DRAFT)
+  paymentStatus  PaymentStatus  @default(PENDING)
+  shipmentStatus ShipmentStatus @default(PENDING)
+
   // Amounts
-  subtotalAmount  Decimal       @db.Decimal(10, 2) // Sum of line items before tax/discounts
-  taxAmount       Decimal       @db.Decimal(10, 2)
-  shippingAmount  Decimal       @db.Decimal(10, 2)
-  discountAmount  Decimal       @db.Decimal(10, 2)
-  totalAmount     Decimal       @db.Decimal(10, 2) // Final amount including all additions/deductions
-  
+  subtotalAmount Decimal @db.Decimal(10, 2) // Sum of line items before tax/discounts
+  taxAmount      Decimal @db.Decimal(10, 2)
+  shippingAmount Decimal @db.Decimal(10, 2)
+  discountAmount Decimal @db.Decimal(10, 2)
+  totalAmount    Decimal @db.Decimal(10, 2) // Final amount including all additions/deductions
+
   // Currency information (copied from store at time of order)
-  currency        StoreCurrency
-  currencySymbol  String
-  
+  currency       StoreCurrency
+  currencySymbol String
+
   // Customer information
-  customerNotes   String?       @db.Text
-  privateNotes    String?       @db.Text
+  customerNotes String? @db.Text
+  privateNotes  String? @db.Text
 
   // Tracking
-  trackingNumber  String?
-  trackingUrl     String?
+  trackingNumber String?
+  trackingUrl    String?
 
   // Relations
-  store          Store           @relation(fields: [storeId], references: [id], onDelete: Cascade)
-  storeId        String
-  customer       Customer?       @relation(fields: [customerId], references: [id])
-  customerId     String?
-  items          OrderItem[]
+  store      Store       @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  storeId    String
+  customer   Customer?   @relation(fields: [customerId], references: [id])
+  customerId String?
+  items      OrderItem[]
 
   // Timestamps
-  createdAt      DateTime        @default(now()) @db.Timestamp(6)
-  updatedAt      DateTime        @updatedAt @db.Timestamp(6)
-  paidAt         DateTime?       @db.Timestamp(6)
-  shippedAt      DateTime?       @db.Timestamp(6)
-  deliveredAt    DateTime?       @db.Timestamp(6)
-  cancelledAt    DateTime?       @db.Timestamp(6)
+  createdAt   DateTime  @default(now()) @db.Timestamp(6)
+  updatedAt   DateTime  @updatedAt @db.Timestamp(6)
+  paidAt      DateTime? @db.Timestamp(6)
+  shippedAt   DateTime? @db.Timestamp(6)
+  deliveredAt DateTime? @db.Timestamp(6)
+  cancelledAt DateTime? @db.Timestamp(6)
 
   @@unique([storeId, orderNumber])
   @@index([storeId])
@@ -750,30 +747,30 @@ model Order {
 }
 
 model OrderItem {
-  id              String    @id @default(cuid())
-  
+  id String @id @default(cuid())
+
   // Product information (copied at time of order)
-  productId       String    // Reference to original product
-  variantId      String    // Reference to original variant
-  title          String    // Product title at time of order
-  variantName    String    // Combined option values (e.g., "Red / Large")
-  sku            String?   // SKU at time of order
-  
+  productId   String // Reference to original product
+  variantId   String // Reference to original variant
+  title       String // Product title at time of order
+  variantName String // Combined option values (e.g., "Red / Large")
+  sku         String? // SKU at time of order
+
   // Pricing
-  unitPrice      Decimal   @db.Decimal(10, 2)  // Price per unit at time of order
+  unitPrice      Decimal @db.Decimal(10, 2) // Price per unit at time of order
   quantity       Int
-  subtotal       Decimal   @db.Decimal(10, 2)  // unitPrice * quantity
-  taxAmount      Decimal   @db.Decimal(10, 2)
-  discountAmount Decimal   @db.Decimal(10, 2)
-  totalAmount    Decimal   @db.Decimal(10, 2)  // Final amount after tax/discounts
-  
+  subtotal       Decimal @db.Decimal(10, 2) // unitPrice * quantity
+  taxAmount      Decimal @db.Decimal(10, 2)
+  discountAmount Decimal @db.Decimal(10, 2)
+  totalAmount    Decimal @db.Decimal(10, 2) // Final amount after tax/discounts
+
   // Relations
-  order          Order     @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  orderId        String
+  order   Order  @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  orderId String
 
   // Timestamps
-  createdAt      DateTime  @default(now()) @db.Timestamp(6)
-  updatedAt      DateTime  @updatedAt @db.Timestamp(6)
+  createdAt DateTime @default(now()) @db.Timestamp(6)
+  updatedAt DateTime @updatedAt @db.Timestamp(6)
 
   @@index([orderId])
   @@map("order_items")

@@ -1,184 +1,192 @@
-import { Injectable, Logger, NotFoundException } from '@nestjs/common';
-import { Category, Prisma, PrismaClient, StoreType } from '@prisma/client';
-import { PrismaService } from '@/api/prisma/prisma.service';
-import { PaginationArgs } from '@/api/pagination/pagination.args';
-import { paginate } from '@/api/pagination/paginate';
 import {
-  CategoryCreateData,
-  CategoryUpdateData,
-  CategoryInclude,
-  DEFAULT_CATEGORY_INCLUDE,
-  PresetCategory,
-} from './category.types';
-import { CategoryFactory } from './categories/category.factory';
-import { DefaultArgs } from '@prisma/client/runtime/library';
+  Injectable,
+  Logger,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
+import { PrismaService } from '@/api/prisma/prisma.service';
+import { Category, StoreType, Product, Prisma, Store } from '@prisma/client';
+import { SlugService } from '@/api/slug/slug.service';
+import { CategoryCreateInput, CategoryUpdateInput } from './category.dto';
+import { PaginationArgs } from '../pagination/pagination.args';
 
 @Injectable()
 export class CategoryService {
   private readonly logger = new Logger(CategoryService.name);
 
-  constructor(private readonly prismaService: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly slugService: SlugService
+  ) {}
 
-  async getCategoryById(
-    id: string,
-    include: CategoryInclude = DEFAULT_CATEGORY_INCLUDE
-  ): Promise<Category | null> {
-    try {
-      return this.prismaService.category.findUnique({
-        where: { id },
-        include,
-      });
-    } catch (error) {
-      this.logger.error(`Error fetching category with ID ${id}:`, error);
-      throw error;
-    }
+  async findById(id: string): Promise<Category | null> {
+    return this.prisma.category.findUnique({
+      where: { id },
+    });
   }
 
-  async getCategoryBySlug(
+  async findByParentId(parentId: string): Promise<Category[]> {
+    return this.prisma.category.findMany({
+      where: { parentId },
+      orderBy: { name: 'asc' },
+    });
+  }
+
+  async findBySlug(
     slug: string,
-    storeId: string,
-    include: CategoryInclude = DEFAULT_CATEGORY_INCLUDE
+    storeType: StoreType
   ): Promise<Category | null> {
-    try {
-      return this.prismaService.category.findFirst({
-        where: { slug, storeId },
-        include,
-      });
-    } catch (error) {
-      this.logger.error(`Error fetching category with slug ${slug}:`, error);
-      throw error;
-    }
+    return this.prisma.category.findUnique({
+      where: { storeType_slug: { storeType, slug } },
+    });
   }
 
-  async createStoreCategoriesFromTransaction(
-    tx: Omit<
-      PrismaClient<Prisma.PrismaClientOptions, never, DefaultArgs>,
-      '$connect' | '$disconnect' | '$on' | '$transaction' | '$use' | '$extends'
-    >,
-    storeId: string,
-    storeType: StoreType
-  ): Promise<void> {
-    const creator = CategoryFactory.getCreator(storeType);
-    const categories = creator.getCategories();
+  async findByStoreType(storeType: StoreType): Promise<Category[]> {
+    return this.prisma.category.findMany({
+      where: { storeType },
+      orderBy: { name: 'asc' },
+    });
+  }
 
-    const createCategoryAndChildren = async (
-      category: PresetCategory,
-      parentId?: string
-    ): Promise<void> => {
-      const created = await tx.category.create({
-        data: {
-          name: category.name,
-          slug: category.slug,
-          description: category.description,
-          store: { connect: { id: storeId } },
-          ...(parentId && { parent: { connect: { id: parentId } } }),
-        },
-      });
+  async create(input: CategoryCreateInput): Promise<Category> {
+    try {
+      // Validate slug uniqueness within store type
+      const isUnique = await this.isSlugUnique(input.slug, input.storeType);
+      if (!isUnique) {
+        throw new BadRequestException(
+          'Category slug must be unique within store type'
+        );
+      }
 
-      if (category.children) {
-        for (const child of category.children) {
-          await createCategoryAndChildren(child, created.id);
+      // If parentId is provided, verify it exists and belongs to same store type
+      if (input.parentId) {
+        const parent = await this.findById(input.parentId);
+        if (!parent) {
+          throw new NotFoundException(
+            `Parent category ${input.parentId} not found`
+          );
+        }
+        if (parent.storeType !== input.storeType) {
+          throw new BadRequestException(
+            'Parent category must be of same store type'
+          );
         }
       }
-    };
 
-    for (const category of categories) {
-      await createCategoryAndChildren(category);
-    }
-  }
-
-  async getCategoriesByStoreId(
-    storeId: string,
-    args?: PaginationArgs,
-    include: CategoryInclude = DEFAULT_CATEGORY_INCLUDE
-  ): Promise<Category[]> {
-    try {
-      const categories = await paginate({
-        modelDelegate: this.prismaService.category,
-        args,
-        where: { storeId },
-        include,
+      return this.prisma.category.create({
+        data: {
+          name: input.name,
+          slug: input.slug,
+          description: input.description,
+          storeType: input.storeType,
+          parentId: input.parentId,
+        },
       });
-
-      return categories;
     } catch (error) {
-      this.logger.error(
-        `Error fetching categories for store ${storeId}:`,
-        error
-      );
+      this.logger.error('Failed to create category:', error);
       throw error;
     }
   }
 
-  async create(
-    input: CategoryCreateData,
-    include: CategoryInclude = DEFAULT_CATEGORY_INCLUDE
-  ): Promise<Category> {
+  async update(input: CategoryUpdateInput): Promise<Category> {
     try {
-      return this.prismaService.category.create({
-        data: input,
-        include,
-      });
-    } catch (error) {
-      this.logger.error('Error creating category:', error);
-      throw error;
-    }
-  }
-
-  async update(
-    id: string,
-    input: CategoryUpdateData,
-    include: CategoryInclude = DEFAULT_CATEGORY_INCLUDE
-  ): Promise<Category> {
-    try {
-      const category = await this.getCategoryById(id);
+      const category = await this.findById(input.id);
       if (!category) {
-        throw new NotFoundException(`Category with ID ${id} not found`);
+        throw new NotFoundException(`Category ${input.id} not found`);
       }
 
-      return this.prismaService.category.update({
-        where: { id },
-        data: input,
-        include,
+      if (input.slug && input.slug !== category.slug) {
+        const isUnique = await this.isSlugUnique(
+          input.slug,
+          category.storeType,
+          input.id
+        );
+        if (!isUnique) {
+          throw new BadRequestException(
+            'Category slug must be unique within store type'
+          );
+        }
+      }
+
+      if (input.parentId) {
+        const parent = await this.findById(input.parentId);
+        if (!parent) {
+          throw new NotFoundException(
+            `Parent category ${input.parentId} not found`
+          );
+        }
+        if (parent.storeType !== category.storeType) {
+          throw new BadRequestException(
+            'Parent category must be of same store type'
+          );
+        }
+      }
+
+      return this.prisma.category.update({
+        where: { id: input.id },
+        data: {
+          name: input.name,
+          slug: input.slug,
+          description: input.description,
+          parentId: input.parentId,
+        },
       });
     } catch (error) {
-      this.logger.error(`Error updating category ${id}:`, error);
+      this.logger.error(`Failed to update category ${input.id}:`, error);
       throw error;
     }
   }
 
   async delete(id: string): Promise<Category> {
-    try {
-      const category = await this.getCategoryById(id);
-      if (!category) {
-        throw new NotFoundException(`Category with ID ${id} not found`);
-      }
-
-      return this.prismaService.category.delete({
-        where: { id },
-      });
-    } catch (error) {
-      this.logger.error(`Error deleting category ${id}:`, error);
-      throw error;
+    const category = await this.findById(id);
+    if (!category) {
+      throw new NotFoundException(`Category ${id} not found`);
     }
+
+    return this.prisma.category.delete({
+      where: { id },
+    });
   }
 
-  async isSlugUnique(
+  private async isSlugUnique(
     slug: string,
-    storeId: string,
+    storeType: StoreType,
     excludeId?: string
   ): Promise<boolean> {
+    const existing = await this.prisma.category.findFirst({
+      where: {
+        slug,
+        storeType,
+        id: excludeId ? { not: excludeId } : undefined,
+      },
+    });
+    return !existing;
+  }
+
+  async findCategoryProducts(categoryId: string): Promise<Product[]> {
+    return this.prisma.product.findMany({
+      where: { categoryId },
+    });
+  }
+
+  async findCategoriesByStore(
+    storeType: StoreType, 
+    args?: PaginationArgs
+  ): Promise<Category[]> {
     try {
-      const existingCategory = await this.prismaService.category.findFirst({
-        where: {
-          slug,
-          storeId,
-          id: excludeId ? { not: excludeId } : undefined,
+      return this.prisma.category.findMany({
+        where: { 
+          storeType,
+          parentId: null // Get root categories
         },
+        orderBy: {
+          name: 'asc'
+        },
+        skip: args?.skip,
+        take: args?.take
       });
-      return !existingCategory;
     } catch (error) {
-      this.logger.error(`Error validating slug uniqueness for ${slug}:`, error);
+      this.logger.error(`Error fetching categories for store type ${storeType}:`, error);
       throw error;
     }
   }
