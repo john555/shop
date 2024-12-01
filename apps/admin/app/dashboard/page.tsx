@@ -406,7 +406,7 @@ export default function DashboardOverview() {
                   </CardHeader>
                   <CardContent>
                     <div className="text-2xl font-bold">
-                      ${overview?.revenue.toLocaleString()}
+                      {formatPrice(overview?.revenue || 0, store)}
                     </div>
                     {overview?.revenueGrowth ? (
                       <p className="text-xs text-muted-foreground">
@@ -426,8 +426,7 @@ export default function DashboardOverview() {
                   </CardHeader>
                   <CardContent>
                     <div className="text-2xl font-bold">
-                      {/* UPDATE Currency formatting */}$
-                      {overview?.averageOrderValue.toLocaleString()}
+                      {formatPrice(overview?.averageOrderValue || 0, store)}
                     </div>
                     {overview?.orderValueGrowth ? (
                       <p className="text-xs text-muted-foreground">

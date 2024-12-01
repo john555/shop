@@ -1,26 +1,26 @@
 {
-  "name": "admin",
+  "name": "storefront",
   "$schema": "../../node_modules/nx/schemas/project-schema.json",
-  "sourceRoot": "apps/admin",
+  "sourceRoot": "apps/storefront",
   "projectType": "application",
   "tags": [],
-  "// targets": "to see all targets run: nx show project admin --web",
+  "// targets": "to see all targets run: nx show project storefront --web",
   "targets": {
     "serve": {
      "executor": "@nx/next:server",
      "defaultConfiguration": "development",
       "options": {
-        "buildTarget": "admin:serve",
-        "port": 3000,
+        "buildTarget": "storefront:serve",
+        "port": 3001,
         "dev": true
       },
       "configurations": {
         "development": {
-          "buildTarget": "admin:build:development",
+          "buildTarget": "storefront:build:development",
           "dev": true
         },
         "production": {
-          "buildTarget": "admin:build:production",
+          "buildTarget": "storefront:build:production",
           "dev": false
         }
       }
