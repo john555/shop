@@ -1,6 +1,5 @@
 import {
   Args,
-  Context,
   Mutation,
   Parent,
   Query,
@@ -10,13 +9,11 @@ import {
 import {
   Logger,
   NotFoundException,
-  UnauthorizedException,
   UseGuards,
   BadRequestException,
 } from '@nestjs/common';
 import { Category } from './category.entity';
 import { CategoryService } from './category.service';
-import { StoreService } from '../store/store.service';
 import { PrismaService } from '@/api/prisma/prisma.service';
 import {
   CategoryCreateInput,
@@ -25,9 +22,7 @@ import {
 } from './category.dto';
 import { PaginationArgs } from '@/api/pagination/pagination.args';
 import { JwtAuthGuard } from '../authentication/guard/jwt-auth.guard';
-import { AuthContext } from '../utils/auth';
 import { DEFAULT_CATEGORY_INCLUDE } from './category.types';
-import { Store } from '../store/store.entity';
 
 @Resolver(() => Category)
 export class CategoryResolver {
@@ -35,25 +30,8 @@ export class CategoryResolver {
 
   constructor(
     private readonly categoryService: CategoryService,
-    private readonly storeService: StoreService,
     private readonly prismaService: PrismaService
   ) {}
-
-  private async validateStoreAccess(
-    storeId: string,
-    userId: string
-  ): Promise<void> {
-    const store = await this.storeService.getStoreById(storeId);
-    if (!store) {
-      throw new NotFoundException(`Store with ID ${storeId} not found`);
-    }
-
-    if (store.ownerId !== userId) {
-      throw new UnauthorizedException(
-        'You do not have permission to access this store'
-      );
-    }
-  }
 
   @Query(() => Category, { nullable: true })
   async categoryBySlug(
@@ -70,10 +48,8 @@ export class CategoryResolver {
   @Query(() => [Category])
   async storeCategories(
     @Args('storeId') storeId: string,
-    @Args() args: PaginationArgs,
-    @Context() context: AuthContext
+    @Args() args: PaginationArgs
   ): Promise<Category[]> {
-    await this.validateStoreAccess(storeId, context.req.user.id);
     return this.categoryService.getCategoriesByStoreId(
       storeId,
       args,
@@ -84,12 +60,9 @@ export class CategoryResolver {
   @UseGuards(JwtAuthGuard)
   @Mutation(() => Category)
   async createCategory(
-    @Args('input') input: CategoryCreateInput,
-    @Context() context: AuthContext
+    @Args('input') input: CategoryCreateInput
   ): Promise<Category> {
     try {
-      await this.validateStoreAccess(input.storeId, context.req.user.id);
-
       // Validate slug uniqueness
       const isSlugUnique = await this.categoryService.isSlugUnique(
         input.slug,
@@ -128,16 +101,13 @@ export class CategoryResolver {
   @UseGuards(JwtAuthGuard)
   @Mutation(() => Category)
   async updateCategory(
-    @Args('input') input: CategoryUpdateInput,
-    @Context() context: AuthContext
+    @Args('input') input: CategoryUpdateInput
   ): Promise<Category> {
     try {
       const category = await this.categoryService.getCategoryById(input.id);
       if (!category) {
         throw new NotFoundException(`Category with ID ${input.id} not found`);
       }
-
-      await this.validateStoreAccess(category.storeId, context.req.user.id);
 
       if (input.parentId && input.parentId !== category.parentId) {
         const parent = await this.categoryService.getCategoryById(
@@ -164,17 +134,13 @@ export class CategoryResolver {
 
   @UseGuards(JwtAuthGuard)
   @Mutation(() => Boolean)
-  async deleteCategory(
-    @Args('id') id: string,
-    @Context() context: AuthContext
-  ): Promise<boolean> {
+  async deleteCategory(@Args('id') id: string): Promise<boolean> {
     try {
       const category = await this.categoryService.getCategoryById(id);
       if (!category) {
         throw new NotFoundException(`Category with ID ${id} not found`);
       }
 
-      await this.validateStoreAccess(category.storeId, context.req.user.id);
       await this.categoryService.delete(id);
       return true;
     } catch (error) {

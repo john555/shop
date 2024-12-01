@@ -18,37 +18,3 @@ export class CategoryFactory {
     }
   }
 }
-
-export const createStoreCategories = async (
-  prisma: any,
-  storeId: string,
-  storeType: StoreType
-): Promise<void> => {
-  const creator = CategoryFactory.getCreator(storeType);
-  const categories = creator.getCategories();
-  
-  const createCategoryAndChildren = async (
-    category: PresetCategory,
-    parentId?: string
-  ): Promise<void> => {
-    const created = await prisma.category.create({
-      data: {
-        name: category.name,
-        slug: category.slug,
-        description: category.description,
-        store: { connect: { id: storeId } },
-        ...(parentId && { parent: { connect: { id: parentId } } })
-      }
-    });
-
-    if (category.children) {
-      for (const child of category.children) {
-        await createCategoryAndChildren(child, created.id);
-      }
-    }
-  };
-
-  for (const category of categories) {
-    await createCategoryAndChildren(category);
-  }
-};

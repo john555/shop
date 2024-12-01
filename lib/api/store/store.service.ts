@@ -26,6 +26,7 @@ import {
 } from './store.types';
 import { AddressOnOwnerService } from '../address-on-owner/address-on-owner.service';
 import { AddressOnOwnerCreateInput } from '../address-on-owner/address-on-owner.dto';
+import { CategoryService } from '../category/category.service';
 
 const DEFAULT_CURRENCY_SYMBOLS: Record<StoreCurrency, string> = {
   KES: 'KSh',
@@ -42,7 +43,8 @@ export class StoreService {
 
   constructor(
     private readonly prismaService: PrismaService,
-    private readonly addressOnOwnerService: AddressOnOwnerService
+    private readonly addressOnOwnerService: AddressOnOwnerService,
+    private readonly categoryService: CategoryService
   ) {}
 
   async findById(id: string): Promise<Store | null> {
@@ -207,23 +209,38 @@ export class StoreService {
   }
 
   // Mutation Methods
-  async create(
-    input: StoreCreateData,
-    
-  ): Promise<Store> {
+  async create(input: StoreCreateData): Promise<Store> {
     try {
-      return this.prismaService.store.create({
-        data: {
-          ...input,
-          currencySymbol:
-            input.currencySymbol ?? DEFAULT_CURRENCY_SYMBOLS[input.currency],
-          currencyPosition:
-            input.currencyPosition ?? CurrencyPosition.BEFORE_AMOUNT,
-          showCurrencyCode: input.showCurrencyCode ?? false,
-          timeZone: input.timeZone ?? 'Africa/Nairobi',
-          orderPrefix: input.orderPrefix ?? '#',
-        },
-        
+      // Use transaction to ensure both store and categories are created atomically
+      return await this.prismaService.$transaction(async (tx) => {
+        // Create the store
+        const store = await tx.store.create({
+          data: {
+            ...input,
+            currencySymbol:
+              input.currencySymbol ?? DEFAULT_CURRENCY_SYMBOLS[input.currency],
+            currencyPosition:
+              input.currencyPosition ?? CurrencyPosition.BEFORE_AMOUNT,
+            showCurrencyCode: input.showCurrencyCode ?? false,
+            timeZone: input.timeZone ?? 'Africa/Nairobi',
+            orderPrefix: input.orderPrefix ?? '#',
+          },
+        });
+
+        // Generate categories based on store type
+        await this.categoryService.createStoreCategoriesFromTransaction(
+          tx,
+          store.id,
+          store.type
+        );
+
+        // Return the created store with categories
+        return tx.store.findUniqueOrThrow({
+          where: { id: store.id },
+          include: {
+            categories: true
+          }
+        });
       });
     } catch (error) {
       this.logger.error('Error creating store:', error);
