@@ -108,6 +108,11 @@ export function VariantsCard({ form }: VariantsCardProps) {
     }
   };
 
+  const showVariantDetails =
+    ((form.getValues('options').length > 0 &&
+      form.getValues('variants')?.length) ||
+      0) > 0;
+
   return (
     <Card>
       <CardHeader>
@@ -149,7 +154,7 @@ export function VariantsCard({ form }: VariantsCardProps) {
           <PlusCircle className="w-4 h-4 mr-2" />
           Add {optionFields.length > 0 ? 'another' : 'an'} option
         </Button>
-        {variantFields.length > 0 && (
+        {showVariantDetails && (
           <>
             <Separator />
             <VariantDetails form={form} variantFields={variantFields} />

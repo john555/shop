@@ -5,7 +5,13 @@ import { Product } from './product.entity';
 import { Decimal } from '@prisma/client/runtime/library';
 
 @ObjectType({ description: 'Product variant model' })
-export class ProductVariant implements Omit<ProductVariantModel, 'product' | 'price' | 'compareAtPrice'> {
+export class ProductVariant
+  implements
+    Omit<
+      ProductVariantModel,
+      'product' | 'price' | 'compareAtPrice' | 'isArchived' | 'archivedAt'
+    >
+{
   @Field(() => ID, { description: 'Unique identifier' })
   id: string;
 
@@ -56,4 +62,10 @@ export class ProductVariant implements Omit<ProductVariantModel, 'product' | 'pr
 
   @Field(() => Date, { description: 'When the variant was last updated' })
   updatedAt: Date;
+
+  // @Field(() => Boolean, { description: 'Whether the variant is archived' })
+  // isArchived: boolean;
+
+  // @Field(() => Date, { description: 'When the variant was archived' })
+  // archivedAt: Date;
 }

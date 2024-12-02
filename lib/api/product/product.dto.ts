@@ -59,6 +59,11 @@ export class ProductOptionInput {
 
 @InputType()
 export class ProductVariantInput {
+  @Field(() => String, { nullable: true })
+  @IsOptional()
+  @IsString()
+  id?: string;
+  
   @Field(() => [String])
   @IsArray()
   @IsString({ each: true })

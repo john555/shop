@@ -135,6 +135,8 @@ export function ProductForm() {
   const { collections } = useCollections({ storeId: store?.id });
   const [openCollections, setOpenCollections] = useState(false);
 
+  console.log(product);
+
   const isEditMode = !!id;
 
   const form = useForm<ProductFormValues>({
@@ -191,7 +193,6 @@ export function ProductForm() {
           name: o.name,
           values: o.values,
         })),
-        variants: undefined,
       });
       form.reset(getInitialValues(updatedProduct));
     } else {
@@ -230,7 +231,6 @@ export function ProductForm() {
           ))
       : !isValid);
 
-  console.log({ store });
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -522,26 +522,8 @@ export function ProductForm() {
                   )}
                 </CardContent>
               </Card>
-              {isEditMode ? (
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Variants</CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <Button
-                      variant="link"
-                      asChild
-                      className="p-0 text-muted-foreground"
-                    >
-                      <Link href={`/dashboard/products/${id}/variants`}>
-                        Edit Variants
-                      </Link>
-                    </Button>
-                  </CardContent>
-                </Card>
-              ) : (
-                <VariantsCard form={form} />
-              )}
+
+              <VariantsCard form={form} />
 
               <Card>
                 <CardHeader>
