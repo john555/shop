@@ -12,24 +12,27 @@ import {
 } from '@/components/ui/popover';
 import { ScrollArea } from '@/components/ui/scroll-area';
 
-interface CategoryTreeSelectProps {
+interface CategorySelectProps {
   categories: Category[];
   onSelect: (category: Category) => void;
-  className?: string
-  selectedCategoryId?: string
+  className?: string;
+  selectedCategoryId?: string;
 }
 
-export function CategoryTreeSelect({
+export function CategorySelect({
   categories,
   onSelect,
   className,
   selectedCategoryId,
-}: CategoryTreeSelectProps) {
+}: CategorySelectProps) {
   const [open, setOpen] = React.useState(false);
   const [currentCategories, setCurrentCategories] = React.useState(categories);
   const [breadcrumbs, setBreadcrumbs] = React.useState<Category[]>([]);
   const [selectedCategory, setSelectedCategory] =
     React.useState<Category | null>(null);
+  const [highlightedCategories, setHighlightedCategories] = React.useState<
+    Set<string>
+  >(new Set());
 
   React.useEffect(() => {
     setCurrentCategories(categories);
@@ -37,24 +40,39 @@ export function CategoryTreeSelect({
 
   React.useEffect(() => {
     if (selectedCategoryId) {
-      const findCategory = (cats: Category[]): Category | null => {
+      const findCategoryAndParents = (
+        cats: Category[],
+        parents: Category[] = []
+      ): [Category | null, Category[]] => {
         for (const cat of cats) {
           if (cat.id === selectedCategoryId) {
-            return cat;
+            return [cat, parents];
           }
           if (cat.children) {
-            const found = findCategory(cat.children);
+            const [found, foundParents] = findCategoryAndParents(cat.children, [
+              ...parents,
+              cat,
+            ]);
             if (found) {
-              return found;
+              return [found, foundParents];
             }
           }
         }
-        return null;
+        return [null, []];
       };
 
-      const category = findCategory(categories);
+      const [category, parents] = findCategoryAndParents(categories);
       if (category) {
         setSelectedCategory(category);
+        setHighlightedCategories(
+          new Set([...parents.map((p) => p.id), category.id])
+        );
+        setBreadcrumbs(parents);
+        setCurrentCategories(
+          parents.length > 0
+            ? parents[parents.length - 1].children || []
+            : categories
+        );
       }
     }
   }, [selectedCategoryId, categories]);
@@ -64,6 +82,9 @@ export function CategoryTreeSelect({
       setSelectedCategory(category);
       onSelect(category);
       setOpen(false);
+      setHighlightedCategories(
+        new Set([...breadcrumbs.map((b) => b.id), category.id])
+      );
     } else {
       setCurrentCategories(category.children);
       setBreadcrumbs([...breadcrumbs, category]);
@@ -93,7 +114,8 @@ export function CategoryTreeSelect({
         size="sm"
         className={cn(
           'w-full justify-start text-left font-normal text-sm',
-          selectedCategory?.id === category.id &&
+          (highlightedCategories.has(category.id) ||
+            selectedCategory?.id === category.id) &&
             'bg-accent text-accent-foreground'
         )}
         onClick={() => handleSelect(category)}

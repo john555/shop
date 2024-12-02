@@ -54,7 +54,7 @@ import MediaInput from '@/components/media-input';
 import { ProductStatusBadge } from '../(ui)/product-status-badge';
 import { VariantsCard } from './variants-card';
 import Link from 'next/link';
-import { CategoryTreeSelect } from './category-tree-select';
+import { CategorySelect } from '@/components/category-select';
 
 function generateSlug(title: string): string {
   return title
@@ -326,7 +326,7 @@ export function ProductForm() {
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Category</FormLabel>
-                        <CategoryTreeSelect
+                        <CategorySelect
                           categories={store?.categories || []}
                           onSelect={(category) => field.onChange(category.id)}
                           selectedCategoryId={field.value}
