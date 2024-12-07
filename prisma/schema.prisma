@@ -269,6 +269,7 @@ model Product {
   @@unique([storeId, slug])
   @@index([storeId])
   @@index([categoryId])
+  @@map("products")
 }
 
 model ProductOption {
