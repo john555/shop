@@ -134,9 +134,6 @@ export function ProductForm() {
   } = useProduct(id?.toString());
   const { collections } = useCollections({ storeId: store?.id });
   const [openCollections, setOpenCollections] = useState(false);
-
-  console.log(product);
-
   const isEditMode = !!id;
 
   const form = useForm<ProductFormValues>({
