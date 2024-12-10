@@ -94,15 +94,10 @@ const navLinks: NavLink[] = [
     label: 'Sales Channels',
     children: [
       {
-        href: '/dashboard/sales-channels/online',
+        href: '/dashboard/channels/online-store',
         icon: Globe,
-        label: 'Online',
-      },
-      {
-        href: '/dashboard/sales-channels/in-store',
-        icon: Store,
-        label: 'In-Store',
-      },
+        label: 'Online store',
+      }
     ],
   },
 ];
@@ -386,7 +381,7 @@ export default function DashboardLayout({
                 </div>
               </div>
             </header>
-            <main className="flex-1 overflow-y-auto w-full bg-background pt-16">
+            <main className="flex-1 overflow-y-auto w-full bg-background">
               <div className="container mx-auto p-4">{children}</div>
             </main>
           </div>

@@ -1,0 +1,36 @@
+/* Add smooth scrolling for the whole page */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Add a subtle hover effect for interactive elements */
+a, button {
+  transition: all 0.3s ease;
+}
+
+/* Improve form input styles */
+input, select, textarea {
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+input:focus, select:focus, textarea:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--primary-color);
+}
+
+/* Add a subtle parallax effect to the hero image */
+.hero-image {
+  transform: translateZ(-1px) scale(2);
+  z-index: -1;
+}
+
+/* Improve card hover effects */
+.card {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+}
+
