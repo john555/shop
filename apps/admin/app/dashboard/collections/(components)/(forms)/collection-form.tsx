@@ -486,7 +486,7 @@ export function CollectionForm() {
                                 <TableCell>{product.title}</TableCell>
                                 <TableCell>{product.sku}</TableCell>
                                 <TableCell>
-                                  ${product.price.toFixed(2)}
+                                  ${product?.price?.toFixed(2)}
                                 </TableCell>
                                 <TableCell>
                                   <Button

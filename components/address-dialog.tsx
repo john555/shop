@@ -101,7 +101,7 @@ export function AddressDialog({
       zipCode: data.zipCode as string,
     };
     try {
-      if (addressOnOwner) {
+      if (addressOwnerId) {
         await updateAddressOwner({
           id: addressOwnerId,
           address: addressData,

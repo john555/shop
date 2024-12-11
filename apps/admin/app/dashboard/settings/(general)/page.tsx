@@ -12,7 +12,7 @@ import { useStore } from '@/admin/hooks/store/use-store';
 import { CurrencyPosition, Store, UnitSystem, WeightUnit } from '@/types/api';
 import { Form } from '@/components/ui/form';
 
-export const storeSettingsSchema = z.object({
+const storeSettingsSchema = z.object({
   currency: z.string().min(1, 'Currency is required'),
   currencySymbol: z.string().min(1, 'Currency symbol is required'),
   currencyPosition: z.nativeEnum(CurrencyPosition, {
@@ -77,7 +77,7 @@ export default function StoreSettingsPage() {
       },
     });
     resetForm(updatedStore?.data?.updateStore);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [form, store]);
 
   return (
