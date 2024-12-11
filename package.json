@@ -5,7 +5,8 @@
   "scripts": {
     "shadcn": "TS_NODE_PROJECT=apps/admin/tsconfig.json pnpm dlx shadcn-ui@latest",
     "gen": "ts-node scripts/generate-module/main.ts",
-    "gen:types": "graphql-codegen"
+    "gen:types": "graphql-codegen",
+    "migrate:prod": "eval $(cat prisma/.env.prod) npx prisma migrate deploy"
   },
   "private": true,
   "dependencies": {

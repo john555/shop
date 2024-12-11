@@ -3,9 +3,11 @@ import { AppModule } from '@/api/app/app.module';
 import { Logger, ValidationPipe } from '@nestjs/common';
 import cookieParser from 'cookie-parser';
 
+let app: any;
+
 async function bootstrap() {
+  app = await NestFactory.create(AppModule);
   const globalPrefix = 'graphql';
-  const app = await NestFactory.create(AppModule);
   app.use(cookieParser(process.env.COOKIE_SECRET!));
   app.setGlobalPrefix(globalPrefix);
   app.useGlobalPipes(new ValidationPipe());
@@ -22,5 +24,8 @@ async function bootstrap() {
     `🚀 Application is running on: http://localhost:${port}/${globalPrefix}`,
     'NestApplication',
   );
+  return app;
 }
 bootstrap();
+
+module.exports = app;
