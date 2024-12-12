@@ -906,6 +906,7 @@ export type ProductVariant = {
 export type ProductVariantInput = {
   available?: InputMaybe<Scalars['Int']['input']>;
   compareAtPrice?: InputMaybe<Scalars['Float']['input']>;
+  id?: InputMaybe<Scalars['String']['input']>;
   optionCombination: Array<Scalars['String']['input']>;
   price: Scalars['Float']['input'];
   sku?: InputMaybe<Scalars['String']['input']>;
