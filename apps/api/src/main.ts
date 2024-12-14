@@ -7,7 +7,9 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   const globalPrefix = 'graphql';
   app.use(cookieParser(process.env.COOKIE_SECRET!));
-  app.setGlobalPrefix(globalPrefix);
+  app.setGlobalPrefix(globalPrefix, {
+    exclude: ['/health'], // Exclude health check from global prefix
+  });
   app.useGlobalPipes(new ValidationPipe());
 
   const allowedOrigins = process.env.ALLOWED_ORIGINS?.split(',') || [];
@@ -20,6 +22,10 @@ async function bootstrap() {
   await app.listen(port);
   Logger.log(
     `🚀 Application is running on: http://localhost:${port}/${globalPrefix}`,
+    'NestApplication'
+  );
+  Logger.log(
+    `Health check endpoint: http://localhost:${port}/health`,
     'NestApplication'
   );
 }

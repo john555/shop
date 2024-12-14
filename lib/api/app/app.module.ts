@@ -18,6 +18,7 @@ import { CustomerModule } from '../customer/customer.module';
 import { AddressOnOwnerModule } from '../address-on-owner/address-on-owner.module';
 import { OverviewModule } from '../overview/overview.module';
 import { OrderModule } from '../order/order.module';
+import { HealthModule } from '../health/health.module';
 
 @Module({
   imports: [
@@ -59,6 +60,7 @@ import { OrderModule } from '../order/order.module';
     AddressOnOwnerModule,
     OverviewModule,
     OrderModule,
+    HealthModule,
   ],
   providers: [],
 })
