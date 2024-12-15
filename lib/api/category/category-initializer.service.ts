@@ -1,6 +1,6 @@
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { CategoryFactory } from './categories/category.factory';
-import { StoreType } from '@prisma/client';
+import { Prisma, StoreType } from '@prisma/client';
 import { PrismaService } from '@/api/prisma/prisma.service';
 import { validateCategoryData } from './category.types';
 
@@ -8,9 +8,7 @@ import { validateCategoryData } from './category.types';
 export class CategoryInitializerService implements OnModuleInit {
   private readonly logger = new Logger(CategoryInitializerService.name);
 
-  constructor(
-    private readonly prisma: PrismaService
-  ) {}
+  constructor(private readonly prisma: PrismaService) {}
 
   async onModuleInit() {
     await this.initializeCategories();
@@ -41,9 +39,16 @@ export class CategoryInitializerService implements OnModuleInit {
     }
 
     // Create categories in transaction to ensure consistency
-    await this.prisma.$transaction(async (tx) => {
-      await this.createCategoriesRecursive(categories, null, storeType, tx);
-    });
+    await this.prisma.$transaction(
+      async (tx) => {
+        await this.createCategoriesRecursive(categories, null, storeType, tx);
+      },
+      {
+        maxWait: 5000, // default: 2000
+        timeout: 10000, // default: 5000
+        isolationLevel: Prisma.TransactionIsolationLevel.Serializable,
+      }
+    );
   }
 
   private async createCategoriesRecursive(
