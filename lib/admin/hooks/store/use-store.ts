@@ -47,6 +47,7 @@ const FETCH_STORE_QUERY = gql`
     myStores {
       id
       name
+      slug
       email
       phone
       facebook
