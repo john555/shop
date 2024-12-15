@@ -12,7 +12,7 @@ export class HealthController {
   @HealthCheck()
   check() {
     return this.health.check([
-      () => this.http.pingCheck('health', process.env.GRAPHQL_URL || `http://localhost:${process.env.PORT! || 4100}/graphql`),
+      () => this.http.pingCheck('health', `http://localhost:${process.env.PORT! || 4100}/graphql`),
     ]);
   }
 }
