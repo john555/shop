@@ -44,8 +44,8 @@ export class CategoryInitializerService implements OnModuleInit {
         await this.createCategoriesRecursive(categories, null, storeType, tx);
       },
       {
-        maxWait: 5000, // default: 2000
-        timeout: 10000, // default: 5000
+        maxWait: 0, // default: 2000
+        timeout: 0, // default: 5000
         isolationLevel: Prisma.TransactionIsolationLevel.Serializable,
       }
     );
