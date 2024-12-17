@@ -90,7 +90,7 @@ export class AuthenticationService {
     res.cookie(process.env.JWT_AUTH_COOKIE_NAME!, tokens.accessToken, {
       signed: true,
       httpOnly: true,
-      sameSite: 'none',
+      sameSite: 'lax',
       secure: process.env.NODE_ENV === 'production',
       domain: process.env.COOKIE_DOMAIN,
       expires: new Date(Date.now() + parseInt(process.env.JWT_AUTH_EXPIRES_MS!)),
@@ -99,7 +99,7 @@ export class AuthenticationService {
     res.cookie(process.env.JWT_REFRESH_COOKIE_NAME!, tokens.refreshToken, {
       signed: true,
       httpOnly: true,
-      sameSite: 'none',
+      sameSite: 'lax',
       secure: process.env.NODE_ENV === 'production',
       domain: process.env.COOKIE_DOMAIN,
       expires: new Date(
