@@ -164,7 +164,7 @@ export function useProduct(initialId?: string) {
 
   return {
     // Data
-    product: productData?.product as Product | undefined,
+    product: productData?.product as Product,
     
     // Loading states
     loading: loadingProduct,

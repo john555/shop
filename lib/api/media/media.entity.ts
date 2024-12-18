@@ -1,5 +1,11 @@
 import { ObjectType, Field, ID, Int, registerEnumType } from '@nestjs/graphql';
-import { Media as MediaModel, MediaType, MediaOwnerType } from '@prisma/client';
+import {
+  Media as MediaModel,
+  MediaType,
+  MediaOwnerType,
+  $Enums,
+  MediaPurpose,
+} from '@prisma/client';
 import { Product } from '../product/entities/product.entity';
 import { ProductVariant } from '../product/entities/product-variant.entity';
 import { Category } from '../category/category.entity';
@@ -18,6 +24,23 @@ registerEnumType(MediaOwnerType, {
   name: 'MediaOwnerType',
   description: 'Type of entity that owns the media',
 });
+
+registerEnumType(MediaPurpose, {
+  name: 'MediaPurpose',
+  description: 'Purpose of the media',
+});
+
+@ObjectType()
+export class MediaUsage {
+  @Field(() => MediaOwnerType)
+  ownerType: MediaOwnerType;
+
+  @Field(() => String)
+  ownerId: string;
+
+  @Field(() => String)
+  ownerTitle: string;
+}
 
 @ObjectType({ description: 'Media model' })
 export class Media implements Omit<MediaModel, 'owner'> {
@@ -101,4 +124,25 @@ export class Media implements Omit<MediaModel, 'owner'> {
 
   @Field(() => Date)
   updatedAt: Date;
+
+  @Field(() => MediaPurpose)
+  purpose: MediaPurpose;
+
+  @Field(() => Boolean)
+  isArchived: boolean;
+
+  @Field(() => String, { nullable: true })
+  blurHash: string | null;
+
+  @Field(() => String, { nullable: true })
+  placeholder: string | null;
+
+  @Field(() => Date, { nullable: true })
+  archivedAt: Date | null;
+
+  @Field(() => String, { nullable: true })
+  storeId: string | null;
+
+  @Field(() => [MediaUsage])
+  usedIn?: MediaUsage[];
 }

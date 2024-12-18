@@ -138,20 +138,29 @@ enum FuelType {
 
 // Media related enums
 enum MediaType {
-  PHOTO
-  VIDEO
-  MODEL_3D
+  PHOTO // Image files
+  VIDEO // Video files
+  MODEL_3D // 3D model files
 }
 
 enum MediaOwnerType {
-  PRODUCT
-  PRODUCT_VARIANT
-  CATEGORY
-  COLLECTION
-  STORE
-  USER_PROFILE
-  PROPERTY
-  VEHICLE
+  STORE_PROFILE // Store's own images (logo, banner, etc)
+  PRODUCT // Product images for the store
+  PRODUCT_VARIANT // Product Variant images for the store
+  COLLECTION // Collection images for the store
+  CATEGORY // Category images for the store
+  USER_PROFILE // User profile images
+  PROPERTY // Property listing images
+  VEHICLE // Vehicle listing images
+}
+
+enum MediaPurpose {
+  LOGO // Store/Brand logo
+  BANNER // Store/Collection banner
+  AVATAR // User/Profile avatar
+  GALLERY // Product/Property gallery images
+  DOCUMENT // Documents, certificates, etc
+  OTHER // Other purposes
 }
 
 // Address related enums
@@ -502,36 +511,45 @@ model Tag {
 }
 
 model Media {
-  id       String    @id @default(cuid())
-  type     MediaType @default(PHOTO)
-  url      String
-  alt      String?
-  position Int       @default(0)
+  id         String       @id @default(cuid())
+  type       MediaType    @default(PHOTO)
+  purpose    MediaPurpose @default(OTHER)
+  url        String
+  alt        String?      @db.Text
+  position   Int          @default(0)
+  isArchived Boolean      @default(false)
 
   // File metadata
-  fileName String?
-  mimeType String?
-  fileSize Int?
-  width    Int?
-  height   Int?
+  fileName    String?
+  mimeType    String?
+  fileSize    Int? // Size in bytes
+  width       Int? // Image/Video width
+  height      Int? // Image/Video height
+  duration    Int? // Video duration in seconds
+  thumbnail   String? // Thumbnail URL for videos/3D models
+  modelFormat String? // 3D model format (e.g., GLB, GLTF)
 
-  // Video specific
-  duration  Int?
-  thumbnail String?
+  // Optimization metadata
+  blurHash    String? // BlurHash for image preview
+  placeholder String? // Base64 tiny preview
 
-  // 3D model specific
-  modelFormat String?
-
-  // Polymorphic relation
+  // Polymorphic relation fields
   ownerType MediaOwnerType
   ownerId   String
+  storeId   String?
 
   // Timestamps
-  createdAt DateTime @default(now()) @db.Timestamp(6)
-  updatedAt DateTime @updatedAt @db.Timestamp(6)
+  createdAt  DateTime  @default(now()) @db.Timestamp(6)
+  updatedAt  DateTime  @updatedAt @db.Timestamp(6)
+  archivedAt DateTime? @db.Timestamp(6)
 
+  // Indices and constraints
   @@unique([ownerId, ownerType, position])
   @@index([ownerId, ownerType])
+  @@index([storeId])
+  @@index([type])
+  @@index([purpose])
+  @@index([isArchived])
   @@map("media")
 }
 

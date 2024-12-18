@@ -4,8 +4,7 @@ import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { Upload, X, Tag, Box, ArrowLeft, Hash, Plus } from 'lucide-react';
-import Image from 'next/image';
+import { Tag, Box, ArrowLeft, Hash, Plus } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -38,7 +37,12 @@ import {
 import { Checkbox } from '@/components/ui/checkbox';
 import { useStore } from '@/admin/hooks/store';
 import { useProduct } from '@/admin/hooks/product/use-product';
-import { Product, ProductStatus, SalesChannel } from '@/types/api';
+import {
+  MediaOwnerType,
+  Product,
+  ProductStatus,
+  SalesChannel,
+} from '@/types/api';
 import { useParams, useRouter } from 'next/navigation';
 import { DASHBOARD_PAGE_LINK } from '@/common/constants';
 import {
@@ -53,7 +57,6 @@ import { useCollections } from '@/admin/hooks/collection';
 import MediaInput from '@/components/media-input';
 import { ProductStatusBadge } from '../(ui)/product-status-badge';
 import { VariantsCard } from './variants-card';
-import Link from 'next/link';
 import { CategorySelect } from '@/components/category-select';
 
 function generateSlug(title: string): string {
@@ -338,7 +341,11 @@ export function ProductForm() {
                   />
                   <div>
                     <FormLabel>Product Images</FormLabel>
-                    <MediaInput />
+                    <MediaInput
+                      ownerId={product.id}
+                      ownerType={MediaOwnerType.Product}
+                      storeId={store?.id}
+                    />
                   </div>
                 </CardContent>
               </Card>

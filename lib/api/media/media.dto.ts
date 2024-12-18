@@ -4,19 +4,44 @@ import {
   IsString,
   IsEnum,
   IsOptional,
-  IsNumber,
   IsUrl,
   Min,
   IsInt,
 } from 'class-validator';
-import { MediaType, MediaOwnerType } from '@prisma/client';
+import { MediaType, MediaOwnerType, MediaPurpose } from '@prisma/client';
+import { FileUpload, GraphQLUpload } from 'graphql-upload-ts';
 
-@ArgsType()
-export class MediaGetArgs {
-  @Field(() => ID)
+@InputType()
+export class MediaSearchInput {
+  @Field(() => String, { nullable: true })
   @IsString()
-  @IsNotEmpty()
-  id: string;
+  @IsOptional()
+  id?: string;
+
+  @Field(() => String, { nullable: true })
+  @IsString()
+  @IsOptional()
+  ownerId?: string;
+
+  @Field(() => MediaOwnerType, { nullable: true })
+  @IsEnum(MediaOwnerType)
+  @IsOptional()
+  ownerType?: MediaOwnerType;
+
+  @Field(() => MediaType, { nullable: true })
+  @IsEnum(MediaType)
+  @IsOptional()
+  type?: MediaType;
+
+  @Field(() => String, { nullable: true })
+  @IsString()
+  @IsOptional()
+  storeId?: string;
+
+  @Field(() => String, { nullable: true })
+  @IsString()
+  @IsOptional()
+  search?: string;
 }
 
 @ArgsType()
@@ -34,11 +59,6 @@ export class GetMediaByOwnerArgs {
 
 @InputType()
 export class MediaCreateInput {
-  @Field(() => MediaType)
-  @IsEnum(MediaType)
-  @IsNotEmpty()
-  type: MediaType;
-
   @Field(() => String)
   @IsString()
   @IsNotEmpty()
@@ -64,6 +84,11 @@ export class MediaCreateInput {
   @IsString()
   @IsNotEmpty()
   ownerId: string;
+
+  @Field(() => String)
+  @IsString()
+  @IsNotEmpty()
+  storeId: string;
 
   // Optional metadata fields
   @Field(() => String, { nullable: true })
@@ -105,6 +130,11 @@ export class MediaCreateInput {
   @IsString()
   @IsOptional()
   modelFormat?: string;
+
+  @Field(() => MediaPurpose, { nullable: true })
+  @IsEnum(MediaPurpose)
+  @IsOptional()
+  purpose?: MediaPurpose;
 }
 
 @InputType()
@@ -176,4 +206,41 @@ export class MediaUpdateInput {
   @IsString()
   @IsOptional()
   modelFormat?: string;
+}
+
+@InputType()
+export class MediaUploadInput {
+  @Field(() => String, { nullable: true })
+  @IsString()
+  @IsOptional()
+  alt?: string;
+
+  @Field(() => MediaOwnerType)
+  @IsEnum(MediaOwnerType)
+  @IsNotEmpty()
+  ownerType: MediaOwnerType;
+
+  @Field(() => String)
+  @IsString()
+  @IsNotEmpty()
+  ownerId: string;
+
+  @Field(() => String)
+  @IsString()
+  @IsNotEmpty()
+  storeId: string;
+
+  @Field(() => String, { nullable: true })
+  @IsString()
+  @IsOptional()
+  path?: string;
+
+  @Field(() => MediaPurpose, { nullable: true })
+  @IsEnum(MediaPurpose)
+  @IsOptional()
+  purpose?: MediaPurpose;
+
+  // This will be populated from the file upload
+  @Field(() => GraphQLUpload)
+  file: Promise<FileUpload>;
 }

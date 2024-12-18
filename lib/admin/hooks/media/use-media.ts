@@ -1,54 +1,63 @@
 import { gql, useMutation, useQuery } from '@apollo/client';
-import { useCallback } from 'react';
-import { Media, MediaCreateInput, MediaUpdateInput } from '@/types/api';
+import { useEffect, useState } from 'react';
+import {
+  Media,
+  MediaOwnerType,
+  MediaSearchInput,
+  MediaUploadInput,
+} from '@/types/api';
 
-const MEDIA_FIELDS = gql`
-  fragment MediaFields on Media {
-    id
-    type
-    url
-    alt
-    position
-    fileName
-    mimeType
-    fileSize
-    width
-    height
-    duration
-    thumbnail
-    modelFormat
+interface UseMediaProps {
+  skip?: number;
+  take?: number;
+  cursor?: string;
+  filters?: MediaSearchInput;
+}
+
+const MEDIA_FIELDS = `
+  id
+  type
+  url
+  alt
+  position
+  fileName
+  mimeType
+  fileSize
+  width
+  height
+  duration
+  thumbnail
+  modelFormat
+  ownerType
+  ownerId
+  blurHash
+  placeholder
+  isArchived
+  createdAt
+  updatedAt
+  usedIn {
     ownerType
     ownerId
-    createdAt
-    updatedAt
+    ownerTitle
   }
 `;
 
 const FETCH_MEDIA = gql`
-  query Media($id: ID!) {
-    media(id: $id) {
-      ...MediaFields
+  query Media(
+    $input: MediaSearchInput!
+    $skip: Int
+    $take: Int
+    $cursor: String
+  ) {
+    media(
+      input: $input
+      skip: $skip
+      take: $take
+      cursor: $cursor
+    ) {
+      ${MEDIA_FIELDS}
     }
   }
-  ${MEDIA_FIELDS}
-`;
-
-const CREATE_MEDIA = gql`
-  mutation CreateMedia($input: MediaCreateInput!) {
-    createMedia(input: $input) {
-      ...MediaFields
-    }
-  }
-  ${MEDIA_FIELDS}
-`;
-
-const UPDATE_MEDIA = gql`
-  mutation UpdateMedia($input: MediaUpdateInput!) {
-    updateMedia(input: $input) {
-      ...MediaFields
-    }
-  }
-  ${MEDIA_FIELDS}
 `;
 
 const DELETE_MEDIA = gql`
@@ -57,97 +66,206 @@ const DELETE_MEDIA = gql`
   }
 `;
 
-export function useMedia(id?: string) {
-  // Query for fetching a single media item
+const UPLOAD_MEDIA = gql`
+  mutation UploadMedia($input: MediaUploadInput!) {
+    uploadMedia(input: $input) {
+      ${MEDIA_FIELDS}
+    }
+  }
+`;
+
+const UPDATE_MEDIA = gql`
+  mutation UpdateMedia($input: MediaUpdateInput!) {
+    updateMedia(input: $input) {
+      ${MEDIA_FIELDS}
+    }
+  }
+`;
+
+const REORDER_MEDIA = gql`
+  mutation ReorderMedia($ownerId: String!, $ownerType: MediaOwnerType!, $orderedIds: [String!]!) {
+    reorderMedia(ownerId: $ownerId, ownerType: $ownerType, orderedIds: $orderedIds) {
+      ${MEDIA_FIELDS}
+    }
+  }
+`;
+
+export function useMedia({
+  skip = 0,
+  take = 25,
+  cursor,
+  filters,
+}: UseMediaProps = {}) {
+  const [uploadProgress, setUploadProgress] = useState<number>(0);
+  const [uploadError, setUploadError] = useState<Error | null>(null);
+  // Fetch media
   const {
-    data: mediaData,
+    data,
     loading: loadingMedia,
     error: mediaError,
-    refetch: refetchMedia
+    refetch,
   } = useQuery(FETCH_MEDIA, {
-    variables: { id },
-    skip: !id,
+    variables: {
+      input: filters || {},
+      skip,
+      take,
+      cursor,
+    },
+    // Skip if no filters provided to avoid unnecessary queries
+    skip: !filters.storeId,
   });
 
-  // Create media mutation
-  const [createMediaMutation, { 
-    loading: creating,
-    error: createError 
-  }] = useMutation(CREATE_MEDIA);
-
-  // Update media mutation
-  const [updateMediaMutation, { 
-    loading: updating,
-    error: updateError 
-  }] = useMutation(UPDATE_MEDIA);
-
-  // Delete media mutation
-  const [deleteMediaMutation, { 
-    loading: deleting,
-    error: deleteError 
-  }] = useMutation(DELETE_MEDIA);
-
-  // Create media wrapper that handles the response
-  const createMedia = useCallback(async (input: MediaCreateInput) => {
-    const response = await createMediaMutation({
-      variables: { input }
-    });
-    
-    const createdMedia = response.data?.createMedia;
-    
-    if (createdMedia?.id) {
-      // Refetch to ensure we have the latest data
-      await refetchMedia({
-        id: createdMedia.id
+  // Refetch when query parameters change
+  useEffect(() => {
+    if (filters) {
+      refetch({
+        input: filters,
+        skip,
+        take,
+        cursor,
       });
     }
-    
-    return createdMedia;
-  }, [createMediaMutation, refetchMedia]);
+  }, [filters, skip, take, cursor, refetch]);
 
-  // Update media wrapper
-  const updateMedia = useCallback(async (input: Omit<MediaUpdateInput, 'id'>) => {
-    if (!id) throw new Error('Media ID is required for updates');
-
-    const { data } = await updateMediaMutation({
-      variables: { 
-        input: { ...input, id } 
-      }
+  // Delete media mutation
+  const [deleteMedia, { loading: deletingMedia, error: deleteError }] =
+    useMutation(DELETE_MEDIA, {
+      refetchQueries: [
+        {
+          query: FETCH_MEDIA,
+          variables: {
+            input: filters || {},
+            skip,
+            take,
+            cursor,
+          },
+        },
+      ],
     });
-    
-    return data?.updateMedia;
-  }, [id, updateMediaMutation]);
 
-  // Delete media wrapper
-  const deleteMedia = useCallback(async () => {
-    if (!id) throw new Error('Media ID is required for deletion');
+  // Upload mutation with progress tracking
+  const [uploadMediaMutation] = useMutation(UPLOAD_MEDIA, {
+    context: {
+      fetchOptions: {
+        onProgress: (progress: ProgressEvent) => {
+          if (progress.lengthComputable) {
+            const percent = Math.round(
+              (progress.loaded / progress.total) * 100
+            );
+            setUploadProgress(percent);
+          }
+        },
+      },
+    },
+    refetchQueries: [
+      {
+        query: FETCH_MEDIA,
+        variables: {
+          input: filters || {},
+          skip,
+          take,
+          cursor,
+        },
+      },
+    ],
+  });
 
-    const { data } = await deleteMediaMutation({
-      variables: { id }
+  // Update media mutation
+  const [updateMedia, { loading: updatingMedia, error: updateError }] =
+    useMutation(UPDATE_MEDIA, {
+      refetchQueries: [
+        {
+          query: FETCH_MEDIA,
+          variables: {
+            input: filters || {},
+            skip,
+            take,
+            cursor,
+          },
+        },
+      ],
     });
-    
-    return data?.deleteMedia;
-  }, [id, deleteMediaMutation]);
 
+  // Reorder media mutation
+  const [reorderMedia, { loading: reorderingMedia, error: reorderError }] =
+    useMutation(REORDER_MEDIA, {
+      refetchQueries: [
+        {
+          query: FETCH_MEDIA,
+          variables: {
+            input: filters || {},
+            skip,
+            take,
+            cursor,
+          },
+        },
+      ],
+    });
+
+  // Combine loading states
+  const loading =
+    loadingMedia || deletingMedia || updatingMedia || reorderingMedia;
+
+  // Combine error states
+  const error = mediaError || deleteError || updateError || reorderError;
   return {
-    // Data
-    media: mediaData?.media as Media | undefined,
-    
-    // Loading states
-    loading: loadingMedia || creating || updating || deleting,
-    creating,
-    updating,
-    deleting,
-    
-    // Errors
-    error: mediaError || createError || updateError || deleteError,
-    
-    // CRUD operations
-    createMedia,
-    updateMedia,
-    deleteMedia,
-    
-    // Refresh data
-    refetch: refetchMedia,
+    media: (data?.media || []) as Media[],
+    loading,
+    error,
+    // Upload state
+    uploadProgress,
+    uploadError,
+    deleteMedia: async (id: string) => {
+      const response = await deleteMedia({
+        variables: { id },
+      });
+      return response.data.deleteMedia;
+    },
+    uploadMedia: async (input: MediaUploadInput) => {
+      try {
+        setUploadProgress(0);
+        setUploadError(null);
+
+        const response = await uploadMediaMutation({
+          variables: {
+            input,
+          },
+          refetchQueries: [
+            {
+              query: FETCH_MEDIA,
+              variables: filters,
+            },
+          ],
+        });
+
+        setUploadProgress(100);
+        return response.data.uploadMedia;
+      } catch (error) {
+        setUploadError(error as Error);
+        throw error;
+      }
+    },
+
+    updateMedia: async (input: {
+      id: string;
+      alt?: string;
+      position?: number;
+    }) => {
+      const response = await updateMedia({
+        variables: { input },
+      });
+      return response.data.updateMedia;
+    },
+    reorderMedia: async (
+      ownerId: string,
+      ownerType: MediaOwnerType,
+      orderedIds: string[]
+    ) => {
+      const response = await reorderMedia({
+        variables: { ownerId, ownerType, orderedIds },
+      });
+      return response.data.reorderMedia;
+    },
+    refetch,
   };
 }

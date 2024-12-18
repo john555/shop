@@ -326,25 +326,34 @@ enum Language {
 """Media model"""
 type Media {
   alt: String
+  archivedAt: DateTime
+  blurHash: String
   category: Category
+  collection: Collection
   createdAt: DateTime!
   duration: Int
   fileName: String
   fileSize: Int
   height: Int
   id: ID!
+  isArchived: Boolean!
   mimeType: String
   modelFormat: String
   ownerId: String!
   ownerType: MediaOwnerType!
+  placeholder: String
   position: Int!
   product: Product
   productVariant: ProductVariant
+  purpose: MediaPurpose!
   store: Store
+  storeId: String
+  storeProfile: Store
   thumbnail: String
   type: MediaType!
   updatedAt: DateTime!
   url: String!
+  usedIn: [MediaUsage!]!
   userProfile: User
   width: Int
 }
@@ -360,8 +369,9 @@ input MediaCreateInput {
   ownerId: String!
   ownerType: MediaOwnerType!
   position: Int!
+  purpose: MediaPurpose
+  storeId: String!
   thumbnail: String
-  type: MediaType!
   url: String!
   width: Int
 }
@@ -373,9 +383,28 @@ enum MediaOwnerType {
   PRODUCT
   PRODUCT_VARIANT
   PROPERTY
-  STORE
+  STORE_PROFILE
   USER_PROFILE
   VEHICLE
+}
+
+"""Purpose of the media"""
+enum MediaPurpose {
+  AVATAR
+  BANNER
+  DOCUMENT
+  GALLERY
+  LOGO
+  OTHER
+}
+
+input MediaSearchInput {
+  id: String
+  ownerId: String
+  ownerType: MediaOwnerType
+  search: String
+  storeId: String
+  type: MediaType
 }
 
 """Type of media (PHOTO, VIDEO, MODEL_3D)"""
@@ -399,6 +428,22 @@ input MediaUpdateInput {
   type: MediaType
   url: String
   width: Int
+}
+
+input MediaUploadInput {
+  alt: String
+  file: Upload!
+  ownerId: String!
+  ownerType: MediaOwnerType!
+  path: String
+  purpose: MediaPurpose
+  storeId: String!
+}
+
+type MediaUsage {
+  ownerId: String!
+  ownerTitle: String!
+  ownerType: MediaOwnerType!
 }
 
 type Mutation {
@@ -445,6 +490,7 @@ type Mutation {
   updateStore(input: StoreUpdateInput!): Store!
   updateTag(input: TagUpdateInput!): Tag!
   updateUser(input: UserUpdateInput!): User!
+  uploadMedia(input: MediaUploadInput!): Media!
 }
 
 """Order model"""
@@ -778,8 +824,7 @@ type Query {
 
   """Get current user"""
   me: User!
-  media(id: ID!): Media
-  mediaByOwner(cursor: String, ownerId: String!, ownerType: MediaOwnerType!, skip: Int! = 0, sortOrder: SortOrder, take: Int! = 25): [Media!]!
+  media(cursor: String, input: MediaSearchInput!, skip: Int! = 0, sortOrder: SortOrder, take: Int! = 25): [Media!]!
   myStoreOrderStats(storeId: String!): OrderStats!
   myStoreOrders(cursor: String, filters: OrderFiltersInput, skip: Int! = 0, sortOrder: SortOrder, storeId: String!, take: Int! = 25): [Order!]!
   myStoreProducts(cursor: String, filters: ProductFiltersInput, skip: Int! = 0, sortOrder: SortOrder, storeId: String!, take: Int! = 25): [Product!]!
@@ -1021,6 +1066,9 @@ enum UnitSystem {
   IMPERIAL
   METRIC
 }
+
+"""The `Upload` scalar type represents a file upload."""
+scalar Upload
 
 """user"""
 type User {

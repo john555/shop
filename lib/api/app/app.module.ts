@@ -19,9 +19,14 @@ import { AddressOnOwnerModule } from '../address-on-owner/address-on-owner.modul
 import { OverviewModule } from '../overview/overview.module';
 import { OrderModule } from '../order/order.module';
 import { HealthModule } from '../health/health.module';
+import { ConfigModule } from '@nestjs/config';
 
 @Module({
   imports: [
+    ConfigModule.forRoot({
+      isGlobal: true,
+      expandVariables: true,
+    }),
     GraphQLModule.forRoot<ApolloDriverConfig>({
       driver: ApolloDriver,
       context: ({ req, res }: { req: Request; res: Response }) => ({

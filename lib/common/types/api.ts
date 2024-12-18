@@ -16,6 +16,8 @@ export type Scalars = {
   Float: { input: number; output: number; }
   /** A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date-time format. */
   DateTime: { input: any; output: any; }
+  /** The `Upload` scalar type represents a file upload. */
+  Upload: { input: any; output: any; }
 };
 
 /** Type of activity in the system */
@@ -316,25 +318,34 @@ export enum Language {
 export type Media = {
   __typename?: 'Media';
   alt?: Maybe<Scalars['String']['output']>;
+  archivedAt?: Maybe<Scalars['DateTime']['output']>;
+  blurHash?: Maybe<Scalars['String']['output']>;
   category?: Maybe<Category>;
+  collection?: Maybe<Collection>;
   createdAt: Scalars['DateTime']['output'];
   duration?: Maybe<Scalars['Int']['output']>;
   fileName?: Maybe<Scalars['String']['output']>;
   fileSize?: Maybe<Scalars['Int']['output']>;
   height?: Maybe<Scalars['Int']['output']>;
   id: Scalars['ID']['output'];
+  isArchived: Scalars['Boolean']['output'];
   mimeType?: Maybe<Scalars['String']['output']>;
   modelFormat?: Maybe<Scalars['String']['output']>;
   ownerId: Scalars['String']['output'];
   ownerType: MediaOwnerType;
+  placeholder?: Maybe<Scalars['String']['output']>;
   position: Scalars['Int']['output'];
   product?: Maybe<Product>;
   productVariant?: Maybe<ProductVariant>;
+  purpose: MediaPurpose;
   store?: Maybe<Store>;
+  storeId?: Maybe<Scalars['String']['output']>;
+  storeProfile?: Maybe<Store>;
   thumbnail?: Maybe<Scalars['String']['output']>;
   type: MediaType;
   updatedAt: Scalars['DateTime']['output'];
   url: Scalars['String']['output'];
+  usedIn: Array<MediaUsage>;
   userProfile?: Maybe<User>;
   width?: Maybe<Scalars['Int']['output']>;
 };
@@ -350,8 +361,9 @@ export type MediaCreateInput = {
   ownerId: Scalars['String']['input'];
   ownerType: MediaOwnerType;
   position: Scalars['Int']['input'];
+  purpose?: InputMaybe<MediaPurpose>;
+  storeId: Scalars['String']['input'];
   thumbnail?: InputMaybe<Scalars['String']['input']>;
-  type: MediaType;
   url: Scalars['String']['input'];
   width?: InputMaybe<Scalars['Int']['input']>;
 };
@@ -363,10 +375,29 @@ export enum MediaOwnerType {
   Product = 'PRODUCT',
   ProductVariant = 'PRODUCT_VARIANT',
   Property = 'PROPERTY',
-  Store = 'STORE',
+  StoreProfile = 'STORE_PROFILE',
   UserProfile = 'USER_PROFILE',
   Vehicle = 'VEHICLE'
 }
+
+/** Purpose of the media */
+export enum MediaPurpose {
+  Avatar = 'AVATAR',
+  Banner = 'BANNER',
+  Document = 'DOCUMENT',
+  Gallery = 'GALLERY',
+  Logo = 'LOGO',
+  Other = 'OTHER'
+}
+
+export type MediaSearchInput = {
+  id?: InputMaybe<Scalars['String']['input']>;
+  ownerId?: InputMaybe<Scalars['String']['input']>;
+  ownerType?: InputMaybe<MediaOwnerType>;
+  search?: InputMaybe<Scalars['String']['input']>;
+  storeId?: InputMaybe<Scalars['String']['input']>;
+  type?: InputMaybe<MediaType>;
+};
 
 /** Type of media (PHOTO, VIDEO, MODEL_3D) */
 export enum MediaType {
@@ -389,6 +420,23 @@ export type MediaUpdateInput = {
   type?: InputMaybe<MediaType>;
   url?: InputMaybe<Scalars['String']['input']>;
   width?: InputMaybe<Scalars['Int']['input']>;
+};
+
+export type MediaUploadInput = {
+  alt?: InputMaybe<Scalars['String']['input']>;
+  file: Scalars['Upload']['input'];
+  ownerId: Scalars['String']['input'];
+  ownerType: MediaOwnerType;
+  path?: InputMaybe<Scalars['String']['input']>;
+  purpose?: InputMaybe<MediaPurpose>;
+  storeId: Scalars['String']['input'];
+};
+
+export type MediaUsage = {
+  __typename?: 'MediaUsage';
+  ownerId: Scalars['String']['output'];
+  ownerTitle: Scalars['String']['output'];
+  ownerType: MediaOwnerType;
 };
 
 export type Mutation = {
@@ -432,6 +480,7 @@ export type Mutation = {
   updateStore: Store;
   updateTag: Tag;
   updateUser: User;
+  uploadMedia: Media;
 };
 
 
@@ -601,6 +650,11 @@ export type MutationUpdateTagArgs = {
 
 export type MutationUpdateUserArgs = {
   input: UserUpdateInput;
+};
+
+
+export type MutationUploadMediaArgs = {
+  input: MediaUploadInput;
 };
 
 /** Order model */
@@ -921,8 +975,7 @@ export type Query = {
   customer: Customer;
   /** Get current user */
   me: User;
-  media?: Maybe<Media>;
-  mediaByOwner: Array<Media>;
+  media: Array<Media>;
   myStoreOrderStats: OrderStats;
   myStoreOrders: Array<Order>;
   myStoreProducts: Array<Product>;
@@ -967,14 +1020,8 @@ export type QueryCustomerArgs = {
 
 
 export type QueryMediaArgs = {
-  id: Scalars['ID']['input'];
-};
-
-
-export type QueryMediaByOwnerArgs = {
   cursor?: InputMaybe<Scalars['String']['input']>;
-  ownerId: Scalars['String']['input'];
-  ownerType: MediaOwnerType;
+  input: MediaSearchInput;
   skip?: Scalars['Int']['input'];
   sortOrder?: InputMaybe<SortOrder>;
   take?: Scalars['Int']['input'];
@@ -1459,8 +1506,12 @@ export type ResolversTypes = {
   Media: ResolverTypeWrapper<Media>;
   MediaCreateInput: MediaCreateInput;
   MediaOwnerType: MediaOwnerType;
+  MediaPurpose: MediaPurpose;
+  MediaSearchInput: MediaSearchInput;
   MediaType: MediaType;
   MediaUpdateInput: MediaUpdateInput;
+  MediaUploadInput: MediaUploadInput;
+  MediaUsage: ResolverTypeWrapper<MediaUsage>;
   Mutation: ResolverTypeWrapper<{}>;
   Order: ResolverTypeWrapper<Order>;
   OrderCounts: ResolverTypeWrapper<OrderCounts>;
@@ -1503,6 +1554,7 @@ export type ResolversTypes = {
   TagUpdateInput: TagUpdateInput;
   Theme: Theme;
   UnitSystem: UnitSystem;
+  Upload: ResolverTypeWrapper<Scalars['Upload']['output']>;
   User: ResolverTypeWrapper<User>;
   UserPasswordUpdateInput: UserPasswordUpdateInput;
   UserUpdateInput: UserUpdateInput;
@@ -1542,7 +1594,10 @@ export type ResolversParentTypes = {
   Int: Scalars['Int']['output'];
   Media: Media;
   MediaCreateInput: MediaCreateInput;
+  MediaSearchInput: MediaSearchInput;
   MediaUpdateInput: MediaUpdateInput;
+  MediaUploadInput: MediaUploadInput;
+  MediaUsage: MediaUsage;
   Mutation: {};
   Order: Order;
   OrderCounts: OrderCounts;
@@ -1575,6 +1630,7 @@ export type ResolversParentTypes = {
   Tag: Tag;
   TagCreateInput: TagCreateInput;
   TagUpdateInput: TagUpdateInput;
+  Upload: Scalars['Upload']['output'];
   User: User;
   UserPasswordUpdateInput: UserPasswordUpdateInput;
   UserUpdateInput: UserUpdateInput;
@@ -1681,27 +1737,43 @@ export interface DateTimeScalarConfig extends GraphQLScalarTypeConfig<ResolversT
 
 export type MediaResolvers<ContextType = any, ParentType extends ResolversParentTypes['Media'] = ResolversParentTypes['Media']> = {
   alt?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  archivedAt?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  blurHash?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   category?: Resolver<Maybe<ResolversTypes['Category']>, ParentType, ContextType>;
+  collection?: Resolver<Maybe<ResolversTypes['Collection']>, ParentType, ContextType>;
   createdAt?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   duration?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   fileName?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   fileSize?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   height?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  isArchived?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   mimeType?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   modelFormat?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   ownerId?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   ownerType?: Resolver<ResolversTypes['MediaOwnerType'], ParentType, ContextType>;
+  placeholder?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   position?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   product?: Resolver<Maybe<ResolversTypes['Product']>, ParentType, ContextType>;
   productVariant?: Resolver<Maybe<ResolversTypes['ProductVariant']>, ParentType, ContextType>;
+  purpose?: Resolver<ResolversTypes['MediaPurpose'], ParentType, ContextType>;
   store?: Resolver<Maybe<ResolversTypes['Store']>, ParentType, ContextType>;
+  storeId?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  storeProfile?: Resolver<Maybe<ResolversTypes['Store']>, ParentType, ContextType>;
   thumbnail?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   type?: Resolver<ResolversTypes['MediaType'], ParentType, ContextType>;
   updatedAt?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   url?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  usedIn?: Resolver<Array<ResolversTypes['MediaUsage']>, ParentType, ContextType>;
   userProfile?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType>;
   width?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
+export type MediaUsageResolvers<ContextType = any, ParentType extends ResolversParentTypes['MediaUsage'] = ResolversParentTypes['MediaUsage']> = {
+  ownerId?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  ownerTitle?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  ownerType?: Resolver<ResolversTypes['MediaOwnerType'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
@@ -1741,6 +1813,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   updateStore?: Resolver<ResolversTypes['Store'], ParentType, ContextType, RequireFields<MutationUpdateStoreArgs, 'input'>>;
   updateTag?: Resolver<ResolversTypes['Tag'], ParentType, ContextType, RequireFields<MutationUpdateTagArgs, 'input'>>;
   updateUser?: Resolver<ResolversTypes['User'], ParentType, ContextType, RequireFields<MutationUpdateUserArgs, 'input'>>;
+  uploadMedia?: Resolver<ResolversTypes['Media'], ParentType, ContextType, RequireFields<MutationUploadMediaArgs, 'input'>>;
 };
 
 export type OrderResolvers<ContextType = any, ParentType extends ResolversParentTypes['Order'] = ResolversParentTypes['Order']> = {
@@ -1883,8 +1956,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   collection?: Resolver<ResolversTypes['Collection'], ParentType, ContextType, RequireFields<QueryCollectionArgs, 'id'>>;
   customer?: Resolver<ResolversTypes['Customer'], ParentType, ContextType, RequireFields<QueryCustomerArgs, 'id'>>;
   me?: Resolver<ResolversTypes['User'], ParentType, ContextType>;
-  media?: Resolver<Maybe<ResolversTypes['Media']>, ParentType, ContextType, RequireFields<QueryMediaArgs, 'id'>>;
-  mediaByOwner?: Resolver<Array<ResolversTypes['Media']>, ParentType, ContextType, RequireFields<QueryMediaByOwnerArgs, 'ownerId' | 'ownerType' | 'skip' | 'take'>>;
+  media?: Resolver<Array<ResolversTypes['Media']>, ParentType, ContextType, RequireFields<QueryMediaArgs, 'input' | 'skip' | 'take'>>;
   myStoreOrderStats?: Resolver<ResolversTypes['OrderStats'], ParentType, ContextType, RequireFields<QueryMyStoreOrderStatsArgs, 'storeId'>>;
   myStoreOrders?: Resolver<Array<ResolversTypes['Order']>, ParentType, ContextType, RequireFields<QueryMyStoreOrdersArgs, 'skip' | 'storeId' | 'take'>>;
   myStoreProducts?: Resolver<Array<ResolversTypes['Product']>, ParentType, ContextType, RequireFields<QueryMyStoreProductsArgs, 'skip' | 'storeId' | 'take'>>;
@@ -1984,6 +2056,10 @@ export type TagResolvers<ContextType = any, ParentType extends ResolversParentTy
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
+export interface UploadScalarConfig extends GraphQLScalarTypeConfig<ResolversTypes['Upload'], any> {
+  name: 'Upload';
+}
+
 export type UserResolvers<ContextType = any, ParentType extends ResolversParentTypes['User'] = ResolversParentTypes['User']> = {
   createdAt?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   email?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -2011,6 +2087,7 @@ export type Resolvers<ContextType = any> = {
   Customer?: CustomerResolvers<ContextType>;
   DateTime?: GraphQLScalarType;
   Media?: MediaResolvers<ContextType>;
+  MediaUsage?: MediaUsageResolvers<ContextType>;
   Mutation?: MutationResolvers<ContextType>;
   Order?: OrderResolvers<ContextType>;
   OrderCounts?: OrderCountsResolvers<ContextType>;
@@ -2027,6 +2104,7 @@ export type Resolvers<ContextType = any> = {
   Store?: StoreResolvers<ContextType>;
   StoreOverview?: StoreOverviewResolvers<ContextType>;
   Tag?: TagResolvers<ContextType>;
+  Upload?: GraphQLScalarType;
   User?: UserResolvers<ContextType>;
 };
 

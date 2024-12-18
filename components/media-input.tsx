@@ -4,6 +4,7 @@ import { useState, useCallback, useMemo } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { DndProvider, useDrag, useDrop } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
+import Image from 'next/image';
 import {
   Dialog,
   DialogContent,
@@ -39,96 +40,27 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
+import { useMedia } from '@/lib/admin/hooks/media';
+import {
+  Media,
+  MediaOwnerType,
+  MediaPurpose,
+  MediaType,
+} from '@/lib/common/types/api';
 
-type MediaItem = {
-  id: string;
-  type: 'image' | 'video' | '3d';
-  url: string;
-  thumbnailUrl: string;
-  name: string;
-  fileType: string;
-  fileSize: number;
-  usedIn: string[];
-  product: string;
+type MediaInputProps = {
+  ownerType: MediaOwnerType;
+  ownerId: string;
+  storeId: string;
 };
 
-const existingMedia: MediaItem[] = [
-  {
-    id: '1',
-    type: 'video',
-    url: 'https://assets.mixkit.co/videos/preview/mixkit-tree-with-yellow-flowers-1173-large.mp4',
-    thumbnailUrl:
-      'https://assets.mixkit.co/videos/preview/mixkit-tree-with-yellow-flowers-1173-large.mp4',
-    name: 'bun33s',
-    fileType: 'MP4',
-    fileSize: 2500000,
-    usedIn: ['Homepage', 'Product Page'],
-    product: 'Nature Collection',
-  },
-  {
-    id: '2',
-    type: 'image',
-    url: 'https://images.unsplash.com/photo-1682687220198-88e9bdea9931',
-    thumbnailUrl:
-      'https://images.unsplash.com/photo-1682687220198-88e9bdea9931',
-    name: 'Frame4675_1',
-    fileType: 'JPG',
-    fileSize: 1200000,
-    usedIn: ['Gallery'],
-    product: 'Art Prints',
-  },
-  {
-    id: '3',
-    type: 'video',
-    url: 'https://assets.mixkit.co/videos/preview/mixkit-spinning-around-the-earth-29351-large.mp4',
-    thumbnailUrl:
-      'https://assets.mixkit.co/videos/preview/mixkit-spinning-around-the-earth-29351-large.mp4',
-    name: '3209828-uhd_384',
-    fileType: 'MP4',
-    fileSize: 5000000,
-    usedIn: ['About Us'],
-    product: 'Space Collection',
-  },
-  {
-    id: '4',
-    type: 'image',
-    url: 'https://images.unsplash.com/photo-1699116550661-bea051952f96',
-    thumbnailUrl:
-      'https://images.unsplash.com/photo-1699116550661-bea051952f96',
-    name: 'hima-cement-multi',
-    fileType: 'JPG',
-    fileSize: 800000,
-    usedIn: ['Product Page'],
-    product: 'Building Materials',
-  },
-  {
-    id: '5',
-    type: '3d',
-    url: 'https://market-assets.fra1.cdn.digitaloceanspaces.com/market-assets/models/rubber-duck/model.gltf',
-    thumbnailUrl: '/placeholder.svg?height=100&width=100',
-    name: 'sample-normal-wa',
-    fileType: 'GLTF',
-    fileSize: 3000000,
-    usedIn: ['3D Viewer'],
-    product: 'Toys',
-  },
-  {
-    id: '6',
-    type: 'image',
-    url: 'https://images.unsplash.com/photo-1699100329878-7f28bb780787',
-    thumbnailUrl:
-      'https://images.unsplash.com/photo-1699100329878-7f28bb780787',
-    name: 'wax-special_d3ed2',
-    fileType: 'PNG',
-    fileSize: 1500000,
-    usedIn: ['Product Page', 'Gallery'],
-    product: 'Cosmetics',
-  },
-];
-
-export default function MediaInput() {
-  const [media, setMedia] = useState<MediaItem[]>(existingMedia);
-  const [selectedMedia, setSelectedMedia] = useState<MediaItem[]>([]);
+export default function MediaInput(props: MediaInputProps) {
+  const { media, uploadMedia } = useMedia({
+    filters: {
+      storeId: props.storeId,
+    },
+  });
+  const [selectedMedia, setSelectedMedia] = useState<Media[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedFiles, setSelectedFiles] = useState<Set<string>>(new Set());
   const [sortBy, setSortBy] = useState<'name' | 'date' | 'size'>('name');
@@ -137,31 +69,38 @@ export default function MediaInput() {
     fileType: '',
     fileSize: '',
     usedIn: '',
-    product: '',
+    productId: '',
   });
   const [isAddFromUrlOpen, setIsAddFromUrlOpen] = useState(false);
   const [urlInput, setUrlInput] = useState('');
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
-    const newMedia = acceptedFiles.map((file) => ({
-      id: Math.random().toString(36).substr(2, 9),
-      type: file.type.startsWith('image/')
-        ? 'image'
-        : file.type.startsWith('video/')
-        ? 'video'
-        : ('3d' as 'image' | 'video' | '3d'),
-      url: URL.createObjectURL(file),
-      thumbnailUrl: file.type.startsWith('image/')
-        ? URL.createObjectURL(file)
-        : '/placeholder.svg?height=100&width=100',
-      name: file.name.split('.')[0],
-      fileType: file.name.split('.').pop()?.toUpperCase() || '',
-      fileSize: file.size,
-      usedIn: [],
-      product: '',
-    }));
-    setMedia((prevMedia) => [...prevMedia, ...newMedia]);
+    console.log(acceptedFiles);
+    // const newMedia = acceptedFiles.map((file) => ({
+    //   id: Math.random().toString(36).substr(2, 9),
+    //   type: file.type.startsWith('image/')
+    //     ? 'image'
+    //     : file.type.startsWith('video/')
+    //     ? 'video'
+    //     : ('3d' as 'image' | 'video' | '3d'),
+    //   url: URL.createObjectURL(file),
+    //   thumbnailUrl: file.type.startsWith('image/')
+    //     ? URL.createObjectURL(file)
+    //     : '/placeholder.svg?height=100&width=100',
+    //   name: file.name.split('.')[0],
+    //   fileType: file.name.split('.').pop()?.toUpperCase() || '',
+    //   fileSize: file.size,
+    //   usedIn: [],
+    //   product: '',
+    // }));
+    uploadMedia({
+      file: acceptedFiles[0],
+      ownerType: props.ownerType,
+      ownerId: props.ownerId,
+      storeId: props.storeId,
+      purpose: MediaPurpose.Gallery,
+    });
   }, []);
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({ onDrop });
@@ -178,54 +117,33 @@ export default function MediaInput() {
     });
   };
 
-  const filteredAndSortedMedia = useMemo(() => {
-    return media
-      .filter(
-        (item) =>
-          item.name.toLowerCase().includes(searchQuery.toLowerCase()) &&
-          (filters.fileType ? item.fileType === filters.fileType : true) &&
-          (filters.fileSize
-            ? filters.fileSize === 'small'
-              ? item.fileSize < 1000000
-              : filters.fileSize === 'medium'
-              ? item.fileSize >= 1000000 && item.fileSize < 5000000
-              : item.fileSize >= 5000000
-            : true) &&
-          (filters.usedIn ? item.usedIn.includes(filters.usedIn) : true) &&
-          (filters.product ? item.product === filters.product : true)
-      )
-      .sort((a, b) => {
-        if (sortBy === 'name') return a.name.localeCompare(b.name);
-        if (sortBy === 'size') return a.fileSize - b.fileSize;
-        return 0; // For 'date', we would need to add a date field to our MediaItem type
-      });
-  }, [media, searchQuery, sortBy, filters]);
+  // const filteredAndSortedMedia = useMemo(() => {
+  //   return media;
+  //   return media
+  //     .filter(
+  //       (item) =>
+  //         item.fileName.toLowerCase().includes(searchQuery.toLowerCase()) &&
+  //         (filters.fileType ? item.type === filters.fileType : true) &&
+  //         (filters.fileSize
+  //           ? filters.fileSize === 'small'
+  //             ? item.fileSize < 1000000
+  //             : filters.fileSize === 'medium'
+  //             ? item.fileSize >= 1000000 && item.fileSize < 5000000
+  //             : item.fileSize >= 5000000
+  //           : true) &&
+  //         (filters.usedIn ? item.usedIn.includes(filters.usedIn) : true) &&
+  //         (filters.productId ? item.product.id === filters.productId : true)
+  //     )
+  //     .sort((a, b) => {
+  //       if (sortBy === 'name') return a.fileName.localeCompare(b.fileName);
+  //       if (sortBy === 'size') return a.fileSize - b.fileSize;
+  //       return 0; // For 'date', we would need to add a date field to our MediaItem type
+  //     });
+  // }, [media, searchQuery, sortBy, filters]);
 
-  const handleAddFromUrl = () => {
-    if (urlInput) {
-      const newItem: MediaItem = {
-        id: Math.random().toString(36).substr(2, 9),
-        type: urlInput.match(/\.(jpeg|jpg|gif|png)$/)
-          ? 'image'
-          : urlInput.match(/\.(mp4|webm)$/)
-          ? 'video'
-          : '3d',
-        url: urlInput,
-        thumbnailUrl: urlInput.match(/\.(jpeg|jpg|gif|png)$/)
-          ? urlInput
-          : '/placeholder.svg?height=100&width=100',
-        name: urlInput.split('/').pop()?.split('.')[0] || 'Unnamed',
-        fileType: urlInput.split('.').pop()?.toUpperCase() || '',
-        fileSize: 0, // We can't determine the file size from a URL
-        usedIn: [],
-        product: '',
-      };
-      setMedia((prevMedia) => [...prevMedia, newItem]);
-      setSelectedFiles((prev) => new Set(prev).add(newItem.id));
-      setUrlInput('');
-      setIsAddFromUrlOpen(false);
-    }
-  };
+  const filteredAndSortedMedia = media;
+
+  const handleAddFromUrl = () => {};
 
   const handleDone = () => {
     const newSelectedMedia = media.filter((item) => selectedFiles.has(item.id));
@@ -245,6 +163,8 @@ export default function MediaInput() {
   const removeMedia = (id: string) => {
     setSelectedMedia((prevMedia) => prevMedia.filter((item) => item.id !== id));
   };
+
+  console.log({ filteredAndSortedMedia });
 
   return (
     <DndProvider backend={HTML5Backend}>
@@ -451,7 +371,7 @@ export default function MediaInput() {
                       onClick={() =>
                         setFilters((prev) => ({
                           ...prev,
-                          product: 'Nature Collection',
+                          productId: 'Nature Collection',
                         }))
                       }
                     >
@@ -461,7 +381,7 @@ export default function MediaInput() {
                       onClick={() =>
                         setFilters((prev) => ({
                           ...prev,
-                          product: 'Art Prints',
+                          productId: 'Art Prints',
                         }))
                       }
                     >
@@ -471,7 +391,7 @@ export default function MediaInput() {
                       onClick={() =>
                         setFilters((prev) => ({
                           ...prev,
-                          product: 'Space Collection',
+                          productId: 'Space Collection',
                         }))
                       }
                     >
@@ -559,7 +479,7 @@ export default function MediaInput() {
                   >
                     {filteredAndSortedMedia &&
                     filteredAndSortedMedia.length > 0 ? (
-                      filteredAndSortedMedia.map((item: MediaItem) => (
+                      filteredAndSortedMedia.map((item: Media) => (
                         <div
                           key={item.id}
                           className={cn(
@@ -578,17 +498,21 @@ export default function MediaInput() {
                                 : 'relative w-10 h-10 rounded-md overflow-hidden border bg-muted flex-shrink-0'
                             }
                           >
-                            <img
-                              src={item.thumbnailUrl}
-                              alt={item.name}
+                            <Image
+                              placeholder="blur"
+                              blurDataURL={item.placeholder}
+                              src={item.url}
+                              alt={item.fileName}
                               className="w-full h-full object-cover"
+                              width={104}
+                              height={104}
                             />
-                            {item.type !== 'image' && (
+                            {item.type !== MediaType.Photo && (
                               <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50">
-                                {item.type === 'video' && (
+                                {item.type === MediaType.Video && (
                                   <Film className="h-6 w-6 text-white" />
                                 )}
-                                {item.type === '3d' && (
+                                {item.type === MediaType.Model_3D && (
                                   <Cube className="h-6 w-6 text-white" />
                                 )}
                               </div>
@@ -607,10 +531,10 @@ export default function MediaInput() {
                             }
                           >
                             <p className="font-medium truncate text-sm">
-                              {item.name}
+                              {item.fileName}
                             </p>
                             <div className="flex items-center text-xs text-muted-foreground">
-                              <span className="truncate">{item.fileType}</span>
+                              <span className="truncate">{item.type}</span>
                               <span className="mx-1">•</span>
                               <span>
                                 {(item.fileSize / 1000000).toFixed(2)} MB
@@ -619,11 +543,14 @@ export default function MediaInput() {
                             {viewMode === 'list' && (
                               <div className="flex items-center mt-1 text-xs text-muted-foreground">
                                 <span className="truncate">
-                                  Used in: {item.usedIn.join(', ')}
+                                  Used in:{' '}
+                                  {item.usedIn
+                                    .map((u) => u.ownerTitle)
+                                    .join(', ')}
                                 </span>
                                 <span className="mx-1">•</span>
                                 <span className="truncate">
-                                  Product: {item.product}
+                                  Product: {item.product.title}
                                 </span>
                               </div>
                             )}
@@ -727,7 +654,7 @@ function MediaItem({
       )}
     >
       <img
-        src={item.thumbnailUrl}
+        src={item.url}
         alt={item.name}
         className="w-full h-full object-cover rounded-lg"
       />
