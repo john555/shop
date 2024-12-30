@@ -6,7 +6,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { Upload, X, ArrowLeft, Plus } from 'lucide-react';
 import Image from 'next/image';
-import slugify from 'slugify';
+import { slugify } from '@/common/slugify';
 import Link from 'next/link';
 
 import { Button } from '@/components/ui/button';
@@ -142,7 +142,7 @@ export function CollectionForm() {
       const createdCollection = await createCollection({
         ...data,
         name: data.name,
-        slug: slugify(data.name, { lower: true, strict: true }),
+        slug: slugify(data.name),
         storeId: store.id,
       });
 

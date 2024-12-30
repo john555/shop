@@ -28,6 +28,7 @@ import { StoreCreateInput, StoreCurrency, StoreType } from '@/types/api';
 import { useCurrentUser } from '@/common/hooks/auth';
 import { useCreateStore } from '@/admin/hooks/store';
 import { StoreAlreadyExists } from './(components)/store-already-exists';
+import { slugify } from '@/common/slugify';
 
 type CurrencyOption = { code: StoreCurrency; description: string };
 
@@ -233,7 +234,7 @@ const StoreHandleStep: React.FC<{ stepIndex: number }> = ({ stepIndex }) => {
     currentStep,
   } = useStoreSetup();
   const [storeHandle, setStoreHandle] = React.useState(
-    storeData.slug || storeData.name.toLowerCase().replace(/\s+/g, '-')
+    storeData.slug || slugify(storeData.name)
   );
   const [animationComplete, setAnimationComplete] = React.useState(false);
 
@@ -248,7 +249,7 @@ const StoreHandleStep: React.FC<{ stepIndex: number }> = ({ stepIndex }) => {
   }, [storeHandle, updateStoreData, storeData.slug]);
 
   const handleStoreHandleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setStoreHandle(e.target.value.toLowerCase().replace(/\s+/g, '-'));
+    setStoreHandle(slugify(e.target.value));
   };
 
   const handleNext = () => {

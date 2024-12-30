@@ -1,21 +1,11 @@
 import { Injectable } from '@nestjs/common';
-import slugify from 'slugify';
+import { slugify } from '@/common/slugify';
 import { randomBytes } from 'crypto';
 
 @Injectable()
 export class SlugService {
-  constructor() {
-    // Configure slugify defaults
-    slugify.extend({ '+': 'plus' }); // Handle special characters
-  }
-
   createSlug(text: string): string {
-    return slugify(text, {
-      lower: true,           // Convert to lowercase
-      strict: true,          // Strip special characters
-      trim: true,            // Trim leading/trailing spaces
-      locale: 'en',          // Use English locale
-    });
+    return slugify(text);
   }
 
   private generateRandomString(length: number = 6): string {
