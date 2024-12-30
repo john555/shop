@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useCallback, useEffect, useMemo } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { DndProvider, useDrag, useDrop } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
@@ -49,13 +49,85 @@ import {
 } from '@/lib/common/types/api';
 
 type MediaInputProps = {
-  ownerType: MediaOwnerType;
-  ownerId: string;
+  ownerType?: MediaOwnerType;
+  ownerId?: string;
   storeId: string;
+  selectedMediaIds: string[];
+  onChange: (mediaIds: string[]) => void;
 };
 
+function MediaItem({
+  item,
+  index,
+  moveMedia,
+  removeMedia,
+  isFeatured = false,
+}: {
+  item: Media;
+  index: number;
+  moveMedia: (dragIndex: number, hoverIndex: number) => void;
+  removeMedia: (id: string) => void;
+  isFeatured?: boolean;
+}) {
+  const [{ isDragging }, drag] = useDrag({
+    type: 'MEDIA_ITEM',
+    item: { id: item.id, index },
+    collect: (monitor) => ({
+      isDragging: monitor.isDragging(),
+    }),
+  });
+
+  const [, drop] = useDrop({
+    accept: 'MEDIA_ITEM',
+    drop: (draggedItem: { id: string; index: number }) => {
+      if (draggedItem.index !== index) {
+        moveMedia(draggedItem.index, index);
+      }
+    },
+  });
+
+  const height = isFeatured ? 200 : 100;
+  const width = isFeatured ? 200 : 100;
+
+  return (
+    <div
+      // @ts-expect-error
+      ref={(node) => drag(drop(node))}
+      className={cn(
+        'group relative rounded-lg overflow-hidden transition-all duration-300 ease-in-out hover:shadow-md cursor-pointer',
+        isFeatured ? 'col-span-2 row-span-2' : '',
+        isDragging ? 'opacity-50' : 'opacity-100'
+      )}
+      style={{ height }}
+    >
+      <Image
+        placeholder="empty"
+        blurDataURL={item.placeholder}
+        src={item.url}
+        alt={item.alt || item.fileName}
+        height={height}
+        width={width}
+        className="w-full h-full object-cover rounded-lg"
+      />
+
+      <Button
+        type="button"
+        variant="ghost"
+        size="icon"
+        className="absolute top-2 right-2 p-1 bg-black/50 hover:bg-black/70 opacity-0 group-hover:opacity-100 transition-all duration-200 rounded-full"
+        onClick={(e) => {
+          e.stopPropagation();
+          removeMedia(item.id);
+        }}
+      >
+        <X className="h-5 w-5 text-white" />
+      </Button>
+    </div>
+  );
+}
+
 export default function MediaInput(props: MediaInputProps) {
-  const { media, uploadMedia } = useMedia({
+  const { media, createMedia, updateMedia, reorderMedia } = useMedia({
     filters: {
       storeId: props.storeId,
     },
@@ -75,33 +147,25 @@ export default function MediaInput(props: MediaInputProps) {
   const [urlInput, setUrlInput] = useState('');
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
-  const onDrop = useCallback((acceptedFiles: File[]) => {
-    console.log(acceptedFiles);
-    // const newMedia = acceptedFiles.map((file) => ({
-    //   id: Math.random().toString(36).substr(2, 9),
-    //   type: file.type.startsWith('image/')
-    //     ? 'image'
-    //     : file.type.startsWith('video/')
-    //     ? 'video'
-    //     : ('3d' as 'image' | 'video' | '3d'),
-    //   url: URL.createObjectURL(file),
-    //   thumbnailUrl: file.type.startsWith('image/')
-    //     ? URL.createObjectURL(file)
-    //     : '/placeholder.svg?height=100&width=100',
-    //   name: file.name.split('.')[0],
-    //   fileType: file.name.split('.').pop()?.toUpperCase() || '',
-    //   fileSize: file.size,
-    //   usedIn: [],
-    //   product: '',
-    // }));
-    uploadMedia({
+  useEffect(() => {
+    // Preserve the sort order of selected media
+    const newSelectedMedia = props.selectedMediaIds
+      .map((id) => media.find((item) => item.id === id))
+      .filter(Boolean) as Media[];
+
+    setSelectedFiles(new Set(props.selectedMediaIds));
+    setSelectedMedia(newSelectedMedia);
+  }, [props.selectedMediaIds, media]);
+
+  const onDrop = async (acceptedFiles: File[]) => {
+    const media = await createMedia({
       file: acceptedFiles[0],
-      ownerType: props.ownerType,
-      ownerId: props.ownerId,
       storeId: props.storeId,
       purpose: MediaPurpose.Gallery,
     });
-  }, []);
+    setSelectedMedia((prevMedia) => [...prevMedia, media]);
+    toggleFileSelection(media.id);
+  };
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({ onDrop });
 
@@ -117,54 +181,71 @@ export default function MediaInput(props: MediaInputProps) {
     });
   };
 
-  // const filteredAndSortedMedia = useMemo(() => {
-  //   return media;
-  //   return media
-  //     .filter(
-  //       (item) =>
-  //         item.fileName.toLowerCase().includes(searchQuery.toLowerCase()) &&
-  //         (filters.fileType ? item.type === filters.fileType : true) &&
-  //         (filters.fileSize
-  //           ? filters.fileSize === 'small'
-  //             ? item.fileSize < 1000000
-  //             : filters.fileSize === 'medium'
-  //             ? item.fileSize >= 1000000 && item.fileSize < 5000000
-  //             : item.fileSize >= 5000000
-  //           : true) &&
-  //         (filters.usedIn ? item.usedIn.includes(filters.usedIn) : true) &&
-  //         (filters.productId ? item.product.id === filters.productId : true)
-  //     )
-  //     .sort((a, b) => {
-  //       if (sortBy === 'name') return a.fileName.localeCompare(b.fileName);
-  //       if (sortBy === 'size') return a.fileSize - b.fileSize;
-  //       return 0; // For 'date', we would need to add a date field to our MediaItem type
-  //     });
-  // }, [media, searchQuery, sortBy, filters]);
+  const filteredAndSortedMedia = useMemo(() => {
+    return media
+      .filter((item) => {
+        if (
+          searchQuery &&
+          !item.fileName.toLowerCase().includes(searchQuery.toLowerCase())
+        ) {
+          return false;
+        }
+        if (filters.fileType && item.type !== filters.fileType) {
+          return false;
+        }
+        // Add more filter conditions as needed
+        return true;
+      })
+      .sort((a, b) => {
+        if (sortBy === 'name') {
+          return a.fileName.localeCompare(b.fileName);
+        } else if (sortBy === 'size') {
+          return a.fileSize - b.fileSize;
+        }
+        return 0;
+      });
+  }, [media, searchQuery, filters, sortBy]);
 
-  const filteredAndSortedMedia = media;
-
-  const handleAddFromUrl = () => {};
+  const handleAddFromUrl = () => {
+    // Implement URL addition logic here
+  };
 
   const handleDone = () => {
-    const newSelectedMedia = media.filter((item) => selectedFiles.has(item.id));
-    setSelectedMedia((prevSelected) => [...prevSelected, ...newSelectedMedia]);
-    setSelectedFiles(new Set());
+    const newSelectedMedia = Array.from(selectedFiles).map((id) => media.find((item) => item.id === id));
+    setSelectedMedia(newSelectedMedia);
     setIsDialogOpen(false);
+    if (props.onChange) {
+      props.onChange(newSelectedMedia.map((item) => item.id));
+    }
   };
 
-  const moveMedia = (dragIndex: number, hoverIndex: number) => {
-    const dragItem = selectedMedia[dragIndex];
-    const newMedia = [...selectedMedia];
-    newMedia.splice(dragIndex, 1);
-    newMedia.splice(hoverIndex, 0, dragItem);
-    setSelectedMedia(newMedia);
-  };
+  const moveMedia = useCallback((dragIndex: number, hoverIndex: number) => {
+    setSelectedMedia((prevMedia) => {
+      const newMedia = [...prevMedia];
+      const [draggedItem] = newMedia.splice(dragIndex, 1);
+      newMedia.splice(hoverIndex, 0, draggedItem);
+      reorderMedia({
+        mediaIds: newMedia.map((item) => item.id),
+        ownerId: props.ownerId,
+        ownerType: props.ownerType,
+      });
+      return newMedia;
+    });
+  }, []);
 
-  const removeMedia = (id: string) => {
-    setSelectedMedia((prevMedia) => prevMedia.filter((item) => item.id !== id));
-  };
+  const removeMedia = useCallback(
+    async (id: string) => {
+      setSelectedMedia((prevMedia) => {
+        const newSelectedMedia = prevMedia.filter((media) => media.id !== id);
+        if (props.onChange) {
+          props.onChange(newSelectedMedia.map((item) => item.id));
+        }
 
-  console.log({ filteredAndSortedMedia });
+        return newSelectedMedia;
+      });
+    },
+    [props.ownerId, props.ownerType, props.onChange]
+  );
 
   return (
     <DndProvider backend={HTML5Backend}>
@@ -190,7 +271,6 @@ export default function MediaInput(props: MediaInputProps) {
               <DialogTitle>Select file</DialogTitle>
             </DialogHeader>
             <div className="space-y-4">
-              {/* Search and filters */}
               <div className="flex items-center gap-4">
                 <div className="relative flex-1">
                   <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
@@ -238,7 +318,6 @@ export default function MediaInput(props: MediaInputProps) {
                 </DropdownMenu>
               </div>
 
-              {/* Filter buttons */}
               <div className="flex flex-wrap gap-2">
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
@@ -401,9 +480,8 @@ export default function MediaInput(props: MediaInputProps) {
                 </DropdownMenu>
               </div>
 
-              <ScrollArea className="h-[300px] rounded-md border">
+              <ScrollArea className="h-[350px] rounded-md border">
                 <div className="p-4 space-y-4">
-                  {/* Upload area */}
                   <div
                     {...getRootProps()}
                     className="border border-dashed border-gray-300 dark:border-gray-700 rounded-lg p-8 text-center"
@@ -469,7 +547,6 @@ export default function MediaInput(props: MediaInputProps) {
                     </div>
                   </div>
 
-                  {/* Media grid */}
                   <div
                     className={
                       viewMode === 'grid'
@@ -502,7 +579,7 @@ export default function MediaInput(props: MediaInputProps) {
                               placeholder="blur"
                               blurDataURL={item.placeholder}
                               src={item.url}
-                              alt={item.fileName}
+                              alt={item.alt || item.fileName}
                               className="w-full h-full object-cover"
                               width={104}
                               height={104}
@@ -606,79 +683,5 @@ export default function MediaInput(props: MediaInputProps) {
         )}
       </div>
     </DndProvider>
-  );
-}
-
-function MediaItem({
-  item,
-  index,
-  moveMedia,
-  removeMedia,
-  isFeatured = false,
-}: any) {
-  const [, ref] = useDrag({
-    type: 'MEDIA_ITEM',
-    item: { index },
-  });
-
-  const [, drop] = useDrop({
-    accept: 'MEDIA_ITEM',
-    hover: (draggedItem: { index: number }) => {
-      if (draggedItem.index !== index) {
-        moveMedia(draggedItem.index, index);
-        draggedItem.index = index;
-      }
-    },
-  });
-
-  const getMediaIcon = (type: string) => {
-    switch (type) {
-      case 'image':
-        return <ImageIcon className="h-6 w-6" />;
-      case 'video':
-        return <Film className="h-6 w-6" />;
-      case '3d':
-        return <Cube className="h-6 w-6" />;
-      default:
-        return null;
-    }
-  };
-
-  return (
-    <div
-      // @ts-expect-error - TS doesn't know about the ref function
-      ref={(node) => ref(drop(node))}
-      className={cn(
-        'group relative rounded-lg overflow-hidden shadow-md transition-all duration-300 ease-in-out hover:shadow-lg cursor-pointer',
-        isFeatured ? 'col-span-2 row-span-2' : ''
-      )}
-    >
-      <img
-        src={item.url}
-        alt={item.name}
-        className="w-full h-full object-cover rounded-lg"
-      />
-      {item.type !== 'image' && (
-        <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 rounded-lg">
-          {getMediaIcon(item.type)}
-        </div>
-      )}
-      <div className="absolute inset-0 bg-black bg-opacity-0 hover:bg-opacity-50 transition-opacity flex items-center justify-center rounded-lg">
-        <div className="opacity-0 group-hover:opacity-100 transition-opacity">
-          {getMediaIcon(item.type)}
-        </div>
-      </div>
-      <Button
-        variant="ghost"
-        size="icon"
-        className="absolute top-2 right-2 p-1 bg-black/50 hover:bg-black/70 opacity-0 group-hover:opacity-100 transition-all duration-200 rounded-full"
-        onClick={(e) => {
-          e.stopPropagation();
-          removeMedia(item.id);
-        }}
-      >
-        <X className="h-5 w-5 text-white" />
-      </Button>
-    </div>
   );
 }

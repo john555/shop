@@ -63,7 +63,7 @@ export class ProductVariantInput {
   @IsOptional()
   @IsString()
   id?: string;
-  
+
   @Field(() => [String])
   @IsArray()
   @IsString({ each: true })
@@ -237,6 +237,12 @@ export class ProductCreateInput {
   @ValidateNested({ each: true })
   @Type(() => ProductVariantInput)
   variants?: ProductVariantInput[];
+
+  @Field(() => [String], { nullable: true })
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  mediaIds?: string[];
 }
 
 @InputType()
@@ -312,25 +318,37 @@ export class ProductUpdateInput {
   collectionIds?: string[];
 
   // Default variant fields
-  @Field(() => Float, { nullable: true, description: 'Price for the default variant' })
+  @Field(() => Float, {
+    nullable: true,
+    description: 'Price for the default variant',
+  })
   @IsOptional()
   @IsNumber()
   @Min(0)
   price?: number;
 
-  @Field(() => Float, { nullable: true, description: 'Compare at price for the default variant' })
+  @Field(() => Float, {
+    nullable: true,
+    description: 'Compare at price for the default variant',
+  })
   @IsOptional()
   @IsNumber()
   @Min(0)
   compareAtPrice?: number | null;
 
-  @Field(() => String, { nullable: true, description: 'SKU for the default variant' })
+  @Field(() => String, {
+    nullable: true,
+    description: 'SKU for the default variant',
+  })
   @IsOptional()
   @IsString()
   @MaxLength(100)
   sku?: string;
 
-  @Field(() => Int, { nullable: true, description: 'Available quantity for the default variant' })
+  @Field(() => Int, {
+    nullable: true,
+    description: 'Available quantity for the default variant',
+  })
   @IsOptional()
   @IsNumber()
   @Min(0)
@@ -348,6 +366,12 @@ export class ProductUpdateInput {
   @ValidateNested({ each: true })
   @Type(() => ProductVariantInput)
   variants?: ProductVariantInput[];
+
+  @Field(() => [String], { nullable: true })
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  mediaIds?: string[];
 }
 
 @InputType()

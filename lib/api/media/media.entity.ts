@@ -1,19 +1,18 @@
+// media.entity.ts
 import { ObjectType, Field, ID, Int, registerEnumType } from '@nestjs/graphql';
 import {
   Media as MediaModel,
   MediaType,
   MediaOwnerType,
-  $Enums,
   MediaPurpose,
+  MediaOwnership as MediaOwnershipModel,
 } from '@prisma/client';
 import { Product } from '../product/entities/product.entity';
 import { ProductVariant } from '../product/entities/product-variant.entity';
 import { Category } from '../category/category.entity';
-// import { Collection } from '../collection/collection.entity';
+import { Collection } from '../collection/collection.entity';
 import { Store } from '../store/store.entity';
 import { User } from '../user/user.entity';
-// import { PropertyListing } from '../property/property-listing.entity';
-// import { VehicleListing } from '../vehicle/vehicle-listing.entity';
 
 registerEnumType(MediaType, {
   name: 'MediaType',
@@ -31,6 +30,27 @@ registerEnumType(MediaPurpose, {
 });
 
 @ObjectType()
+export class MediaOwnership implements Partial<MediaOwnershipModel> {
+  @Field(() => ID)
+  id: string;
+
+  @Field(() => String)
+  ownerId: string;
+
+  @Field(() => MediaOwnerType)
+  ownerType: MediaOwnerType;
+
+  @Field(() => Int)
+  position: number;
+
+  @Field(() => Date)
+  createdAt: Date;
+
+  @Field(() => Date)
+  updatedAt: Date;
+}
+
+@ObjectType()
 export class MediaUsage {
   @Field(() => MediaOwnerType)
   ownerType: MediaOwnerType;
@@ -43,7 +63,7 @@ export class MediaUsage {
 }
 
 @ObjectType({ description: 'Media model' })
-export class Media implements Omit<MediaModel, 'owner'> {
+export class Media implements Omit<MediaModel, 'owners'> {
   @Field(() => ID)
   id: string;
 
@@ -56,10 +76,6 @@ export class Media implements Omit<MediaModel, 'owner'> {
   @Field(() => String, { nullable: true })
   alt: string | null;
 
-  @Field(() => Int)
-  position: number;
-
-  // File metadata
   @Field(() => String, { nullable: true })
   fileName: string | null;
 
@@ -75,25 +91,43 @@ export class Media implements Omit<MediaModel, 'owner'> {
   @Field(() => Int, { nullable: true })
   height: number | null;
 
-  // Video specific
   @Field(() => Int, { nullable: true })
   duration: number | null;
 
   @Field(() => String, { nullable: true })
   thumbnail: string | null;
 
-  // 3D model specific
   @Field(() => String, { nullable: true })
   modelFormat: string | null;
 
-  // Polymorphic relation
-  @Field(() => MediaOwnerType)
-  ownerType: MediaOwnerType;
+  @Field(() => String, { nullable: true })
+  blurHash: string | null;
 
-  @Field(() => String)
-  ownerId: string;
+  @Field(() => String, { nullable: true })
+  placeholder: string | null;
+
+  @Field(() => Boolean)
+  isArchived: boolean;
+
+  @Field(() => MediaPurpose)
+  purpose: MediaPurpose;
+
+  @Field(() => String, { nullable: true })
+  storeId: string | null;
+
+  @Field(() => Date)
+  createdAt: Date;
+
+  @Field(() => Date)
+  updatedAt: Date;
+
+  @Field(() => Date, { nullable: true })
+  archivedAt: Date | null;
 
   // Resolved owner fields
+  @Field(() => [MediaOwnership, { nullable: true }])
+  owners?: MediaOwnership[];
+
   @Field(() => Product, { nullable: true })
   product?: Product;
 
@@ -103,45 +137,14 @@ export class Media implements Omit<MediaModel, 'owner'> {
   @Field(() => Category, { nullable: true })
   category?: Category;
 
-  // @Field(() => Collection, { nullable: true })
-  // collection?: Collection;
+  @Field(() => Collection, { nullable: true })
+  collection?: Collection;
 
   @Field(() => Store, { nullable: true })
-  store?: Store;
+  storeProfile?: Store;
 
   @Field(() => User, { nullable: true })
   userProfile?: User;
-
-  // @Field(() => PropertyListing, { nullable: true })
-  // property?: PropertyListing;
-
-  // @Field(() => VehicleListing, { nullable: true })
-  // vehicle?: VehicleListing;
-
-  // Timestamps
-  @Field(() => Date)
-  createdAt: Date;
-
-  @Field(() => Date)
-  updatedAt: Date;
-
-  @Field(() => MediaPurpose)
-  purpose: MediaPurpose;
-
-  @Field(() => Boolean)
-  isArchived: boolean;
-
-  @Field(() => String, { nullable: true })
-  blurHash: string | null;
-
-  @Field(() => String, { nullable: true })
-  placeholder: string | null;
-
-  @Field(() => Date, { nullable: true })
-  archivedAt: Date | null;
-
-  @Field(() => String, { nullable: true })
-  storeId: string | null;
 
   @Field(() => [MediaUsage])
   usedIn?: MediaUsage[];

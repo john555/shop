@@ -63,7 +63,6 @@ export class ProductService {
     return combinations;
   }
 
-
   // Query Methods
   async findById(id: string): Promise<Product | null> {
     try {
@@ -209,6 +208,32 @@ export class ProductService {
           data: productData,
         });
 
+        // Handle media associations if provided
+        if (input.mediaIds?.length) {
+          // Get last position
+          const lastPosition = await tx.mediaOwnership.findFirst({
+            where: {
+              ownerType: MediaOwnerType.PRODUCT,
+              ownerId: newProduct.id,
+            },
+            orderBy: {
+              position: 'desc',
+            },
+          });
+
+          let startPosition = (lastPosition?.position ?? -1) + 1;
+
+          // Create media ownership records
+          await tx.mediaOwnership.createMany({
+            data: input.mediaIds.map((mediaId, index) => ({
+              mediaId,
+              ownerId: newProduct.id,
+              ownerType: MediaOwnerType.PRODUCT,
+              position: startPosition + index,
+            })),
+          });
+        }
+
         if (input.options?.length) {
           const optionNames = new Set(input.options.map((o) => o.name));
           if (optionNames.size !== input.options.length) {
@@ -309,12 +334,123 @@ export class ProductService {
   }
 
   // Update Operation
+  async update(input: ProductUpdateInput): Promise<Product> {
+    try {
+      const existingProduct = await this.findById(input.id);
+      if (!existingProduct) {
+        throw new NotFoundException(`Product with ID ${input.id} not found`);
+      }
+
+      let slug = input.slug;
+      if (slug && slug !== existingProduct.slug) {
+        if (!this.slugService.isValidSlug(slug)) {
+          throw new BadRequestException(
+            'Invalid slug format. Use only lowercase letters, numbers, and hyphens.'
+          );
+        }
+        if (
+          !(await this.isSlugUnique(slug, existingProduct.storeId, input.id))
+        ) {
+          slug = await this.slugService.createUniqueSlug(slug, (s) =>
+            this.isSlugUnique(s, existingProduct.storeId, input.id)
+          );
+        }
+      }
+
+      const product = await this.prisma.$transaction(async (tx) => {
+        // Update base product
+        const updatedProduct = await tx.product.update({
+          where: { id: input.id },
+          data: {
+            title: input.title,
+            description: input.description,
+            slug,
+            status: input.status,
+            seoTitle: input.seoTitle,
+            seoDescription: input.seoDescription,
+            trackInventory: input.trackInventory,
+            salesChannels: input.salesChannels,
+            category:
+              input.categoryId !== undefined
+                ? input.categoryId === null
+                  ? { disconnect: true }
+                  : { connect: { id: input.categoryId } }
+                : undefined,
+            tags: input.tagIds
+              ? { set: input.tagIds.map((id) => ({ id })) }
+              : undefined,
+            collections: input.collectionIds
+              ? { set: input.collectionIds.map((id) => ({ id })) }
+              : undefined,
+          },
+        });
+
+        // Handle media updates if provided
+        if (input.mediaIds !== undefined) {
+          // Remove existing media ownerships
+          await tx.mediaOwnership.deleteMany({
+            where: {
+              ownerId: input.id,
+              ownerType: MediaOwnerType.PRODUCT,
+            },
+          });
+
+          if (input.mediaIds.length > 0) {
+            // Verify all media exists and belongs to the same store
+            const media = await tx.media.findMany({
+              where: {
+                id: { in: input.mediaIds },
+                storeId: existingProduct.storeId,
+              },
+            });
+
+            if (media.length !== input.mediaIds.length) {
+              throw new BadRequestException('Invalid media IDs provided');
+            }
+
+            // Add new media ownerships
+            await tx.mediaOwnership.createMany({
+              data: input.mediaIds.map((mediaId, index) => ({
+                mediaId,
+                ownerId: input.id,
+                ownerType: MediaOwnerType.PRODUCT,
+                position: index,
+              })),
+            });
+          }
+        }
+
+        // Handle variant updates
+        await this.handleVariantUpdates(tx, input.id, input);
+
+        const result = await tx.product.findUnique({
+          where: { id: updatedProduct.id },
+          include: { variants: true },
+        });
+
+        if (!result) {
+          throw new Error('Failed to update product');
+        }
+
+        return result;
+      });
+
+      if (!product) {
+        throw new Error('Failed to update product');
+      }
+
+      return product;
+    } catch (error) {
+      this.logger.error(`Failed to update product ${input.id}:`, error);
+      throw error;
+    }
+  }
+
   private async handleVariantUpdates(
     tx: Prisma.TransactionClient,
     productId: string,
     input: ProductUpdateInput
   ): Promise<void> {
-    // If no variant-related updates, exit early
     if (
       input.options === undefined &&
       input.variants === undefined &&
@@ -326,13 +462,11 @@ export class ProductService {
       return;
     }
 
-    // Get existing options to check if structure changed
     const existingOptions = await tx.productOption.findMany({
       where: { productId },
       orderBy: { name: 'asc' },
     });
 
-    // Handle default variant updates
     if (
       (input.price !== undefined ||
         input.compareAtPrice !== undefined ||
@@ -387,7 +521,6 @@ export class ProductService {
       return;
     }
 
-    // Handle variant updates when there are no options changes
     if (input.variants?.length && input.options === undefined) {
       const existingVariants = await tx.productVariant.findMany({
         where: {
@@ -397,7 +530,6 @@ export class ProductService {
       });
 
       for (const variantInput of input.variants) {
-        // First try to find by ID if provided
         if (variantInput.id) {
           await tx.productVariant.update({
             where: { id: variantInput.id },
@@ -413,7 +545,6 @@ export class ProductService {
           continue;
         }
 
-        // If no ID, find by option combination
         const existingVariant = existingVariants.find(
           (v) =>
             JSON.stringify(v.optionCombination) ===
@@ -443,9 +574,7 @@ export class ProductService {
       return;
     }
 
-    // Handle complete option/variant structure changes
     if (input.options !== undefined) {
-      // Archive existing variants
       await tx.productVariant.updateMany({
         where: {
           productId,
@@ -457,11 +586,9 @@ export class ProductService {
         },
       });
 
-      // Delete existing options (safe as they're not referenced by orders)
       await tx.productOption.deleteMany({ where: { productId } });
 
       if (input.options.length === 0) {
-        // Create new default variant if removing all options
         await tx.productVariant.create({
           data: {
             productId,
@@ -477,7 +604,6 @@ export class ProductService {
         return;
       }
 
-      // Create new options
       await tx.productOption.createMany({
         data: input.options.map((option) => ({
           productId,
@@ -486,7 +612,6 @@ export class ProductService {
         })),
       });
 
-      // Generate and validate combinations
       const combinations = this.generateVariantCombinations(input.options);
 
       if (input.variants?.length) {
@@ -506,7 +631,6 @@ export class ProductService {
           );
         }
 
-        // Look for existing archived variants that match the new combinations
         const archivedVariants = await tx.productVariant.findMany({
           where: {
             productId,
@@ -514,7 +638,6 @@ export class ProductService {
           },
         });
 
-        // Create new variants, reusing archived ones where possible
         for (const variantInput of input.variants) {
           const matchingArchived = archivedVariants.find(
             (v) =>
@@ -523,7 +646,6 @@ export class ProductService {
           );
 
           if (matchingArchived) {
-            // Reactivate and update the archived variant
             await tx.productVariant.update({
               where: { id: matchingArchived.id },
               data: {
@@ -538,7 +660,6 @@ export class ProductService {
               },
             });
           } else {
-            // Create new variant
             await tx.productVariant.create({
               data: {
                 productId,
@@ -554,7 +675,6 @@ export class ProductService {
           }
         }
       } else {
-        // Create empty variants for all combinations
         await tx.productVariant.createMany({
           data: combinations.map((combination) => ({
             productId,
@@ -569,84 +689,6 @@ export class ProductService {
     }
   }
 
-
-  async update(input: ProductUpdateInput): Promise<Product> {
-    try {
-      const existingProduct = await this.findById(input.id);
-      if (!existingProduct) {
-        throw new NotFoundException(`Product with ID ${input.id} not found`);
-      }
-
-      let slug = input.slug;
-      if (slug && slug !== existingProduct.slug) {
-        if (!this.slugService.isValidSlug(slug)) {
-          throw new BadRequestException(
-            'Invalid slug format. Use only lowercase letters, numbers, and hyphens.'
-          );
-        }
-        if (
-          !(await this.isSlugUnique(slug, existingProduct.storeId, input.id))
-        ) {
-          slug = await this.slugService.createUniqueSlug(slug, (s) =>
-            this.isSlugUnique(s, existingProduct.storeId, input.id)
-          );
-        }
-      }
-
-      const product = await this.prisma.$transaction(async (tx) => {
-        // Update base product
-        const updatedProduct = await tx.product.update({
-          where: { id: input.id },
-          data: {
-            title: input.title,
-            description: input.description,
-            slug,
-            status: input.status,
-            seoTitle: input.seoTitle,
-            seoDescription: input.seoDescription,
-            trackInventory: input.trackInventory,
-            salesChannels: input.salesChannels,
-            category:
-              input.categoryId !== undefined
-                ? input.categoryId === null
-                  ? { disconnect: true }
-                  : { connect: { id: input.categoryId } }
-                : undefined,
-            tags: input.tagIds
-              ? { set: input.tagIds.map((id) => ({ id })) }
-              : undefined,
-            collections: input.collectionIds
-              ? { set: input.collectionIds.map((id) => ({ id })) }
-              : undefined,
-          },
-        });
-
-        // Handle variant updates with the new method
-        await this.handleVariantUpdates(tx, input.id, input);
-
-        const result = await tx.product.findUnique({
-          where: { id: updatedProduct.id },
-          include: { variants: true },
-        });
-
-        if (!result) {
-          throw new Error('Failed to update product');
-        }
-
-        return result;
-      });
-
-      if (!product) {
-        throw new Error('Failed to update product');
-      }
-
-      return product;
-    } catch (error) {
-      this.logger.error(`Failed to update product ${input.id}:`, error);
-      throw error;
-    }
-  }
-
   // Delete Operation
   async delete(id: string): Promise<Product> {
     try {
@@ -656,13 +698,26 @@ export class ProductService {
       }
 
       return await this.prisma.$transaction(async (tx) => {
-        // Delete related media
-        await tx.media.deleteMany({
+        // Delete related media by first finding them through MediaOwnership
+        const mediaToDelete = await tx.mediaOwnership.findMany({
           where: {
             ownerId: id,
             ownerType: MediaOwnerType.PRODUCT,
           },
+          select: {
+            mediaId: true,
+          },
         });
+
+        if (mediaToDelete.length > 0) {
+          await tx.media.deleteMany({
+            where: {
+              id: {
+                in: mediaToDelete.map((m) => m.mediaId),
+              },
+            },
+          });
+        }
 
         // Delete the product (cascade will handle options and variants)
         return tx.product.delete({
@@ -678,6 +733,46 @@ export class ProductService {
       });
     } catch (error) {
       this.logger.error(`Failed to delete product ${id}:`, error);
+      throw error;
+    }
+  }
+
+  async bulkDelete(storeId: string, productIds: string[]): Promise<number> {
+    try {
+      return await this.prisma.$transaction(async (tx) => {
+        // Find and delete related media
+        const mediaToDelete = await tx.mediaOwnership.findMany({
+          where: {
+            ownerId: { in: productIds },
+            ownerType: MediaOwnerType.PRODUCT,
+          },
+          select: {
+            mediaId: true,
+          },
+        });
+
+        if (mediaToDelete.length > 0) {
+          await tx.media.deleteMany({
+            where: {
+              id: {
+                in: mediaToDelete.map((m) => m.mediaId),
+              },
+            },
+          });
+        }
+
+        // Delete products (cascade will handle options and variants)
+        const result = await tx.product.deleteMany({
+          where: {
+            id: { in: productIds },
+            storeId,
+          },
+        });
+
+        return result.count;
+      });
+    } catch (error) {
+      this.logger.error('Failed to bulk delete products:', error);
       throw error;
     }
   }
@@ -725,33 +820,6 @@ export class ProductService {
       });
     } catch (error) {
       this.logger.error('Failed to bulk update products:', error);
-      throw error;
-    }
-  }
-
-  async bulkDelete(storeId: string, productIds: string[]): Promise<number> {
-    try {
-      return await this.prisma.$transaction(async (tx) => {
-        // Delete related media
-        await tx.media.deleteMany({
-          where: {
-            ownerId: { in: productIds },
-            ownerType: MediaOwnerType.PRODUCT,
-          },
-        });
-
-        // Delete products (cascade will handle options and variants)
-        const result = await tx.product.deleteMany({
-          where: {
-            id: { in: productIds },
-            storeId,
-          },
-        });
-
-        return result.count;
-      });
-    } catch (error) {
-      this.logger.error('Failed to bulk delete products:', error);
       throw error;
     }
   }
@@ -823,12 +891,31 @@ export class ProductService {
   }
 
   async findProductMedia(productId: string): Promise<Media[]> {
-    return this.prisma.media.findMany({
+    const mediaWithOwnerships = await this.prisma.media.findMany({
       where: {
-        ownerId: productId,
-        ownerType: MediaOwnerType.PRODUCT,
+        owners: {
+          some: {
+            ownerId: productId,
+            ownerType: MediaOwnerType.PRODUCT,
+          },
+        },
       },
-      orderBy: { position: 'asc' },
+      include: {
+        owners: {
+          where: {
+            ownerId: productId,
+            ownerType: MediaOwnerType.PRODUCT,
+          },
+        },
+      },
+    });
+    console.log('mediaWithOwnerships', JSON.stringify(mediaWithOwnerships, null, 2));
+
+    // Sort by position from the ownership relation
+    return mediaWithOwnerships.sort((a, b) => {
+      const positionA = a.owners[0]?.position ?? 0;
+      const positionB = b.owners[0]?.position ?? 0;
+      return positionA - positionB;
     });
   }
 

@@ -118,6 +118,7 @@ const productSchema = z.object({
     .optional()
     .default([]),
   variants: z.array(variantSchema).optional(),
+  mediaIds: z.array(z.string()).optional(),
 });
 
 export type ProductFormValues = z.infer<typeof productSchema>;
@@ -174,6 +175,7 @@ export function ProductForm() {
       options:
         product?.options?.map((o) => ({ ...o, isCollapsed: true })) || [],
       variants: product?.variants || [],
+      mediaIds: product?.media?.map((m) => m.id) || [],
     };
   }
 
@@ -342,9 +344,17 @@ export function ProductForm() {
                   <div>
                     <FormLabel>Product Images</FormLabel>
                     <MediaInput
-                      ownerId={product.id}
-                      ownerType={MediaOwnerType.Product}
+                      ownerId={product?.id}
+                      ownerType={
+                        product?.id ? MediaOwnerType.Product : undefined
+                      }
                       storeId={store?.id}
+                      selectedMediaIds={form.watch('mediaIds') || []}
+                      onChange={(mediaIds: string[]) =>
+                        form.setValue('mediaIds', mediaIds, {
+                          shouldDirty: true,
+                        })
+                      }
                     />
                   </div>
                 </CardContent>

@@ -166,7 +166,7 @@ let isRefreshing = false;
 let pendingRequests: Array<() => void> = [];
 
 // Error handling link for token refresh
-const errorLink = onError(({ networkError, operation, forward }) => {
+const errorLink = onError(({ networkError, operation, forward, ...p }) => {
   // Check if the error is an unauthenticated error
   const isUnauthenticated =
     networkError?.message?.includes('UNAUTHENTICATED') ||
@@ -198,7 +198,7 @@ const errorLink = onError(({ networkError, operation, forward }) => {
         });
     });
   }
-
+console.log('operation', operation);
   return new Observable<FetchResult>((observer) => {
     pendingRequests.push(() => forward(operation).subscribe(observer));
   });

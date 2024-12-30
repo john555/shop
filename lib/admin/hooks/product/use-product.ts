@@ -50,7 +50,6 @@ const PRODUCT_FIELDS = gql`
       type
       url
       alt
-      position
     }
   }
 `;
