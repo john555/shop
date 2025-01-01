@@ -1,11 +1,11 @@
 import { ObjectType, Field, ID, registerEnumType } from '@nestjs/graphql';
-import { 
+import {
   Store as StoreModel,
-  StoreType, 
-  StoreCurrency, 
+  StoreType,
+  StoreCurrency,
   CurrencyPosition,
   UnitSystem,
-  WeightUnit
+  WeightUnit,
 } from '@prisma/client';
 import { User } from '../user/user.entity';
 import { AddressOnOwner } from '../address-on-owner/address-on-owner.entity';
@@ -47,32 +47,38 @@ export class Store implements Omit<StoreModel, 'addresses' | 'owner'> {
   @Field(() => String, { description: 'URL-friendly slug of the store' })
   slug: string;
 
+  @Field(() => String, {
+    nullable: true,
+    description: 'Slogan or tagline of the store',
+  })
+  slogan: string | null;
+
   // Contact Information
   @Field(() => String, { description: 'Email address of the store' })
   email: string;
 
-  @Field(() => String, { 
+  @Field(() => String, {
     description: 'Phone number of the store',
-    nullable: true 
+    nullable: true,
   })
   phone: string | null;
 
-  @Field(() => String, { 
+  @Field(() => String, {
     description: 'WhatsApp business number',
-    nullable: true 
+    nullable: true,
   })
   whatsApp: string | null;
 
   // Social Media
-  @Field(() => String, { 
+  @Field(() => String, {
     description: 'Facebook page username/handle',
-    nullable: true 
+    nullable: true,
   })
   facebook: string | null;
 
-  @Field(() => String, { 
+  @Field(() => String, {
     description: 'Instagram handle (without @)',
-    nullable: true 
+    nullable: true,
   })
   instagram: string | null;
 
@@ -84,61 +90,61 @@ export class Store implements Omit<StoreModel, 'addresses' | 'owner'> {
   @Field(() => StoreCurrency, { description: 'Primary currency of the store' })
   currency: StoreCurrency;
 
-  @Field(() => String, { 
+  @Field(() => String, {
     description: 'Custom symbol for the currency (e.g., KSh, USh)',
-    nullable: true 
+    nullable: true,
   })
   currencySymbol: string | null;
 
-  @Field(() => CurrencyPosition, { 
-    description: 'Position of the currency symbol relative to the amount' 
+  @Field(() => CurrencyPosition, {
+    description: 'Position of the currency symbol relative to the amount',
   })
   currencyPosition: CurrencyPosition;
 
-  @Field(() => Boolean, { 
-    description: 'Whether to show currency code alongside amounts' 
+  @Field(() => Boolean, {
+    description: 'Whether to show currency code alongside amounts',
   })
   showCurrencyCode: boolean;
 
   // Measurement Settings
-  @Field(() => UnitSystem, { 
-    description: 'Measurement system used by the store' 
+  @Field(() => UnitSystem, {
+    description: 'Measurement system used by the store',
   })
   unitSystem: UnitSystem;
 
-  @Field(() => WeightUnit, { 
-    description: 'Weight unit used for products' 
+  @Field(() => WeightUnit, {
+    description: 'Weight unit used for products',
   })
   weightUnit: WeightUnit;
 
-  @Field(() => String, { 
-    description: 'Timezone of the store (e.g., Africa/Nairobi)' 
+  @Field(() => String, {
+    description: 'Timezone of the store (e.g., Africa/Nairobi)',
   })
   timeZone: string;
 
   // Order Configuration
-  @Field(() => String, { 
+  @Field(() => String, {
     description: 'Prefix for order numbers',
-    nullable: true 
+    nullable: true,
   })
   orderPrefix: string | null;
 
-  @Field(() => String, { 
+  @Field(() => String, {
     description: 'Suffix for order numbers',
-    nullable: true 
+    nullable: true,
   })
   orderSuffix: string | null;
 
   // Relations
-  @Field(() => [AddressOnOwner], { 
+  @Field(() => [AddressOnOwner], {
     description: 'Addresses associated with the store',
-    nullable: true 
+    nullable: true,
   })
   addresses?: AddressOnOwner[];
 
-  @Field(() => User, { 
+  @Field(() => User, {
     description: 'Owner of the store',
-    nullable: true 
+    nullable: true,
   })
   owner?: User;
 

@@ -20,10 +20,10 @@ import {
 
 @ArgsType()
 export class StoreGetArgs {
-  @Field(() => ID)
+  @Field(() => String)
   @IsString()
   @IsNotEmpty()
-  id!: string;
+  idOrSlug!: string;
 }
 
 @ArgsType()

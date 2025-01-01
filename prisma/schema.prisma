@@ -206,10 +206,11 @@ model User {
 }
 
 model Store {
-  id   String    @id @default(cuid())
-  name String
-  slug String    @unique
-  type StoreType
+  id     String    @id @default(cuid())
+  name   String
+  slug   String    @unique
+  slogan String?
+  type   StoreType
 
   // Contact Information
   email    String
@@ -511,37 +512,37 @@ model Tag {
 }
 
 model Media {
-  id         String         @id @default(cuid())
-  type       MediaType      @default(PHOTO)
-  purpose    MediaPurpose   @default(OTHER)
+  id         String       @id @default(cuid())
+  type       MediaType    @default(PHOTO)
+  purpose    MediaPurpose @default(OTHER)
   url        String
-  alt        String?       @db.Text
-  isArchived Boolean       @default(false)
+  alt        String?      @db.Text
+  isArchived Boolean      @default(false)
 
   // File metadata
   fileName    String?
   mimeType    String?
-  fileSize    Int?     // Size in bytes
-  width       Int?     // Image/Video width
-  height      Int?     // Image/Video height
-  duration    Int?     // Video duration in seconds
-  thumbnail   String?  // Thumbnail URL for videos/3D models
-  modelFormat String?  // 3D model format (e.g., GLB, GLTF)
+  fileSize    Int? // Size in bytes
+  width       Int? // Image/Video width
+  height      Int? // Image/Video height
+  duration    Int? // Video duration in seconds
+  thumbnail   String? // Thumbnail URL for videos/3D models
+  modelFormat String? // 3D model format (e.g., GLB, GLTF)
 
   // Optimization metadata
-  blurHash    String?  // BlurHash for image preview
-  placeholder String?  // Base64 tiny preview
+  blurHash    String? // BlurHash for image preview
+  placeholder String? // Base64 tiny preview
 
   // Store reference for access control
-  storeId   String?
+  storeId String?
 
   // Replace direct polymorphic fields with relation to MediaOwnership
   owners MediaOwnership[]
 
   // Timestamps
-  createdAt  DateTime   @default(now()) @db.Timestamp(6)
-  updatedAt  DateTime   @updatedAt @db.Timestamp(6)
-  archivedAt DateTime?  @db.Timestamp(6)
+  createdAt  DateTime  @default(now()) @db.Timestamp(6)
+  updatedAt  DateTime  @updatedAt @db.Timestamp(6)
+  archivedAt DateTime? @db.Timestamp(6)
 
   @@index([storeId])
   @@index([type])
@@ -552,18 +553,18 @@ model Media {
 
 // New join table for media ownership
 model MediaOwnership {
-  id         String         @id @default(cuid())
-  mediaId    String
-  ownerId    String
-  ownerType  MediaOwnerType
-  position   Int           @default(0)
-  
+  id        String         @id @default(cuid())
+  mediaId   String
+  ownerId   String
+  ownerType MediaOwnerType
+  position  Int            @default(0)
+
   // Relation to Media
-  media      Media         @relation(fields: [mediaId], references: [id], onDelete: Cascade)
-  
+  media Media @relation(fields: [mediaId], references: [id], onDelete: Cascade)
+
   // Timestamps
-  createdAt  DateTime      @default(now()) @db.Timestamp(6)
-  updatedAt  DateTime      @updatedAt @db.Timestamp(6)
+  createdAt DateTime @default(now()) @db.Timestamp(6)
+  updatedAt DateTime @updatedAt @db.Timestamp(6)
 
   @@unique([ownerId, ownerType, mediaId])
   @@unique([ownerId, ownerType, position])

@@ -1075,7 +1075,7 @@ export type QueryProductBySlugArgs = {
 
 
 export type QueryStoreArgs = {
-  id: Scalars['ID']['input'];
+  idOrSlug: Scalars['String']['input'];
 };
 
 
@@ -1197,6 +1197,8 @@ export type Store = {
   products: Array<Product>;
   /** Whether to show currency code alongside amounts */
   showCurrencyCode: Scalars['Boolean']['output'];
+  /** Slogan or tagline of the store */
+  slogan?: Maybe<Scalars['String']['output']>;
   /** URL-friendly slug of the store */
   slug: Scalars['String']['output'];
   tags: Array<Tag>;
@@ -1967,7 +1969,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   ownerAddresses?: Resolver<Array<ResolversTypes['AddressOnOwner']>, ParentType, ContextType, RequireFields<QueryOwnerAddressesArgs, 'ownerId' | 'ownerType'>>;
   product?: Resolver<Maybe<ResolversTypes['Product']>, ParentType, ContextType, RequireFields<QueryProductArgs, 'id'>>;
   productBySlug?: Resolver<Maybe<ResolversTypes['Product']>, ParentType, ContextType, RequireFields<QueryProductBySlugArgs, 'slug' | 'storeId'>>;
-  store?: Resolver<ResolversTypes['Store'], ParentType, ContextType, RequireFields<QueryStoreArgs, 'id'>>;
+  store?: Resolver<ResolversTypes['Store'], ParentType, ContextType, RequireFields<QueryStoreArgs, 'idOrSlug'>>;
   storeCollections?: Resolver<Array<ResolversTypes['Collection']>, ParentType, ContextType, RequireFields<QueryStoreCollectionsArgs, 'skip' | 'storeId' | 'take'>>;
   storeCustomers?: Resolver<Array<ResolversTypes['Customer']>, ParentType, ContextType, RequireFields<QueryStoreCustomersArgs, 'skip' | 'storeId' | 'take'>>;
   storeOverview?: Resolver<ResolversTypes['StoreOverview'], ParentType, ContextType, RequireFields<QueryStoreOverviewArgs, 'storeId'>>;
@@ -2015,6 +2017,7 @@ export type StoreResolvers<ContextType = any, ParentType extends ResolversParent
   phone?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   products?: Resolver<Array<ResolversTypes['Product']>, ParentType, ContextType>;
   showCurrencyCode?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  slogan?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   slug?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   tags?: Resolver<Array<ResolversTypes['Tag']>, ParentType, ContextType>;
   timeZone?: Resolver<ResolversTypes['String'], ParentType, ContextType>;

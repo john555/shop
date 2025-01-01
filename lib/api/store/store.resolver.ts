@@ -37,9 +37,15 @@ export class StoreResolver {
   @AuthStore()
   @Query(() => Store)
   async store(@Args() args: StoreGetArgs): Promise<Store> {
-    const store = await this.storeService.getStoreById(args.id);
+    let store = await this.storeService.getStoreById(args.idOrSlug);
+    if(store) {
+      return store;
+    }
+    
+    store = await this.storeService.getStoreBySlug(args.idOrSlug);
+
     if (!store) {
-      throw new NotFoundException(`Store with ID ${args.id} not found`);
+      throw new NotFoundException(`Store with ID ${args.idOrSlug} not found`);
     }
 
     return store;

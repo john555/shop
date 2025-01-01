@@ -825,7 +825,7 @@ type Query {
   ownerAddresses(ownerId: String!, ownerType: AddressOwnerType!): [AddressOnOwner!]!
   product(id: String!): Product
   productBySlug(slug: String!, storeId: String!): Product
-  store(id: ID!): Store!
+  store(idOrSlug: String!): Store!
   storeCollections(cursor: String, skip: Int! = 0, sortOrder: SortOrder, storeId: String!, take: Int! = 25): [Collection!]!
   storeCustomers(cursor: String, skip: Int! = 0, sortOrder: SortOrder, storeId: String!, take: Int! = 25): [Customer!]!
   storeOverview(storeId: String!): StoreOverview!
@@ -923,6 +923,9 @@ type Store {
 
   """Whether to show currency code alongside amounts"""
   showCurrencyCode: Boolean!
+
+  """Slogan or tagline of the store"""
+  slogan: String
 
   """URL-friendly slug of the store"""
   slug: String!
