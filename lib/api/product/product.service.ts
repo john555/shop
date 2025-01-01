@@ -909,7 +909,6 @@ export class ProductService {
         },
       },
     });
-    console.log('mediaWithOwnerships', JSON.stringify(mediaWithOwnerships, null, 2));
 
     // Sort by position from the ownership relation
     return mediaWithOwnerships.sort((a, b) => {

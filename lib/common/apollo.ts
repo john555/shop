@@ -198,7 +198,6 @@ const errorLink = onError(({ networkError, operation, forward, ...p }) => {
         });
     });
   }
-console.log('operation', operation);
   return new Observable<FetchResult>((observer) => {
     pendingRequests.push(() => forward(operation).subscribe(observer));
   });
