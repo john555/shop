@@ -11,7 +11,7 @@
      "defaultConfiguration": "development",
       "options": {
         "buildTarget": "storefront:serve",
-        "port": 3001,
+        "port": 4000,
         "dev": true
       },
       "configurations": {

@@ -19,10 +19,11 @@
     "baseUrl": ".",
     "paths": {
       "@/*": ["./*"],
-      "@/admin/*": ["lib/admin/*"],
       "@/admin-api/*": ["lib/admin-api/*"],
+      "@/admin/*": ["lib/admin/*"],
       "@/common/*": ["lib/common/*"],
-      "@/types/*": ["lib/common/types/*"]
+      "@/types/*": ["lib/common/types/*"],
+      "@/api/*": ["lib/api/*"]
     }
   },
   "exclude": ["node_modules", "tmp"]
