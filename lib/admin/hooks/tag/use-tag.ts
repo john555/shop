@@ -1,6 +1,6 @@
 import { gql, useMutation, useQuery } from '@apollo/client';
 import { useCallback } from 'react';
-import { Tag, TagCreateInput, TagUpdateInput } from '@/types/api';
+import { Tag, TagCreateInput, TagUpdateInput } from '@/types/admin-api';
 
 // GraphQL Fragments
 const TAG_FIELDS = gql`

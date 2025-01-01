@@ -1,6 +1,6 @@
 import { gql, useMutation, useQuery } from '@apollo/client';
 import { useEffect } from 'react';
-import { Product, SortOrder } from '@/types/api';
+import { Product, SortOrder } from '@/types/admin-api';
 
 interface ProductFiltersInput {
   categoryId?: string;

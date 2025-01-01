@@ -1,4 +1,4 @@
-import { Customer, CustomerCreateInput } from '@/types/api';
+import { Customer, CustomerCreateInput } from '@/types/admin-api';
 import { gql, useMutation, useQuery } from '@apollo/client';
 import { useEffect } from 'react';
 

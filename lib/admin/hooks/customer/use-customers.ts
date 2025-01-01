@@ -1,7 +1,7 @@
 import { gql, useMutation, useQuery } from '@apollo/client';
 import { useEffect } from 'react';
 
-import { Customer, SortOrder } from '@/types/api';
+import { Customer, SortOrder } from '@/types/admin-api';
 
 interface CustomerFiltersInput {
   searchQuery?: string;

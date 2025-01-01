@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import Image from 'next/image'
-import { Media, MediaType } from '@/types/api'
+import { Media, MediaType } from '@/types/admin-api'
 import { Canvas } from '@react-three/fiber'
 import { useGLTF, OrbitControls, Environment } from '@react-three/drei'
 

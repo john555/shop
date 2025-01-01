@@ -7,7 +7,7 @@
     "gen": "ts-node scripts/generate-module/main.ts",
     "gen:types": "graphql-codegen",
     "test": "true",
-    "start": "pm2 start dist/apps/api/main.js",
+    "start": "pm2 start dist/apps/admin-api/main.js",
     "migrate:prod": "eval $(cat prisma/.env.prod) npx prisma migrate deploy"
   },
   "private": true,

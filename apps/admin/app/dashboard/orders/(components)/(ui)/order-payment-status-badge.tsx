@@ -1,7 +1,7 @@
 import React from 'react';
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
-import { PaymentStatus } from '@/types/api';
+import { PaymentStatus } from '@/types/admin-api';
 
 
 interface OrderPaymentStatusBadgeProps {

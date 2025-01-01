@@ -1,6 +1,6 @@
 import { gql, useMutation, useQuery } from '@apollo/client';
 import { useCallback, useState } from 'react';
-import { Product, ProductCreateInput, ProductUpdateInput } from '@/types/api';
+import { Product, ProductCreateInput, ProductUpdateInput } from '@/types/admin-api';
 
 const PRODUCT_FIELDS = gql`
   fragment ProductFields on Product {

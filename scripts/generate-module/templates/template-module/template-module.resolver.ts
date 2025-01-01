@@ -6,7 +6,7 @@ import {
   TemplateModuleCreateInput,
   TemplateModuleUpdateInput,
 } from './template-module.dto';
-import { PaginationArgs } from '@/api/pagination/pagination.args';
+import { PaginationArgs } from '@/admin-api/pagination/pagination.args';
 
 @Resolver(() => TemplateModule)
 export class TemplateModuleResolver {

@@ -1,4 +1,4 @@
-import { Store } from '@/types/api';
+import { Store } from '@/types/admin-api';
 import { gql, useMutation, useQuery } from '@apollo/client';
 
 const UPDATE_STORE = gql`

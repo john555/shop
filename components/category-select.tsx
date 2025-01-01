@@ -4,7 +4,7 @@ import * as React from 'react';
 import { ChevronRight, ChevronDown, ArrowLeft } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
-import { Category } from '@/types/api';
+import { Category } from '@/types/admin-api';
 import {
   Popover,
   PopoverContent,

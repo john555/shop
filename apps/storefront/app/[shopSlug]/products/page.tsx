@@ -9,7 +9,7 @@ import { ActiveFilters } from '../components/active-filters';
 import { NoResultsFeedback } from '../components/no-results-feedback';
 import { ProductCard } from '../components/product-card';
 import { categories, collections, products } from '../utils/mock-data';
-import { Tag } from '@/types/api';
+import { Tag } from '@/types/admin-api';
 
 const ITEMS_PER_PAGE = 12;
 

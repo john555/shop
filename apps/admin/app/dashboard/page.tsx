@@ -52,7 +52,7 @@ import {
 import { Checkbox } from '@/components/ui/checkbox';
 import { useOverview } from '@/admin/hooks/overview';
 import { useStore } from '@/admin/hooks/store';
-import { OrderStatus } from '@/types/api';
+import { OrderStatus } from '@/types/admin-api';
 import { formatPrice } from '@/common/currency';
 import { OrderStatusBadge } from './orders/(components)/(ui)/order-status-badge';
 

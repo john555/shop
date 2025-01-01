@@ -1,6 +1,6 @@
 import { DASHBOARD_PAGE_LINK } from '@/common/constants';
 import { Button } from '@/components/ui/button';
-import { Product, SalesChannel } from '@/types/api';
+import { Product, SalesChannel } from '@/types/admin-api';
 import { Checkbox } from '@/components/ui/checkbox';
 import { ColumnDef } from '@tanstack/react-table';
 import { ArrowUpDown, ChevronDown } from 'lucide-react';

@@ -13,7 +13,7 @@ import { FileTypes, generateFile } from './generate-file';
 
   const path = await new Promise<string>((resolve) => {
     ri.question('What is the path of the module? ', resolve);
-    ri.write('lib/api');
+    ri.write('lib/admin-api');
   });
 
   ri.close();

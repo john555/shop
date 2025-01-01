@@ -14,7 +14,7 @@ import { useStore } from '@/admin/hooks/store/use-store';
 import { useState } from 'react';
 import { EditProfileDialog } from './edit-profile-dialog';
 import { EditSocialMediaDialog } from './edit-social-media-dialog';
-import { AddressOwnerType, AddressType } from '@/types/api';
+import { AddressOwnerType, AddressType } from '@/types/admin-api';
 import { formatAddress } from '@/common/address';
 import { AddressDialog } from '@/components/address-dialog';
 

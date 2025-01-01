@@ -23,12 +23,14 @@ import {
   FormItem,
   FormLabel,
   FormControl,
+  FormDescription,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
 import * as React from 'react';
 import { ProductFormValues } from './product-form';
 import { VariantDetails } from './variant-details';
+import { Switch } from '@/components/ui/switch';
 
 interface VariantsCardProps {
   form: UseFormReturn<ProductFormValues>;
@@ -156,6 +158,26 @@ export function VariantsCard({ form }: VariantsCardProps) {
         </Button>
         {showVariantDetails && (
           <>
+            <FormField
+              control={form.control}
+              name="trackInventory"
+              render={({ field }) => (
+                <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                  <div className="space-y-0.5">
+                    <FormLabel className="text-base">Track Inventory</FormLabel>
+                    <FormDescription>
+                      Enable inventory tracking for this product
+                    </FormDescription>
+                  </div>
+                  <FormControl>
+                    <Switch
+                      checked={field.value}
+                      onCheckedChange={field.onChange}
+                    />
+                  </FormControl>
+                </FormItem>
+              )}
+            />
             <Separator />
             <VariantDetails form={form} variantFields={variantFields} />
           </>

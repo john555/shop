@@ -1,5 +1,5 @@
 import { gql, useMutation, useQuery } from '@apollo/client';
-import { Order, OrderCreateInput, OrderUpdateInput } from '@/types/api';
+import { Order, OrderCreateInput, OrderUpdateInput } from '@/types/admin-api';
 import { formatDatesInObject } from '@/common/date';
 
 const ORDER_FIELDS = `

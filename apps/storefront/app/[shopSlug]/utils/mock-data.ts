@@ -6,7 +6,7 @@ import {
   ProductStatus,
   SalesChannel,
   MediaType,
-} from '@/types/api';
+} from '@/types/admin-api';
 
 export interface Product {
   id: string;

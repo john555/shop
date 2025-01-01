@@ -6,7 +6,7 @@ import {
   ShoppingCart,
   Users,
 } from 'lucide-react';
-import { StoreOverview, ActivityType, RecentActivity } from '@/types/api';
+import { StoreOverview, ActivityType, RecentActivity } from '@/types/admin-api';
 import { formatDatesInObject } from '@/common/date';
 
 const STORE_OVERVIEW_QUERY = gql`

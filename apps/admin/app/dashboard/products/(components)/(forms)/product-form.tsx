@@ -42,7 +42,7 @@ import {
   Product,
   ProductStatus,
   SalesChannel,
-} from '@/types/api';
+} from '@/types/admin-api';
 import { useParams, useRouter } from 'next/navigation';
 import { DASHBOARD_PAGE_LINK } from '@/common/constants';
 import {
@@ -58,6 +58,7 @@ import MediaInput from '@/components/media-input';
 import { ProductStatusBadge } from '../(ui)/product-status-badge';
 import { VariantsCard } from './variants-card';
 import { CategorySelect } from '@/components/category-select';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 function generateSlug(title: string): string {
   return title
@@ -174,7 +175,7 @@ export function ProductForm() {
       seoDescription: product?.seoDescription ?? undefined,
       options:
         product?.options?.map((o) => ({ ...o, isCollapsed: true })) || [],
-      variants: product?.variants || [],
+      variants: product?.variants ?? [],
       mediaIds: product?.media?.map((m) => m.id) || [],
     };
   }
@@ -359,185 +360,200 @@ export function ProductForm() {
                   </div>
                 </CardContent>
               </Card>
-              <Card>
-                <CardHeader>
-                  <CardTitle>Pricing & Inventory</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="flex space-x-4">
-                    <FormField
-                      control={form.control}
-                      name="price"
-                      render={({ field }) => (
-                        <FormItem className="flex-1">
-                          <FormLabel>Price</FormLabel>
-                          <FormControl>
-                            <div className="relative">
-                              {store?.currencyPosition === 'BEFORE_AMOUNT' && (
-                                <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">
-                                  {store?.showCurrencyCode
-                                    ? store?.currency
-                                    : store?.currencySymbol}
-                                </span>
-                              )}
-                              <Input
-                                type="number"
-                                step="0.01"
-                                placeholder="0.00"
-                                className={
-                                  store?.currencyPosition === 'BEFORE_AMOUNT'
-                                    ? 'pl-16'
-                                    : 'pr-16'
-                                }
-                                {...field}
-                                onChange={(e) =>
-                                  field.onChange(parseFloat(e.target.value))
-                                }
-                              />
-                              {store?.currencyPosition === 'AFTER_AMOUNT' && (
-                                <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500">
-                                  {store?.showCurrencyCode
-                                    ? store?.currency
-                                    : store?.currencySymbol}
-                                </span>
-                              )}
+              <Tabs defaultValue="single">
+                <TabsList className="grid w-full grid-cols-2">
+                  <TabsTrigger value="single">Single product</TabsTrigger>
+                  <TabsTrigger value="variants">Variants e.g Size, Color, etc</TabsTrigger>
+                </TabsList>
+                <TabsContent value="single">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Pricing & Inventory</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div className="flex space-x-4">
+                        <FormField
+                          control={form.control}
+                          name="price"
+                          render={({ field }) => (
+                            <FormItem className="flex-1">
+                              <FormLabel>Price</FormLabel>
+                              <FormControl>
+                                <div className="relative">
+                                  {store?.currencyPosition ===
+                                    'BEFORE_AMOUNT' && (
+                                    <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">
+                                      {store?.showCurrencyCode
+                                        ? store?.currency
+                                        : store?.currencySymbol}
+                                    </span>
+                                  )}
+                                  <Input
+                                    type="number"
+                                    step="0.01"
+                                    placeholder="0.00"
+                                    className={
+                                      store?.currencyPosition ===
+                                      'BEFORE_AMOUNT'
+                                        ? 'pl-16'
+                                        : 'pr-16'
+                                    }
+                                    {...field}
+                                    onChange={(e) =>
+                                      field.onChange(parseFloat(e.target.value))
+                                    }
+                                  />
+                                  {store?.currencyPosition ===
+                                    'AFTER_AMOUNT' && (
+                                    <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500">
+                                      {store?.showCurrencyCode
+                                        ? store?.currency
+                                        : store?.currencySymbol}
+                                    </span>
+                                  )}
+                                </div>
+                              </FormControl>
+                              <FormDescription>
+                                Set the selling price for your product. Enter 0
+                                for free items.
+                              </FormDescription>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={form.control}
+                          name="compareAtPrice"
+                          render={({ field }) => (
+                            <FormItem className="flex-1">
+                              <FormLabel>Compare at Price</FormLabel>
+                              <FormControl>
+                                <div className="relative">
+                                  {store?.currencyPosition ===
+                                    'BEFORE_AMOUNT' && (
+                                    <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">
+                                      {store?.showCurrencyCode
+                                        ? store?.currency
+                                        : store?.currencySymbol}
+                                    </span>
+                                  )}
+                                  <Input
+                                    type="number"
+                                    step="0.01"
+                                    placeholder="0.00"
+                                    className={
+                                      store?.currencyPosition ===
+                                      'BEFORE_AMOUNT'
+                                        ? 'pl-16'
+                                        : 'pr-16'
+                                    }
+                                    {...field}
+                                    onChange={(e) =>
+                                      field.onChange(parseFloat(e.target.value))
+                                    }
+                                  />
+                                  {store?.currencyPosition ===
+                                    'AFTER_AMOUNT' && (
+                                    <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500">
+                                      {store?.showCurrencyCode
+                                        ? store?.currency
+                                        : store?.currencySymbol}
+                                    </span>
+                                  )}
+                                </div>
+                              </FormControl>
+                              <FormDescription>
+                                Optional. Use to show a discounted price by
+                                displaying the original price.
+                              </FormDescription>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+                      <FormField
+                        control={form.control}
+                        name="trackInventory"
+                        render={({ field }) => (
+                          <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                            <div className="space-y-0.5">
+                              <FormLabel className="text-base">
+                                Track Inventory
+                              </FormLabel>
+                              <FormDescription>
+                                Enable inventory tracking for this product
+                              </FormDescription>
                             </div>
-                          </FormControl>
-                          <FormDescription>
-                            Set the selling price for your product. Enter 0 for
-                            free items.
-                          </FormDescription>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="compareAtPrice"
-                      render={({ field }) => (
-                        <FormItem className="flex-1">
-                          <FormLabel>Compare at Price</FormLabel>
-                          <FormControl>
-                            <div className="relative">
-                              {store?.currencyPosition === 'BEFORE_AMOUNT' && (
-                                <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">
-                                  {store?.showCurrencyCode
-                                    ? store?.currency
-                                    : store?.currencySymbol}
-                                </span>
-                              )}
-                              <Input
-                                type="number"
-                                step="0.01"
-                                placeholder="0.00"
-                                className={
-                                  store?.currencyPosition === 'BEFORE_AMOUNT'
-                                    ? 'pl-16'
-                                    : 'pr-16'
-                                }
-                                {...field}
-                                onChange={(e) =>
-                                  field.onChange(parseFloat(e.target.value))
-                                }
+                            <FormControl>
+                              <Switch
+                                checked={field.value}
+                                onCheckedChange={field.onChange}
                               />
-                              {store?.currencyPosition === 'AFTER_AMOUNT' && (
-                                <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500">
-                                  {store?.showCurrencyCode
-                                    ? store?.currency
-                                    : store?.currencySymbol}
-                                </span>
-                              )}
-                            </div>
-                          </FormControl>
-                          <FormDescription>
-                            Optional. Use to show a discounted price by
-                            displaying the original price.
-                          </FormDescription>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-                  <FormField
-                    control={form.control}
-                    name="trackInventory"
-                    render={({ field }) => (
-                      <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
-                        <div className="space-y-0.5">
-                          <FormLabel className="text-base">
-                            Track Inventory
-                          </FormLabel>
-                          <FormDescription>
-                            Enable inventory tracking for this product
-                          </FormDescription>
-                        </div>
-                        <FormControl>
-                          <Switch
-                            checked={field.value}
-                            onCheckedChange={field.onChange}
+                            </FormControl>
+                          </FormItem>
+                        )}
+                      />
+                      {form.watch('trackInventory') && (
+                        <div className="flex space-x-4">
+                          <FormField
+                            control={form.control}
+                            name="sku"
+                            render={({ field }) => (
+                              <FormItem className="flex-1">
+                                <FormLabel>SKU (Stock Keeping Unit)</FormLabel>
+                                <FormControl>
+                                  <div className="relative">
+                                    <Tag className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500" />
+                                    <Input
+                                      placeholder="e.g. WH-1000XM4"
+                                      className="pl-10"
+                                      {...field}
+                                    />
+                                  </div>
+                                </FormControl>
+                                <FormDescription>
+                                  Enter a unique identifier for your product.
+                                </FormDescription>
+                                <FormMessage />
+                              </FormItem>
+                            )}
                           />
-                        </FormControl>
-                      </FormItem>
-                    )}
-                  />
-                  {form.watch('trackInventory') && (
-                    <div className="flex space-x-4">
-                      <FormField
-                        control={form.control}
-                        name="sku"
-                        render={({ field }) => (
-                          <FormItem className="flex-1">
-                            <FormLabel>SKU (Stock Keeping Unit)</FormLabel>
-                            <FormControl>
-                              <div className="relative">
-                                <Tag className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500" />
-                                <Input
-                                  placeholder="e.g. WH-1000XM4"
-                                  className="pl-10"
-                                  {...field}
-                                />
-                              </div>
-                            </FormControl>
-                            <FormDescription>
-                              Enter a unique identifier for your product.
-                            </FormDescription>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      <FormField
-                        control={form.control}
-                        name="available"
-                        render={({ field }) => (
-                          <FormItem className="flex-1">
-                            <FormLabel>Available Quantity</FormLabel>
-                            <FormControl>
-                              <div className="relative">
-                                <Box className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500" />
-                                <Input
-                                  type="number"
-                                  placeholder="0"
-                                  className="pl-10"
-                                  {...field}
-                                  onChange={(e) =>
-                                    field.onChange(parseInt(e.target.value))
-                                  }
-                                />
-                              </div>
-                            </FormControl>
-                            <FormDescription>
-                              Enter the number of items available in stock.
-                            </FormDescription>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-
-              <VariantsCard form={form} />
+                          <FormField
+                            control={form.control}
+                            name="available"
+                            render={({ field }) => (
+                              <FormItem className="flex-1">
+                                <FormLabel>Available Quantity</FormLabel>
+                                <FormControl>
+                                  <div className="relative">
+                                    <Box className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500" />
+                                    <Input
+                                      type="number"
+                                      placeholder="0"
+                                      className="pl-10"
+                                      {...field}
+                                      onChange={(e) =>
+                                        field.onChange(parseInt(e.target.value))
+                                      }
+                                    />
+                                  </div>
+                                </FormControl>
+                                <FormDescription>
+                                  Enter the number of items available in stock.
+                                </FormDescription>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+                </TabsContent>
+                <TabsContent value="variants">
+                  <VariantsCard form={form} />
+                </TabsContent>
+              </Tabs>
 
               <Card>
                 <CardHeader>

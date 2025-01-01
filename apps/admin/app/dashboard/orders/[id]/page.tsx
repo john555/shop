@@ -50,7 +50,7 @@ import {
   OrderUpdateInput,
   PaymentStatus,
   ShipmentStatus,
-} from '@/types/api';
+} from '@/types/admin-api';
 import { useOrder } from '@/admin/hooks/order';
 import { useParams } from 'next/navigation';
 import { useStore } from '@/admin/hooks/store';

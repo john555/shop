@@ -46,7 +46,7 @@ import {
   MediaOwnerType,
   MediaPurpose,
   MediaType,
-} from '@/lib/common/types/api';
+} from '@/lib/common/types/admin-api';
 
 type MediaInputProps = {
   ownerType?: MediaOwnerType;

@@ -1,6 +1,6 @@
 import { gql, useQuery } from '@apollo/client';
 import { useEffect } from 'react';
-import { Order, OrderStatus, PaymentStatus, ShipmentStatus } from '@/types/api';
+import { Order, OrderStatus, PaymentStatus, ShipmentStatus } from '@/types/admin-api';
 
 const ORDERS_FIELDS = `
   id

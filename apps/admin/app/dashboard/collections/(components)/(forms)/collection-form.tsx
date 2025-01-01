@@ -52,7 +52,7 @@ import { useProducts } from '@/admin/hooks/product';
 import { useStore } from '@/admin/hooks/store';
 import { useParams, useRouter } from 'next/navigation';
 import { DASHBOARD_PAGE_LINK } from '@/common/constants';
-import { Collection } from '@/types/api';
+import { Collection } from '@/types/admin-api';
 
 const collectionSchema = z.object({
   name: z

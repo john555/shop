@@ -20,7 +20,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useEffect } from 'react';
-import { AddressOwnerType, AddressType } from '@/types/api';
+import { AddressOwnerType, AddressType } from '@/types/admin-api';
 import { COUNTRIES } from '@/common/constants';
 import { useAddressOwner } from '@/admin/hooks/address-owner';
 

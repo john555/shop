@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { gql } from '@apollo/client';
 import { client } from '@/common/apollo';
-import { User } from '@/types/api';
+import { User } from '@/types/admin-api';
 import { SIGNIN_PAGE_LINK } from '@/common/constants';
 
 const ME_QUERY = gql`

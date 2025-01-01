@@ -57,7 +57,7 @@ import {
 import { useOrder } from '@/admin/hooks/order';
 import { useStore } from '@/admin/hooks/store';
 import { useProducts } from '@/admin/hooks/product';
-import { Customer, Product, ProductStatus } from '@/types/api';
+import { Customer, Product, ProductStatus } from '@/types/admin-api';
 import { formatPrice } from '@/common/currency';
 import { useCustomers } from '@/admin/hooks/customer';
 import { DASHBOARD_PAGE_LINK } from '@/common/constants';

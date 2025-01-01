@@ -20,7 +20,7 @@ import {
 } from '@/components/ui/tooltip';
 import { updateUser } from '@/common/actions/user';
 import { useCurrentUser } from '@/common/hooks/auth';
-import { Theme } from '@/types/api';
+import { Theme } from '@/types/admin-api';
 
 export default function ThemeSettingsPage() {
   const { user } = useCurrentUser();

@@ -14,7 +14,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
-import { ProductVariant, Media, MediaType } from '@/types/api';
+import { ProductVariant, Media, MediaType } from '@/types/admin-api';
 import Link from 'next/link';
 import { products } from '../utils/mock-data';
 import { MediaRenderer } from '../components/media-renderer';

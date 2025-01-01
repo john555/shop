@@ -1,6 +1,6 @@
 import { DASHBOARD_PAGE_LINK, LANGUAGES } from '@/common/constants';
 import { Button } from '@/components/ui/button';
-import { Customer } from '@/types/api';
+import { Customer } from '@/types/admin-api';
 import { Checkbox } from '@/components/ui/checkbox';
 import { ColumnDef } from '@tanstack/react-table';
 import { ArrowUpDown } from 'lucide-react';

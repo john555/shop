@@ -9,7 +9,7 @@ import { StoreDetailsCard } from './(components)/store-details-card';
 import { StoreDefaultsCard } from './(components)/store-defaults-card';
 import { OrderIdCard } from './(components)/order-id-card';
 import { useStore } from '@/admin/hooks/store/use-store';
-import { CurrencyPosition, Store, UnitSystem, WeightUnit } from '@/types/api';
+import { CurrencyPosition, Store, UnitSystem, WeightUnit } from '@/types/admin-api';
 import { Form } from '@/components/ui/form';
 
 const storeSettingsSchema = z.object({

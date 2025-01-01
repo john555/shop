@@ -1,6 +1,6 @@
 import { DASHBOARD_PAGE_LINK } from '@/common/constants';
 import { Button } from '@/components/ui/button';
-import { Collection } from '@/types/api';
+import { Collection } from '@/types/admin-api';
 import { Checkbox } from '@/components/ui/checkbox';
 import {
   DropdownMenu,

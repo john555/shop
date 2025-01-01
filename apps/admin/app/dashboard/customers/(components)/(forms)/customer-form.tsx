@@ -40,7 +40,7 @@ import {
   getCountryFromPhoneCode,
   LANGUAGES,
 } from '@/common/constants';
-import { AddressOwnerType, AddressType, Customer, Language } from '@/types/api';
+import { AddressOwnerType, AddressType, Customer, Language } from '@/types/admin-api';
 import { Badge } from '@/components/ui/badge';
 import { AddressDialog } from '@/components/address-dialog';
 

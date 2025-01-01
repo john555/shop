@@ -19,7 +19,7 @@ import { useStore } from '@/admin/hooks/store';
 import { DataTable } from './(components)/(table)/data-table';
 import { createColumns } from './(components)/(table)/columns';
 import { useState } from 'react';
-import { Collection } from '@/types/api';
+import { Collection } from '@/types/admin-api';
 
 export default function CollectionsPage() {
   const [activeCollection, setActiveCollection] = useState<Collection>();

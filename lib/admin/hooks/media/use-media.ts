@@ -6,7 +6,7 @@ import {
   MediaUpdateInput,
   MediaCreateInput,
   MediaReorderInput,
-} from '@/types/api';
+} from '@/types/admin-api';
 
 interface UseMediaProps {
   skip?: number;

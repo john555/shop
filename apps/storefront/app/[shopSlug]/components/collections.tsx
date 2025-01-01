@@ -1,4 +1,4 @@
-import { Collection } from '@/types/api';
+import { Collection } from '@/types/admin-api';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Card, CardContent } from '@/components/ui/card';

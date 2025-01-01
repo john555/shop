@@ -1,6 +1,6 @@
 import { DASHBOARD_PAGE_LINK } from '@/common/constants';
 import { Button } from '@/components/ui/button';
-import { Order } from '@/types/api';
+import { Order } from '@/types/admin-api';
 import { Checkbox } from '@/components/ui/checkbox';
 import { ColumnDef } from '@tanstack/react-table';
 import { ArrowUpDown } from 'lucide-react';

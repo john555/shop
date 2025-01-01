@@ -3,7 +3,7 @@ import {
   AddressOnOwnerCreateInput,
   AddressOnOwnerUpdateInput,
   AddressOnOwner,
-} from '@/types/api';
+} from '@/types/admin-api';
 
 const ADDRESS_OWNER_FIELDS = `
   id

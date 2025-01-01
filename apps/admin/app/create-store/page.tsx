@@ -24,7 +24,7 @@ import {
 } from '@/components/ui/select';
 import { TypeAnimation } from 'react-type-animation';
 import { motion } from 'framer-motion';
-import { StoreCreateInput, StoreCurrency, StoreType } from '@/types/api';
+import { StoreCreateInput, StoreCurrency, StoreType } from '@/types/admin-api';
 import { useCurrentUser } from '@/common/hooks/auth';
 import { useCreateStore } from '@/admin/hooks/store';
 import { StoreAlreadyExists } from './(components)/store-already-exists';

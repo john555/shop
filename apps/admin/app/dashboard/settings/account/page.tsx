@@ -18,7 +18,7 @@ import { PasswordChange } from './(components)/password-change';
 import { accountFormSchema, AccountFormValues } from './(types)/account-types';
 import { useCurrentUser } from '@/common/hooks/auth/use-current-user';
 import { updateUser, updateUserPassword } from '@/common/actions/user';
-import { User } from '@/types/api';
+import { User } from '@/types/admin-api';
 import { toast } from "sonner"
 
 export default function SettingsAccountPage() {

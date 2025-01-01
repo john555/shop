@@ -17,7 +17,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useStore } from '@/admin/hooks/store/use-store';
-import { CurrencyPosition, UnitSystem, WeightUnit } from '@/types/api';
+import { CurrencyPosition, UnitSystem, WeightUnit } from '@/types/admin-api';
 import { Input } from '@/components/ui/input';
 import {
   FormField,

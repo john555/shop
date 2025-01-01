@@ -3,7 +3,7 @@ import {
   Collection,
   CollectionCreateInput,
   CollectionUpdateInput,
-} from '@/types/api';
+} from '@/types/admin-api';
 import { useState } from 'react';
 
 const PRODUCT_FRAGMENT = gql`

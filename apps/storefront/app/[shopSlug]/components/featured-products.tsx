@@ -1,5 +1,5 @@
 import { ProductCard } from "./product-card"
-import { Product } from "@/types/api"
+import { Product } from "@/types/admin-api"
 
 interface FeaturedProductsProps {
   products: Product[]

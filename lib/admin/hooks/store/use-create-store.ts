@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { gql } from '@apollo/client';
 import { client } from '@/common/apollo';
-import { StoreCreateInput, Store } from '@/types/api';
+import { StoreCreateInput, Store } from '@/types/admin-api';
 
 // GraphQL Queries and Mutations
 const CREATE_STORE_MUTATION = gql`

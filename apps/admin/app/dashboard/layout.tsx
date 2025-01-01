@@ -62,7 +62,7 @@ import { useCurrentUser } from '@/common/hooks/auth';
 import { SignInRequired } from '../(auth)/(components)/sign-in-required';
 import { DASHBOARD_SETTINGS_LINK, THEMES } from '@/common/constants';
 import { updateUser } from '@/common/actions/user';
-import { Theme } from '@/types/api';
+import { Theme } from '@/types/admin-api';
 import { ApolloProvider } from '@apollo/client';
 import { client } from '@/common/apollo';
 import { CreateStoreRequired } from './(components)/create-store-required';

@@ -20,7 +20,7 @@
     "paths": {
       "@/*": ["./*"],
       "@/admin/*": ["lib/admin/*"],
-      "@/api/*": ["lib/api/*"],
+      "@/admin-api/*": ["lib/admin-api/*"],
       "@/common/*": ["lib/common/*"],
       "@/types/*": ["lib/common/types/*"]
     }

@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Product } from '@/types/api';
+import { Product } from '@/types/admin-api';
 import { formatCurrency } from '../utils/currency';
 import { createStoreFrontUrl } from '@/lib/common/url';
 import { useParams } from 'next/navigation';

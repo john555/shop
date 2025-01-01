@@ -1,4 +1,4 @@
-import { Language } from '@/types/api';
+import { Language } from '@/types/admin-api';
 import { z } from 'zod';
 
 export const accountFormSchema = z
