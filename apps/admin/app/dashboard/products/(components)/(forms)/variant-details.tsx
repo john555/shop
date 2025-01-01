@@ -167,6 +167,7 @@ export function VariantDetails({ form, variantFields }: VariantDetailsProps) {
                                 step="0.01"
                                 placeholder="$0.00"
                                 {...field}
+                                value={field.value !== null ? field.value : ''}
                                 onChange={(e) => {
                                   const value = parseFloat(e.target.value);
                                   field.onChange(value);
@@ -191,6 +192,7 @@ export function VariantDetails({ form, variantFields }: VariantDetailsProps) {
                                 step="0.01"
                                 placeholder="$0.00"
                                 {...field}
+                                value={field.value !== null ? field.value : ''}
                                 onChange={(e) => {
                                   const value = parseFloat(e.target.value);
                                   field.onChange(value);
