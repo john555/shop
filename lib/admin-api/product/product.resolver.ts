@@ -12,11 +12,11 @@ import {
 import { Logger, NotFoundException } from '@nestjs/common';
 import { Product } from './entities/product.entity';
 import { ProductService } from './product.service';
-import { Store } from '../store/store.entity';
-import { Category } from '../category/category.entity';
-import { Collection } from '../collection/collection.entity';
-import { Tag } from '../tag/tag.entity';
-import { Media } from '../media/media.entity';
+import { Store } from '@/common/backend/store/store.entity';
+import { Category } from '../../common/backend/category/category.entity';
+import { Collection } from '../../common/backend/collection/collection.entity';
+import { Tag } from '../../common/backend/tag/tag.entity';
+import { Media } from '../../common/backend/media/media.entity';
 import { ProductOption } from './entities/product-option.entity';
 import { ProductVariant } from './entities/product-variant.entity';
 import {
@@ -29,13 +29,13 @@ import {
   ProductGetBySlugArgs,
   GetMyStoreProductsArgs,
 } from './product.dto';
-import { PaginationArgs } from '@/admin-api/pagination/pagination.args';
-import { AuthContext } from '@/admin-api/utils/auth';
+import { PaginationArgs } from '@/lib/common/backend/pagination/pagination.args';
+import { AuthContext } from '@/lib/common/backend/utils/auth';
 import {
   AuthBulkProducts,
   AuthProduct,
   AuthStore,
-} from '../authorization/decorators/auth.decorator';
+} from '@/common/backend/authorization/decorators/auth.decorator';
 
 @Resolver(() => Product)
 export class ProductResolver {

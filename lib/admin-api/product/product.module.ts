@@ -1,9 +1,9 @@
 import { Module } from '@nestjs/common';
 import { ProductResolver } from './product.resolver';
 import { ProductService } from './product.service';
-import { StoreModule } from '../store/store.module';
-import { AuthorizationModule } from '../authorization/authorization.module';
-import { SlugModule } from '@/admin-api/slug/slug.module';
+import { StoreModule } from '@/common/backend/store/store.module';
+import { AuthorizationModule } from '@/common/backend/authorization/authorization.module';
+import { SlugModule } from '@/lib/common/backend/slug/slug.module';
 
 @Module({
   imports: [AuthorizationModule, StoreModule, SlugModule],

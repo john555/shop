@@ -5,7 +5,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { PrismaService } from '@/admin-api/prisma/prisma.service';
-import { StoreService } from '../store/store.service';
+import { StoreService } from '@/common/backend/store/store.service';
 import {
   Order,
   OrderStatus,
@@ -18,8 +18,8 @@ import {
   OrderFiltersInput,
   OrderUpdateInput,
 } from './order.dto';
-import { paginate } from '@/admin-api/pagination/paginate';
-import { PaginationArgs } from '@/admin-api/pagination/pagination.args';
+import { paginate } from '@/lib/common/backend/pagination/paginate';
+import { PaginationArgs } from '@/lib/common/backend/pagination/pagination.args';
 
 @Injectable()
 export class OrderService {

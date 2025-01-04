@@ -10,7 +10,7 @@ import {
   ArrayMinSize,
   Min,
 } from 'class-validator';
-import { PaginationArgs } from '../pagination/pagination.args';
+import { PaginationArgs } from '../../common/backend/pagination/pagination.args';
 import { OrderStatus, PaymentStatus, ShipmentStatus } from '@prisma/client';
 
 @InputType()

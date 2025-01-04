@@ -19,9 +19,9 @@ import {
   Media,
   Store,
 } from '@prisma/client';
-import { PaginationArgs } from '@/admin-api/pagination/pagination.args';
-import { paginate } from '@/admin-api/pagination/paginate';
-import { SlugService } from '@/admin-api/slug/slug.service';
+import { PaginationArgs } from '@/lib/common/backend/pagination/pagination.args';
+import { paginate } from '@/lib/common/backend/pagination/paginate';
+import { SlugService } from '@/lib/common/backend/slug/slug.service';
 import {
   ProductCreateInput,
   ProductUpdateInput,

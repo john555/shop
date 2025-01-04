@@ -1,8 +1,8 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from '@/admin-api/prisma/prisma.service';
 import { Customer } from '@prisma/client';
-import { PaginationArgs } from '@/admin-api/pagination/pagination.args';
-import { paginate } from '@/admin-api/pagination/paginate';
+import { PaginationArgs } from '@/lib/common/backend/pagination/pagination.args';
+import { paginate } from '@/lib/common/backend/pagination/paginate';
 import { CustomerCreateInput, CustomerUpdateInput } from './customer.dto';
 
 @Injectable()

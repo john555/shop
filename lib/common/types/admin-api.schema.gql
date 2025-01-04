@@ -919,7 +919,6 @@ type Store {
 
   """Phone number of the store"""
   phone: String
-  products: [Product!]!
 
   """Whether to show currency code alongside amounts"""
   showCurrencyCode: Boolean!

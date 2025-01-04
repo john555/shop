@@ -8,7 +8,7 @@ import {
   WeightUnit,
 } from '@prisma/client';
 import { User } from '../user/user.entity';
-import { AddressOnOwner } from '../../common/backend/address-on-owner/address-on-owner.entity';
+import { AddressOnOwner } from '../address-on-owner/address-on-owner.entity';
 
 // Register all enums for GraphQL
 registerEnumType(StoreType, {

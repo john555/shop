@@ -14,7 +14,7 @@ import {
   StoreCurrency,
 } from '@prisma/client';
 import { Customer } from '../customer/customer.entity';
-import { Store } from '../store/store.entity';
+import { Store } from '@/common/backend/store/store.entity';
 import { Decimal } from '@prisma/client/runtime/library';
 
 registerEnumType(OrderStatus, {

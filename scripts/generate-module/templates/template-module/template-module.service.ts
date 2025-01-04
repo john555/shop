@@ -5,8 +5,8 @@ import {
   TemplateModuleUpdateInput,
 } from './template-module.dto';
 import { PrismaService } from '@/admin-api/prisma/prisma.service';
-import { PaginationArgs } from '@/admin-api/pagination/pagination.args';
-import { paginate } from '@/admin-api/pagination/paginate';
+import { PaginationArgs } from '@/lib/common/backend/pagination/pagination.args';
+import { paginate } from '@/lib/common/backend/pagination/paginate';
 
 @Injectable()
 export class TemplateModuleService {

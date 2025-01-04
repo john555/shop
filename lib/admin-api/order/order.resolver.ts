@@ -10,7 +10,7 @@ import {
 import { Logger, NotFoundException } from '@nestjs/common';
 import { Order, OrderStats } from './order.entity';
 import { OrderService } from './order.service';
-import { Store } from '../store/store.entity';
+import { Store } from '@/common/backend/store/store.entity';
 import { Customer } from '../customer/customer.entity';
 import { OrderItem } from './order.entity';
 import {
@@ -20,9 +20,9 @@ import {
   OrderGetArgs,
   OrderUpdateInput,
 } from './order.dto';
-import { AuthOrder, AuthStore } from '../authorization/decorators/auth.decorator';
-import { AuthContext } from '../utils/auth';
-import { PaginationArgs } from '../pagination/pagination.args';
+import { AuthOrder, AuthStore } from '@/common/backend/authorization/decorators/auth.decorator';
+import { AuthContext } from '../../common/backend/utils/auth';
+import { PaginationArgs } from '../../common/backend/pagination/pagination.args';
 import { getFormattedOrderNumber } from '@/common/order-number';
 import { formatPrice } from '@/common/currency';
 import { CurrencyPosition, StoreCurrency } from '@/types/admin-api';

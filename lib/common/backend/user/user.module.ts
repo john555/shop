@@ -1,12 +1,12 @@
 import { Module } from '@nestjs/common';
-import { OrderResolver } from './order.resolver';
-import { OrderService } from './order.service';
+import { UserService } from './user.service';
+import { UserResolver } from './user.resolver';
 import { StoreModule } from '@/common/backend/store/store.module';
 import { AuthorizationModule } from '@/common/backend/authorization/authorization.module';
 
 @Module({
   imports: [AuthorizationModule, StoreModule],
-  providers: [OrderResolver, OrderService],
-  exports: [OrderService],
+  providers: [UserResolver, UserService],
+  exports: [UserService],
 })
-export class OrderModule {}
+export class UserModule {}

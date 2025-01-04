@@ -20,11 +20,11 @@ import {
   CustomerCreateInput,
   CustomerUpdateInput,
 } from './customer.dto';
-import { AuthContext } from '../utils/auth';
-import { PaginationArgs } from '@/admin-api/pagination/pagination.args';
-import { JwtAuthGuard } from '../authentication/guard/jwt-auth.guard';
-import { AddressOnOwner } from '../address-on-owner/address-on-owner.entity';
-import { AddressOnOwnerService } from '../address-on-owner/address-on-owner.service';
+import { AuthContext } from '../../common/backend/utils/auth';
+import { PaginationArgs } from '@/lib/common/backend/pagination/pagination.args';
+import { JwtAuthGuard } from '@/common/backend/authentication/guard/jwt-auth.guard';
+import { AddressOnOwner } from '../../common/backend/address-on-owner/address-on-owner.entity';
+import { AddressOnOwnerService } from '../../common/backend/address-on-owner/address-on-owner.service';
 import { AddressOwnerType, AddressType } from '@prisma/client';
 
 @Resolver(() => Customer)

@@ -11,18 +11,17 @@ import { Logger, NotFoundException, BadRequestException } from '@nestjs/common';
 import { Store } from './store.entity';
 import { StoreService } from './store.service';
 import { StoreGetArgs, StoreCreateInput, StoreUpdateInput } from './store.dto';
-import { PaginationArgs } from '@/admin-api/pagination/pagination.args';
-import { AuthContext } from '../../common/backend/utils/auth';
+import { PaginationArgs } from '@/lib/common/backend/pagination/pagination.args';
+import { AuthContext } from '../utils/auth';
 import { AddressOwnerType } from '@prisma/client';
 
 import { User } from '../user/user.entity';
-import { Category } from '../../common/backend/category/category.entity';
-import { Collection } from '../../common/backend/collection/collection.entity';
-import { Tag } from '../../common/backend/tag/tag.entity';
-import { Product } from '../product/entities/product.entity';
+import { Category } from '@/common/backend/category/category.entity';
+import { Collection } from '@/common/backend/collection/collection.entity';
+import { Tag } from '@/common/backend/tag/tag.entity';
 import { Auth, AuthStore } from '@/common/backend/authorization/decorators/auth.decorator';
-import { AddressOnOwnerService } from '../../common/backend/address-on-owner/address-on-owner.service';
-import { AddressOnOwner } from '../../common/backend/address-on-owner/address-on-owner.entity';
+import { AddressOnOwnerService } from '../address-on-owner/address-on-owner.service';
+import { AddressOnOwner } from '../address-on-owner/address-on-owner.entity';
 
 @Resolver(() => Store)
 export class StoreResolver {
@@ -127,21 +126,6 @@ export class StoreResolver {
       AddressOwnerType.STORE
     );
   }
-
-  @ResolveField(() => [Product])
-  async products(@Parent() store: Store): Promise<Product[]> {
-    return this.storeService.findProducts(store.id);
-  }
-
-  // @ResolveField(() => [PropertyListing])
-  // async propertyListings(@Parent() store: Store): Promise<PropertyListing[]> {
-  //   return this.storeService.findPropertyListings(store.id);
-  // }
-
-  // @ResolveField(() => [VehicleListing])
-  // async vehicleListings(@Parent() store: Store): Promise<VehicleListing[]> {
-  //   return this.storeService.findVehicleListings(store.id);
-  // }
 
   @ResolveField(() => [Category])
   async categories(

@@ -15,7 +15,7 @@ import {
   Matches,
 } from 'class-validator';
 import { ProductStatus, SalesChannel } from '@prisma/client';
-import { PaginationArgs } from '@/admin-api/pagination/pagination.args';
+import { PaginationArgs } from '@/lib/common/backend/pagination/pagination.args';
 
 @ArgsType()
 export class ProductGetArgs {

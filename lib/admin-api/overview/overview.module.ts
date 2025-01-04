@@ -1,8 +1,8 @@
 import { Module } from '@nestjs/common';
 import { OverviewResolver } from './overview.resolver';
 import { OverviewService } from './overview.service';
-import { StoreModule } from '../store/store.module';
-import { AuthorizationModule } from '../authorization/authorization.module';
+import { StoreModule } from '@/common/backend/store/store.module';
+import { AuthorizationModule } from '@/common/backend/authorization/authorization.module';
 
 @Module({
   imports: [StoreModule, AuthorizationModule],

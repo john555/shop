@@ -1194,7 +1194,6 @@ export type Store = {
   ownerId: Scalars['String']['output'];
   /** Phone number of the store */
   phone?: Maybe<Scalars['String']['output']>;
-  products: Array<Product>;
   /** Whether to show currency code alongside amounts */
   showCurrencyCode: Scalars['Boolean']['output'];
   /** Slogan or tagline of the store */
@@ -2015,7 +2014,6 @@ export type StoreResolvers<ContextType = any, ParentType extends ResolversParent
   owner?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType>;
   ownerId?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   phone?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  products?: Resolver<Array<ResolversTypes['Product']>, ParentType, ContextType>;
   showCurrencyCode?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   slogan?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   slug?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
