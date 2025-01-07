@@ -5,6 +5,9 @@ import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { GraphQLModule } from '@nestjs/graphql';
+import { ProductModule } from '../product/product.module';
+import { AuthenticationModule } from '@/lib/common/backend/authentication/authentication.module';
+import { AuthorizationModule } from '@/lib/common/backend/authorization/authorization.module';
 
 @Module({
   imports: [
@@ -37,6 +40,9 @@ import { GraphQLModule } from '@nestjs/graphql';
     }),
     PrismaModule,
     HealthModule,
+    AuthenticationModule,
+    AuthorizationModule,
+    ProductModule,
   ],
 })
 export class AppModule {}

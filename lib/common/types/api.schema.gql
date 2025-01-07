@@ -1,0 +1,632 @@
+# ------------------------------------------------------
+# THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
+# ------------------------------------------------------
+
+"""Address information"""
+type Address {
+  city: String
+  country: String!
+  createdAt: DateTime!
+  id: ID!
+  line1: String
+  line2: String
+  state: String
+  updatedAt: DateTime!
+  zipCode: String
+}
+
+input AddressInput {
+  city: String
+  country: String!
+  line1: String
+  line2: String
+  state: String
+  zipCode: String
+}
+
+"""Address association with an owner entity"""
+type AddressOnOwner {
+  address: Address
+  createdAt: DateTime!
+  id: ID!
+  isDefault: Boolean!
+  ownerId: String!
+  ownerType: AddressOwnerType!
+  type: AddressType!
+  updatedAt: DateTime!
+}
+
+input AddressOnOwnerCreateInput {
+  address: AddressInput!
+  isDefault: Boolean
+  ownerId: String!
+  ownerType: AddressOwnerType!
+  type: AddressType!
+}
+
+input AddressOnOwnerUpdateInput {
+  address: AddressInput
+  id: ID!
+  isDefault: Boolean
+  type: AddressType
+}
+
+"""Type of entity that owns the address (STORE, CUSTOMER, ORDER, etc.)"""
+enum AddressOwnerType {
+  CUSTOMER
+  ORDER
+  PROPERTY
+  STORE
+  VEHICLE
+}
+
+"""Type of address (BILLING, SHIPPING, PICKUP, etc.)"""
+enum AddressType {
+  BILLING
+  PICKUP
+  REGISTERED
+  SHIPPING
+  WAREHOUSE
+}
+
+"""AuthSignin"""
+type AuthSignin {
+  accessToken: String!
+  refreshToken: String!
+}
+
+input AuthSigninInput {
+  email: String!
+  password: String!
+}
+
+"""AuthSignout"""
+type AuthSignout {
+  success: Boolean!
+}
+
+"""AuthSignup"""
+type AuthSignup {
+  accessToken: String!
+  refreshToken: String!
+}
+
+input AuthSignupInput {
+  email: String!
+  firstName: String
+  lastName: String
+  password: String!
+}
+
+"""Category model"""
+type Category {
+  """Child categories"""
+  children: [Category!]
+
+  """When the category was created"""
+  createdAt: DateTime!
+
+  """Description of the category"""
+  description: String
+
+  """Unique identifier of the category"""
+  id: ID!
+
+  """Name of the category"""
+  name: String!
+
+  """Parent category"""
+  parent: Category
+
+  """ID of the parent category"""
+  parentId: ID
+
+  """URL-friendly slug of the category"""
+  slug: String!
+
+  """Type of the store"""
+  storeType: StoreType!
+
+  """When the category was last updated"""
+  updatedAt: DateTime!
+}
+
+"""Collection model"""
+type Collection {
+  """When the collection was created"""
+  createdAt: DateTime!
+
+  """Collection description"""
+  description: String
+
+  """Unique identifier"""
+  id: ID!
+
+  """Is the collection active"""
+  isActive: Boolean!
+
+  """Collection name"""
+  name: String!
+
+  """SEO description"""
+  seoDescription: String
+
+  """SEO title"""
+  seoTitle: String
+
+  """URL-friendly slug"""
+  slug: String!
+
+  """Store this collection belongs to"""
+  store: Store!
+
+  """When the collection was last updated"""
+  updatedAt: DateTime!
+}
+
+"""Position of currency symbol (BEFORE_AMOUNT, AFTER_AMOUNT)"""
+enum CurrencyPosition {
+  AFTER_AMOUNT
+  BEFORE_AMOUNT
+}
+
+"""
+A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date-time format.
+"""
+scalar DateTime
+
+"""Supported user interface languages"""
+enum Language {
+  AR
+  EN
+  FR
+  LG
+  RW
+  SW
+}
+
+"""Media model"""
+type Media {
+  alt: String
+  archivedAt: DateTime
+  blurHash: String
+  category: Category
+  collection: Collection
+  createdAt: DateTime!
+  duration: Int
+  fileName: String
+  fileSize: Int
+  height: Int
+  id: ID!
+  isArchived: Boolean!
+  mimeType: String
+  modelFormat: String
+  owners: [MediaOwnership!]!
+  placeholder: String
+  purpose: MediaPurpose!
+  storeId: String
+  storeProfile: Store
+  thumbnail: String
+  type: MediaType!
+  updatedAt: DateTime!
+  url: String!
+  usedIn: [MediaUsage!]!
+  userProfile: User
+  width: Int
+}
+
+"""Type of entity that owns the media"""
+enum MediaOwnerType {
+  CATEGORY
+  COLLECTION
+  PRODUCT
+  PRODUCT_VARIANT
+  PROPERTY
+  STORE_PROFILE
+  USER_PROFILE
+  VEHICLE
+}
+
+type MediaOwnership {
+  createdAt: DateTime!
+  id: ID!
+  ownerId: String!
+  ownerType: MediaOwnerType!
+  position: Int!
+  updatedAt: DateTime!
+}
+
+"""Purpose of the media"""
+enum MediaPurpose {
+  AVATAR
+  BANNER
+  DOCUMENT
+  GALLERY
+  LOGO
+  OTHER
+}
+
+"""Type of media (PHOTO, VIDEO, MODEL_3D)"""
+enum MediaType {
+  MODEL_3D
+  PHOTO
+  VIDEO
+}
+
+type MediaUsage {
+  ownerId: String!
+  ownerTitle: String!
+  ownerType: MediaOwnerType!
+}
+
+type Mutation {
+  createAddressOnOwner(input: AddressOnOwnerCreateInput!): AddressOnOwner!
+  createStore(input: StoreCreateInput!): Store!
+  deleteAddressOnOwner(id: String!): Boolean!
+
+  """Refresh auth token"""
+  refresh: AuthSignin!
+
+  """Sign in"""
+  signin(input: AuthSigninInput!): AuthSignin!
+
+  """Sign out"""
+  signout: AuthSignout!
+
+  """Sign up new user"""
+  signup(input: AuthSignupInput!): AuthSignup!
+  updateAddressOnOwner(input: AddressOnOwnerUpdateInput!): AddressOnOwner!
+  updatePassword(input: UserPasswordUpdateInput!): User!
+  updateStore(input: StoreUpdateInput!): Store!
+  updateUser(input: UserUpdateInput!): User!
+}
+
+"""Product model"""
+type Product {
+  available: Int!
+  category: Category
+  categoryId: String
+  collections: [Collection!]!
+  compareAtPrice: Float
+  createdAt: DateTime!
+  description: String
+  id: ID!
+  media: [Media!]!
+  options: [ProductOption!]!
+  price: Float
+  seoDescription: String
+  seoTitle: String
+  sku: String
+  slug: String!
+  store: Store!
+  storeId: String!
+  tags: [Tag!]!
+  title: String!
+  updatedAt: DateTime!
+  variants: [ProductVariant!]!
+}
+
+input ProductFiltersInput {
+  categoryId: String
+  inStock: Boolean
+  maxPrice: Float
+  minPrice: Float
+  searchQuery: String
+}
+
+"""Product option model (e.g., Size, Color)"""
+type ProductOption {
+  """When the option was created"""
+  createdAt: DateTime!
+
+  """Unique identifier"""
+  id: ID!
+
+  """Option name (e.g., "Size", "Color")"""
+  name: String!
+
+  """Product this option belongs to"""
+  product: Product!
+
+  """When the option was last updated"""
+  updatedAt: DateTime!
+
+  """Possible values for this option (e.g., ["S", "M", "L"])"""
+  values: [String!]!
+}
+
+type ProductOptionValue {
+  """Option name"""
+  name: String!
+
+  """Selected value"""
+  value: String!
+}
+
+"""Product variant model"""
+type ProductVariant {
+  """Number of items in stock"""
+  available: Int!
+
+  """Original or compare-at price"""
+  compareAtPrice: Float
+
+  """When the variant was created"""
+  createdAt: DateTime!
+
+  """Unique identifier"""
+  id: ID!
+
+  """Media attached to this variant"""
+  media: [Media!]!
+
+  """Combination of option values that define this variant"""
+  optionCombination: [String!]!
+
+  """Current selling price"""
+  price: Float!
+
+  """Parent product"""
+  product: Product!
+
+  """ID of the parent product"""
+  productId: String!
+
+  """Stock keeping unit"""
+  sku: String
+
+  """When the variant was last updated"""
+  updatedAt: DateTime!
+}
+
+type Query {
+  addressOnOwner(id: ID!): AddressOnOwner!
+  categoriesByStoreType(storeType: StoreType!): [Category!]!
+  category(id: String!): Category
+
+  """Get current user"""
+  me: User!
+  myStores(cursor: String, skip: Int! = 0, sortOrder: SortOrder, take: Int! = 25): [Store!]!
+  ownerAddresses(ownerId: String!, ownerType: AddressOwnerType!): [AddressOnOwner!]!
+  product(idOrSlug: String!): Product
+  products(cursor: String, filters: ProductFiltersInput, skip: Int! = 0, sortOrder: SortOrder, storeIdOrSlug: String!, take: Int! = 25): [Product!]!
+  store(idOrSlug: String!): Store!
+  user(id: String!): User!
+}
+
+enum SortOrder {
+  ASC
+  DESC
+}
+
+"""Store model"""
+type Store {
+  """Addresses associated with the store"""
+  addresses: [AddressOnOwner!]
+  categories(cursor: String, skip: Int! = 0, sortOrder: SortOrder, take: Int! = 25): [Category!]!
+  collections: [Collection!]!
+
+  """When the store was created"""
+  createdAt: DateTime!
+
+  """Primary currency of the store"""
+  currency: StoreCurrency!
+
+  """Position of the currency symbol relative to the amount"""
+  currencyPosition: CurrencyPosition!
+
+  """Custom symbol for the currency (e.g., KSh, USh)"""
+  currencySymbol: String
+
+  """Email address of the store"""
+  email: String!
+
+  """Facebook page username/handle"""
+  facebook: String
+
+  """Unique identifier of the store"""
+  id: ID!
+
+  """Instagram handle (without @)"""
+  instagram: String
+
+  """Name of the store"""
+  name: String!
+
+  """Prefix for order numbers"""
+  orderPrefix: String
+
+  """Suffix for order numbers"""
+  orderSuffix: String
+
+  """Owner of the store"""
+  owner: User
+
+  """ID of the store owner"""
+  ownerId: String!
+
+  """Phone number of the store"""
+  phone: String
+
+  """Whether to show currency code alongside amounts"""
+  showCurrencyCode: Boolean!
+
+  """Slogan or tagline of the store"""
+  slogan: String
+
+  """URL-friendly slug of the store"""
+  slug: String!
+  tags: [Tag!]!
+
+  """Timezone of the store (e.g., Africa/Nairobi)"""
+  timeZone: String!
+
+  """Type of store"""
+  type: StoreType!
+
+  """Measurement system used by the store"""
+  unitSystem: UnitSystem!
+
+  """When the store was last updated"""
+  updatedAt: DateTime!
+
+  """Weight unit used for products"""
+  weightUnit: WeightUnit!
+
+  """WhatsApp business number"""
+  whatsApp: String
+}
+
+input StoreCreateInput {
+  currency: StoreCurrency!
+  name: String!
+  slug: String!
+  type: StoreType!
+}
+
+"""The currency used by the store (KES, UGX, TZS, etc.)"""
+enum StoreCurrency {
+  BIF
+  KES
+  RWF
+  SSP
+  TZS
+  UGX
+}
+
+"""The type of store (PHYSICAL_GOODS, REAL_ESTATE, VEHICLES)"""
+enum StoreType {
+  PHYSICAL_GOODS
+  REAL_ESTATE
+  VEHICLES
+}
+
+input StoreUpdateInput {
+  currencyPosition: CurrencyPosition
+  currencySymbol: String
+  email: String
+  facebook: String
+  id: ID!
+  instagram: String
+  name: String
+  orderPrefix: String
+  orderSuffix: String
+  phone: String
+  showCurrencyCode: Boolean
+  timeZone: String
+  unitSystem: UnitSystem
+  weightUnit: WeightUnit
+  whatsApp: String
+}
+
+"""Tag model"""
+type Tag {
+  """When the tag was created"""
+  createdAt: DateTime!
+
+  """Unique identifier of the tag"""
+  id: ID!
+
+  """Name of the tag"""
+  name: String!
+
+  """URL-friendly slug of the tag"""
+  slug: String!
+
+  """Store this tag belongs to"""
+  store: Store
+
+  """ID of the store this tag belongs to"""
+  storeId: String!
+
+  """When the tag was last updated"""
+  updatedAt: DateTime!
+}
+
+"""Available user interface themes"""
+enum Theme {
+  DARK
+  LIGHT
+  SYSTEM
+}
+
+"""Measurement system used by the store (METRIC, IMPERIAL)"""
+enum UnitSystem {
+  IMPERIAL
+  METRIC
+}
+
+"""user"""
+type User {
+  """Date the User was created"""
+  createdAt: DateTime!
+
+  """Email of the User"""
+  email: String!
+
+  """Whether the User email is verified"""
+  emailVerified: Boolean!
+
+  """First name of the User"""
+  firstName: String
+
+  """ID of the User"""
+  id: ID!
+
+  """Preferred language for the user interface"""
+  language: Language!
+
+  """Last name of the User"""
+  lastName: String
+
+  """Stores owned by the User"""
+  stores: [Store!]!
+
+  """Preferred theme for the user interface"""
+  theme: Theme!
+
+  """Preferred timezone"""
+  timeZone: String!
+
+  """Date the User was last updated"""
+  updatedAt: DateTime!
+}
+
+input UserPasswordUpdateInput {
+  """ID of the User"""
+  id: String!
+
+  """New password of the User"""
+  newPassword: String
+
+  """Old password of the User"""
+  oldPassword: String
+}
+
+input UserUpdateInput {
+  """First name of the User"""
+  firstName: String
+
+  """ID of the User"""
+  id: String!
+
+  """Preferred language for the user interface"""
+  language: Language
+
+  """Last name of the User"""
+  lastName: String
+
+  """Preferred theme for the user interface"""
+  theme: Theme
+
+  """Preferred timezone (e.g., "Africa/Nairobi")"""
+  timeZone: String
+}
+
+"""Weight unit used by the store (KILOGRAM, POUND, etc.)"""
+enum WeightUnit {
+  GRAM
+  KILOGRAM
+  OUNCE
+  POUND
+}
