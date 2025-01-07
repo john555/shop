@@ -7,8 +7,7 @@ import {
   MediaPurpose,
   MediaOwnership as MediaOwnershipModel,
 } from '@prisma/client';
-import { Product } from '../../../admin-api/product/entities/product.entity';
-import { ProductVariant } from '../../../admin-api/product/entities/product-variant.entity';
+
 import { Category } from '@/common/backend/category/category.entity';
 import { Collection } from '@/common/backend/collection/collection.entity';
 import { Store } from '@/common/backend/store/store.entity';
@@ -127,12 +126,6 @@ export class Media implements Omit<MediaModel, 'owners'> {
   // Resolved owner fields
   @Field(() => [MediaOwnership, { nullable: true }])
   owners?: MediaOwnership[];
-
-  @Field(() => Product, { nullable: true })
-  product?: Product;
-
-  @Field(() => ProductVariant, { nullable: true })
-  productVariant?: ProductVariant;
 
   @Field(() => Category, { nullable: true })
   category?: Category;

@@ -1,7 +1,6 @@
 import { ObjectType, Field, ID } from '@nestjs/graphql';
 import { Collection as CollectionModel } from '@prisma/client';
 import { Store } from '@/common/backend/store/store.entity';
-import { Product } from '../../../admin-api/product/entities/product.entity';
 
 @ObjectType({ description: 'Collection model' })
 export class Collection implements Partial<CollectionModel> {
@@ -22,9 +21,6 @@ export class Collection implements Partial<CollectionModel> {
 
   @Field(() => Store, { description: 'Store this collection belongs to' })
   store?: Store;
-
-  @Field(() => [Product], { description: 'Products in this collection' })
-  products?: Product[];
 
   @Field(() => Date, { description: 'When the collection was created' })
   createdAt: Date;

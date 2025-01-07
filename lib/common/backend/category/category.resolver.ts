@@ -8,7 +8,7 @@ import {
 import { Logger } from '@nestjs/common';
 import { Category } from './category.entity';
 import { CategoryService } from './category.service';
-import { Product } from '../../../admin-api/product/entities/product.entity';
+
 import {
   CategoryGetArgs,
   GetCategoriesByStoreTypeArgs,
@@ -43,10 +43,5 @@ export class CategoryResolver {
   @ResolveField(() => [Category])
   async children(@Parent() category: Category): Promise<Category[]> {
     return this.categoryService.findByParentId(category.id);
-  }
-
-  @ResolveField(() => [Product])
-  async products(@Parent() category: Category): Promise<Product[]> {
-    return this.categoryService.findCategoryProducts(category.id);
   }
 }

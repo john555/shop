@@ -27,7 +27,6 @@ import {
 import { PaginationArgs } from '@/lib/common/backend/pagination/pagination.args';
 import { AuthContext } from '../utils/auth';
 import { Store } from '@/common/backend/store/store.entity';
-import { Product } from '../../../admin-api/product/entities/product.entity';
 import {
   AuthBulkCollections,
   AuthBulkProducts,
@@ -212,16 +211,6 @@ export class CollectionResolver {
       return this.collectionService.findCollectionStore(collection.id);
     } catch (error) {
       this.logger.error(`Failed to resolve store for collection:`, error);
-      throw error;
-    }
-  }
-
-  @ResolveField(() => [Product])
-  async products(@Parent() collection: Collection): Promise<Product[]> {
-    try {
-      return this.collectionService.findCollectionProducts(collection.id);
-    } catch (error) {
-      this.logger.error(`Failed to resolve products for collection:`, error);
       throw error;
     }
   }

@@ -22,7 +22,6 @@ import { JwtAuthGuard } from '@/common/backend/authentication/guard/jwt-auth.gua
 import { AuthContext } from '../utils/auth';
 import { Store } from '@/common/backend/store/store.entity';
 import { StoreService } from '@/common/backend/store/store.service';
-import { Product } from '../../../admin-api/product/entities/product.entity';
 
 @Resolver(() => Tag)
 export class TagResolver {
@@ -30,12 +29,12 @@ export class TagResolver {
 
   constructor(
     private readonly tagService: TagService,
-    private readonly storeService: StoreService,
+    private readonly storeService: StoreService
   ) {}
 
   private async validateTagOwnership(
     tagId: string,
-    userId: string,
+    userId: string
   ): Promise<Tag> {
     const tag = await this.tagService.getTagById(tagId);
 
@@ -47,7 +46,7 @@ export class TagResolver {
 
     if (!store || store.ownerId !== userId) {
       throw new UnauthorizedException(
-        'You do not have permission to access this tag',
+        'You do not have permission to access this tag'
       );
     }
 
@@ -59,11 +58,11 @@ export class TagResolver {
   @Query(() => Tag)
   async tag(
     @Args() args: TagGetArgs,
-    @Context() context: AuthContext,
+    @Context() context: AuthContext
   ): Promise<Tag> {
     await this.validateTagOwnership(args.id, context.req.user.id);
     const tag = await this.tagService.getTagById(args.id);
-    
+
     if (!tag) {
       throw new NotFoundException(`Tag with ID ${args.id} not found`);
     }
@@ -76,7 +75,7 @@ export class TagResolver {
   async storeTags(
     @Args('storeId') storeId: string,
     @Args() args: PaginationArgs,
-    @Context() context: AuthContext,
+    @Context() context: AuthContext
   ): Promise<Tag[]> {
     const store = await this.storeService.getStoreById(storeId);
 
@@ -86,7 +85,7 @@ export class TagResolver {
 
     if (store.ownerId !== context.req.user.id) {
       throw new UnauthorizedException(
-        'You do not have permission to access this store',
+        'You do not have permission to access this store'
       );
     }
 
@@ -98,7 +97,7 @@ export class TagResolver {
   @Mutation(() => Tag)
   async createTag(
     @Args('input') input: TagCreateInput,
-    @Context() context: AuthContext,
+    @Context() context: AuthContext
   ): Promise<Tag> {
     try {
       const store = await this.storeService.getStoreById(input.storeId);
@@ -109,16 +108,18 @@ export class TagResolver {
 
       if (store.ownerId !== context.req.user.id) {
         throw new UnauthorizedException(
-          'You do not have permission to create tags for this store',
+          'You do not have permission to create tags for this store'
         );
       }
 
       const isSlugUnique = await this.tagService.isSlugUnique(
         input.slug,
-        input.storeId,
+        input.storeId
       );
       if (!isSlugUnique) {
-        throw new BadRequestException('Tag slug is already taken in this store');
+        throw new BadRequestException(
+          'Tag slug is already taken in this store'
+        );
       }
 
       return await this.tagService.create(input);
@@ -132,7 +133,7 @@ export class TagResolver {
   @Mutation(() => Tag)
   async updateTag(
     @Args('input') input: TagUpdateInput,
-    @Context() context: AuthContext,
+    @Context() context: AuthContext
   ): Promise<Tag> {
     try {
       await this.validateTagOwnership(input.id, context.req.user.id);
@@ -147,7 +148,7 @@ export class TagResolver {
   @Mutation(() => Boolean)
   async deleteTag(
     @Args('id') id: string,
-    @Context() context: AuthContext,
+    @Context() context: AuthContext
   ): Promise<boolean> {
     try {
       await this.validateTagOwnership(id, context.req.user.id);
@@ -167,10 +168,5 @@ export class TagResolver {
       throw new NotFoundException(`Store with ID ${tag.storeId} not found`);
     }
     return store;
-  }
-
-  @ResolveField(() => [Product])
-  async products(@Parent() tag: Tag): Promise<Product[]> {
-    return this.tagService.getTagProducts(tag.id);
   }
 }

@@ -16,8 +16,6 @@ import {
   MediaReorderInput,
 } from './media.dto';
 import { PaginationArgs } from '@/lib/common/backend/pagination/pagination.args';
-import { Product } from '../../../admin-api/product/entities/product.entity';
-import { ProductVariant } from '../../../admin-api/product/entities/product-variant.entity';
 import { Category } from '@/common/backend/category/category.entity';
 import { Collection } from '@/common/backend/collection/collection.entity';
 import { Store } from '@/common/backend/store/store.entity';
@@ -164,30 +162,6 @@ export class MediaResolver {
   }
 
   // Field Resolvers
-  @ResolveField(() => Product, { nullable: true })
-  async product(@Parent() media: Media): Promise<Product | null> {
-    const owner = media.owners?.find(
-      (o) => o.ownerType === MediaOwnerType.PRODUCT
-    );
-    if (!owner) return null;
-    return this.mediaService.resolveOwner({
-      ownerType: MediaOwnerType.PRODUCT,
-      ownerId: owner.ownerId,
-    });
-  }
-
-  @ResolveField(() => ProductVariant, { nullable: true })
-  async productVariant(@Parent() media: Media): Promise<ProductVariant | null> {
-    const owner = media.owners?.find(
-      (o) => o.ownerType === MediaOwnerType.PRODUCT_VARIANT
-    );
-    if (!owner) return null;
-    return this.mediaService.resolveOwner({
-      ownerType: MediaOwnerType.PRODUCT_VARIANT,
-      ownerId: owner.ownerId,
-    });
-  }
-
   @ResolveField(() => Category, { nullable: true })
   async category(@Parent() media: Media): Promise<Category | null> {
     const owner = media.owners?.find(
