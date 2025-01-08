@@ -1,6 +1,6 @@
 import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { Tag, Prisma, Product } from '@prisma/client';
-import { PrismaService } from '@/admin-api/prisma/prisma.service';
+import { PrismaService } from '@/lib/common/prisma/prisma.service';
 import { PaginationArgs } from '@/lib/common/backend/pagination/pagination.args';
 import { paginate } from '@/lib/common/backend/pagination/paginate';
 import { TagCreateInput, TagUpdateInput } from './tag.dto';

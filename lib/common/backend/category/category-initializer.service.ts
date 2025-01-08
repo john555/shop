@@ -1,7 +1,7 @@
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { CategoryFactory } from './categories/category.factory';
 import { Prisma, StoreType } from '@prisma/client';
-import { PrismaService } from '@/admin-api/prisma/prisma.service';
+import { PrismaService } from '@/lib/common/prisma/prisma.service';
 import { validateCategoryData } from './category.types';
 
 @Injectable()

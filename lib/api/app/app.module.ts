@@ -1,5 +1,5 @@
 import { join } from 'path';
-import { PrismaModule } from '@/lib/admin-api/prisma/prisma.module';
+import { PrismaModule } from '@/lib/common/prisma/prisma.module';
 import { HealthModule } from '@/lib/api/health/health.module';
 import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
 import { Module } from '@nestjs/common';

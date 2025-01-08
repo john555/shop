@@ -5,7 +5,7 @@ import {
   UserUpdateInput,
   UserPasswordUpdateInput,
 } from './user.dto';
-import { PrismaService } from 'lib/admin-api/prisma/prisma.service';
+import { PrismaService } from '@/lib/common/prisma/prisma.service';
 import { PaginationArgs } from '@/lib/common/backend/pagination/pagination.args';
 import { paginate } from '@/lib/common/backend/pagination/paginate';
 import { comparePassword, hashPassword } from '@/lib/common/backend/utils/hashing';

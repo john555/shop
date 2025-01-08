@@ -1,5 +1,5 @@
 import { Injectable, Logger, NotFoundException } from '@nestjs/common';
-import { PrismaService } from '@/admin-api/prisma/prisma.service';
+import { PrismaService } from '@/lib/common/prisma/prisma.service';
 import { Media, MediaOwnerType, MediaType, Prisma } from '@prisma/client';
 import { PaginationArgs } from '@/lib/common/backend/pagination/pagination.args';
 import { paginate } from '@/lib/common/backend/pagination/paginate';

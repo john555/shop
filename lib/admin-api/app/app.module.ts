@@ -2,7 +2,7 @@ import { Module } from '@nestjs/common';
 import { GraphQLModule } from '@nestjs/graphql';
 import { ApolloDriverConfig, ApolloDriver } from '@nestjs/apollo';
 import { join } from 'path';
-import { PrismaModule } from '@/admin-api/prisma/prisma.module';
+import { PrismaModule } from '@/lib/common/prisma/prisma.module';
 import { AuthenticationModule } from '@/common/backend/authentication/authentication.module';
 import { UserModule } from '@/common/backend/user/user.module';
 import { Request, Response } from 'express';

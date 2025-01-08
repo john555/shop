@@ -4,7 +4,7 @@ import {
   NotFoundException,
   BadRequestException,
 } from '@nestjs/common';
-import { PrismaService } from '@/admin-api/prisma/prisma.service';
+import { PrismaService } from '@/lib/common/prisma/prisma.service';
 import { Category, StoreType, Product, Prisma, Store } from '@prisma/client';
 import { SlugService } from '@/lib/common/backend/slug/slug.service';
 import { CategoryCreateInput, CategoryUpdateInput } from './category.dto';
