@@ -2,6 +2,13 @@
 # THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
 # ------------------------------------------------------
 
+input AddCartItemInput {
+  cartId: String!
+  productId: String!
+  quantity: Float!
+  variantId: String
+}
+
 """Address information"""
 type Address {
   city: String
@@ -69,6 +76,11 @@ enum AddressType {
   WAREHOUSE
 }
 
+input ApplyDiscountInput {
+  cartId: String!
+  code: String!
+}
+
 """AuthSignin"""
 type AuthSignin {
   accessToken: String!
@@ -96,6 +108,65 @@ input AuthSignupInput {
   firstName: String
   lastName: String
   password: String!
+}
+
+type Cart {
+  checkoutStartedAt: DateTime
+  convertedAt: DateTime
+  createdAt: DateTime!
+  currency: StoreCurrency!
+  currencySymbol: String!
+  customerId: ID
+  discountAmount: Float!
+  discounts: [CartDiscount!]!
+  email: String
+  expiresAt: DateTime
+  id: ID!
+  items: [CartItem!]!
+  lastActivityAt: DateTime!
+  notes: String
+  phoneNumber: String
+  shippingAmount: Float!
+  status: CartStatus!
+  storeId: ID!
+  subtotalAmount: Float!
+  taxAmount: Float!
+  totalAmount: Float!
+  updatedAt: DateTime!
+}
+
+type CartDiscount {
+  amount: Float!
+  applied: Boolean!
+  cartId: ID!
+  code: String!
+  id: ID!
+  type: DiscountType!
+}
+
+type CartItem {
+  cartId: ID!
+  discountAmount: Float!
+  id: ID!
+  previewImageUrl: String
+  productId: String!
+  quantity: Int!
+  sku: String
+  subtotal: Float!
+  taxAmount: Float!
+  title: String!
+  totalAmount: Float!
+  unitPrice: Float!
+  variantId: String
+  variantName: String
+}
+
+enum CartStatus {
+  ABANDONED
+  ACTIVE
+  CHECKOUT_STARTED
+  CONVERTED
+  EXPIRED
 }
 
 """Category model"""
@@ -164,6 +235,14 @@ type Collection {
   updatedAt: DateTime!
 }
 
+input CreateCartInput {
+  customerId: String
+  email: String
+  notes: String
+  phoneNumber: String
+  storeId: String!
+}
+
 """Position of currency symbol (BEFORE_AMOUNT, AFTER_AMOUNT)"""
 enum CurrencyPosition {
   AFTER_AMOUNT
@@ -174,6 +253,12 @@ enum CurrencyPosition {
 A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date-time format.
 """
 scalar DateTime
+
+enum DiscountType {
+  FIXED_AMOUNT
+  FREE_SHIPPING
+  PERCENTAGE
+}
 
 """Supported user interface languages"""
 enum Language {
@@ -260,12 +345,16 @@ type MediaUsage {
 }
 
 type Mutation {
+  addCartItem(input: AddCartItemInput!): CartItem!
+  applyDiscount(input: ApplyDiscountInput!): Cart!
   createAddressOnOwner(input: AddressOnOwnerCreateInput!): AddressOnOwner!
+  createCart(input: CreateCartInput!): Cart!
   createStore(input: StoreCreateInput!): Store!
   deleteAddressOnOwner(id: String!): Boolean!
 
   """Refresh auth token"""
   refresh: AuthSignin!
+  removeCartItem(id: ID!): Boolean!
 
   """Sign in"""
   signin(input: AuthSigninInput!): AuthSignin!
@@ -276,6 +365,7 @@ type Mutation {
   """Sign up new user"""
   signup(input: AuthSignupInput!): AuthSignup!
   updateAddressOnOwner(input: AddressOnOwnerUpdateInput!): AddressOnOwner!
+  updateCartItem(input: UpdateCartItemInput!): CartItem!
   updatePassword(input: UserPasswordUpdateInput!): User!
   updateStore(input: StoreUpdateInput!): Store!
   updateUser(input: UserUpdateInput!): User!
@@ -381,6 +471,7 @@ type ProductVariant {
 
 type Query {
   addressOnOwner(id: ID!): AddressOnOwner!
+  cart(id: ID!): Cart!
   categoriesByStoreType(storeType: StoreType!): [Category!]!
   category(id: String!): Category
 
@@ -484,7 +575,6 @@ input StoreCreateInput {
   type: StoreType!
 }
 
-"""The currency used by the store (KES, UGX, TZS, etc.)"""
 enum StoreCurrency {
   BIF
   KES
@@ -554,6 +644,11 @@ enum Theme {
 enum UnitSystem {
   IMPERIAL
   METRIC
+}
+
+input UpdateCartItemInput {
+  cartItemId: String!
+  quantity: Float!
 }
 
 """user"""

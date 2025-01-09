@@ -163,7 +163,6 @@ type Category {
 
   """ID of the parent category"""
   parentId: ID
-  products: [Product!]!
 
   """URL-friendly slug of the category"""
   slug: String!
@@ -191,9 +190,6 @@ type Collection {
 
   """Collection name"""
   name: String!
-
-  """Products in this collection"""
-  products: [Product!]!
 
   """SEO description"""
   seoDescription: String
@@ -341,8 +337,6 @@ type Media {
   modelFormat: String
   owners: [MediaOwnership!]!
   placeholder: String
-  product: Product
-  productVariant: ProductVariant
   purpose: MediaPurpose!
   storeId: String
   storeProfile: Store
@@ -1020,9 +1014,6 @@ type Tag {
 
   """Name of the tag"""
   name: String!
-
-  """Products associated with this tag"""
-  products: [Product!]
 
   """URL-friendly slug of the tag"""
   slug: String!

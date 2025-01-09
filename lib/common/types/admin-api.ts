@@ -182,7 +182,6 @@ export type Category = {
   parent?: Maybe<Category>;
   /** ID of the parent category */
   parentId?: Maybe<Scalars['ID']['output']>;
-  products: Array<Product>;
   /** URL-friendly slug of the category */
   slug: Scalars['String']['output'];
   /** Type of the store */
@@ -204,8 +203,6 @@ export type Collection = {
   isActive: Scalars['Boolean']['output'];
   /** Collection name */
   name: Scalars['String']['output'];
-  /** Products in this collection */
-  products: Array<Product>;
   /** SEO description */
   seoDescription?: Maybe<Scalars['String']['output']>;
   /** SEO title */
@@ -333,8 +330,6 @@ export type Media = {
   modelFormat?: Maybe<Scalars['String']['output']>;
   owners: Array<MediaOwnership>;
   placeholder?: Maybe<Scalars['String']['output']>;
-  product?: Maybe<Product>;
-  productVariant?: Maybe<ProductVariant>;
   purpose: MediaPurpose;
   storeId?: Maybe<Scalars['String']['output']>;
   storeProfile?: Maybe<Store>;
@@ -1295,8 +1290,6 @@ export type Tag = {
   id: Scalars['ID']['output'];
   /** Name of the tag */
   name: Scalars['String']['output'];
-  /** Products associated with this tag */
-  products?: Maybe<Array<Product>>;
   /** URL-friendly slug of the tag */
   slug: Scalars['String']['output'];
   /** Store this tag belongs to */
@@ -1688,7 +1681,6 @@ export type CategoryResolvers<ContextType = any, ParentType extends ResolversPar
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   parent?: Resolver<Maybe<ResolversTypes['Category']>, ParentType, ContextType>;
   parentId?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType>;
-  products?: Resolver<Array<ResolversTypes['Product']>, ParentType, ContextType>;
   slug?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   storeType?: Resolver<ResolversTypes['StoreType'], ParentType, ContextType>;
   updatedAt?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
@@ -1701,7 +1693,6 @@ export type CollectionResolvers<ContextType = any, ParentType extends ResolversP
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   isActive?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  products?: Resolver<Array<ResolversTypes['Product']>, ParentType, ContextType>;
   seoDescription?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   seoTitle?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   slug?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -1748,8 +1739,6 @@ export type MediaResolvers<ContextType = any, ParentType extends ResolversParent
   modelFormat?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   owners?: Resolver<Array<ResolversTypes['MediaOwnership']>, ParentType, ContextType>;
   placeholder?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  product?: Resolver<Maybe<ResolversTypes['Product']>, ParentType, ContextType>;
-  productVariant?: Resolver<Maybe<ResolversTypes['ProductVariant']>, ParentType, ContextType>;
   purpose?: Resolver<ResolversTypes['MediaPurpose'], ParentType, ContextType>;
   storeId?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   storeProfile?: Resolver<Maybe<ResolversTypes['Store']>, ParentType, ContextType>;
@@ -2051,7 +2040,6 @@ export type TagResolvers<ContextType = any, ParentType extends ResolversParentTy
   createdAt?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  products?: Resolver<Maybe<Array<ResolversTypes['Product']>>, ParentType, ContextType>;
   slug?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   store?: Resolver<Maybe<ResolversTypes['Store']>, ParentType, ContextType>;
   storeId?: Resolver<ResolversTypes['String'], ParentType, ContextType>;

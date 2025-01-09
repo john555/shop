@@ -8,6 +8,7 @@ import { GraphQLModule } from '@nestjs/graphql';
 import { ProductModule } from '../product/product.module';
 import { AuthenticationModule } from '@/lib/common/backend/authentication/authentication.module';
 import { AuthorizationModule } from '@/lib/common/backend/authorization/authorization.module';
+import { CartModule } from '../cart/cart.module';
 
 @Module({
   imports: [
@@ -43,6 +44,7 @@ import { AuthorizationModule } from '@/lib/common/backend/authorization/authoriz
     AuthenticationModule,
     AuthorizationModule,
     ProductModule,
+    CartModule,
   ],
 })
 export class AppModule {}
