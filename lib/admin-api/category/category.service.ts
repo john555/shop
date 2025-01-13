@@ -6,9 +6,9 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from '@/lib/common/prisma/prisma.service';
 import { Category, StoreType, Product, Prisma, Store } from '@prisma/client';
-import { SlugService } from '@/lib/common/backend/slug/slug.service';
+import { SlugService } from '@/lib/admin-api/slug/slug.service';
 import { CategoryCreateInput, CategoryUpdateInput } from './category.dto';
-import { PaginationArgs } from '../pagination/pagination.args';
+import { PaginationArgs } from '../../common/backend/pagination/pagination.args';
 
 @Injectable()
 export class CategoryService {

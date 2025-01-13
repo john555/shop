@@ -6,3 +6,12 @@ export const currencyLabels = {
   BIF: 'Burundian Franc (BIF)',
   SSP: 'South Sudanese Pound (SSP)',
 };
+
+export const DEFAULT_CURRENCY_SYMBOLS: Record<string, string> = {
+  KES: 'KSh',
+  UGX: 'USh',
+  TZS: 'TSh',
+  RWF: 'RF',
+  BIF: 'FBu',
+  SSP: 'SSP',
+};

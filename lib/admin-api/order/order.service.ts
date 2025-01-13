@@ -5,7 +5,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { PrismaService } from '@/lib/common/prisma/prisma.service';
-import { StoreService } from '@/common/backend/store/store.service';
+import { StoreService } from '@/lib/admin-api/store/store.service';
 import {
   Order,
   OrderStatus,

@@ -26,16 +26,8 @@ import {
 } from './store.types';
 import { AddressOnOwnerService } from '../address-on-owner/address-on-owner.service';
 import { AddressOnOwnerCreateInput } from '../address-on-owner/address-on-owner.dto';
-import { CategoryService } from '@/common/backend/category/category.service';
-
-const DEFAULT_CURRENCY_SYMBOLS: Record<StoreCurrency, string> = {
-  KES: 'KSh',
-  UGX: 'USh',
-  TZS: 'TSh',
-  RWF: 'RF',
-  BIF: 'FBu',
-  SSP: 'SSP',
-};
+import { CategoryService } from '@/lib/admin-api/category/category.service';
+import { DEFAULT_CURRENCY_SYMBOLS } from '@/common/constants';
 
 @Injectable()
 export class StoreService {

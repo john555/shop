@@ -11,8 +11,8 @@ import { BadRequestException, Logger, NotFoundException } from '@nestjs/common';
 import { User } from './user.entity';
 import { UserService } from './user.service';
 import { UserUpdateInput, UserPasswordUpdateInput } from './user.dto';
-import { Store } from '@/common/backend/store/store.entity';
-import { StoreService } from '@/common/backend/store/store.service';
+import { Store } from '@/lib/admin-api/store/store.entity';
+import { StoreService } from '@/lib/admin-api/store/store.service';
 import { Auth } from '@/common/backend/authorization/decorators/auth.decorator';
 
 @Auth()

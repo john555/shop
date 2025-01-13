@@ -1,6 +1,6 @@
 import { ObjectType, Field, ID } from '@nestjs/graphql';
 import { Category as CategoryModel, StoreType } from '@prisma/client';
-import { Store } from '@/common/backend/store/store.entity';
+import { Store } from '@/lib/admin-api/store/store.entity';
 
 @ObjectType({ description: 'Category model' })
 export class Category implements Omit<CategoryModel, 'store'> {

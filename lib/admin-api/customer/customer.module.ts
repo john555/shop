@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { CustomerResolver } from './customer.resolver';
 import { CustomerService } from './customer.service';
-import { AddressOnOwnerModule } from '../../common/backend/address-on-owner/address-on-owner.module';
+import { AddressOnOwnerModule } from '../address-on-owner/address-on-owner.module';
 
 @Module({
   imports: [AddressOnOwnerModule],

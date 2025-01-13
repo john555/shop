@@ -1,6 +1,6 @@
 import { ObjectType, Field, ID, Float, Int } from '@nestjs/graphql';
 import { ProductVariant as ProductVariantModel } from '@prisma/client';
-import { Media } from '@/common/backend/media/media.entity';
+import { Media } from '@/lib/admin-api/media/media.entity';
 import { Product } from './product.entity';
 import { Decimal } from '@prisma/client/runtime/library';
 

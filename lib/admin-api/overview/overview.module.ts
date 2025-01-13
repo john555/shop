@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { OverviewResolver } from './overview.resolver';
 import { OverviewService } from './overview.service';
-import { StoreModule } from '@/common/backend/store/store.module';
+import { StoreModule } from '@/lib/admin-api/store/store.module';
 import { AuthorizationModule } from '@/common/backend/authorization/authorization.module';
 
 @Module({

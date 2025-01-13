@@ -1,6 +1,6 @@
 import { ObjectType, Field, ID } from '@nestjs/graphql';
 import { Tag as TagModel } from '@prisma/client';
-import { Store } from '@/common/backend/store/store.entity';
+import { Store } from '@/lib/admin-api/store/store.entity';
 
 @ObjectType({ description: 'Tag model' })
 export class Tag implements Omit<TagModel, 'store' | 'products'> {

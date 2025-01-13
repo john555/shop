@@ -19,9 +19,9 @@ import { TagService } from './tag.service';
 import { TagGetArgs, TagCreateInput, TagUpdateInput } from './tag.dto';
 import { PaginationArgs } from '@/lib/common/backend/pagination/pagination.args';
 import { JwtAuthGuard } from '@/common/backend/authentication/guard/jwt-auth.guard';
-import { AuthContext } from '../utils/auth';
-import { Store } from '@/common/backend/store/store.entity';
-import { StoreService } from '@/common/backend/store/store.service';
+import { AuthContext } from '../../common/backend/utils/auth';
+import { Store } from '@/lib/admin-api/store/store.entity';
+import { StoreService } from '@/lib/admin-api/store/store.service';
 
 @Resolver(() => Tag)
 export class TagResolver {

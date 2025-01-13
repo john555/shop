@@ -1,6 +1,6 @@
 import { ObjectType, Field, ID } from '@nestjs/graphql';
 import { Collection as CollectionModel } from '@prisma/client';
-import { Store } from '@/common/backend/store/store.entity';
+import { Store } from '@/lib/admin-api/store/store.entity';
 
 @ObjectType({ description: 'Collection model' })
 export class Collection implements Partial<CollectionModel> {

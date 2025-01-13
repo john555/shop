@@ -1,7 +1,7 @@
 import { Language, Theme, User as UserBase } from '@prisma/client';
 import { Field, ID, ObjectType, registerEnumType } from '@nestjs/graphql';
 import { Injectable } from '@nestjs/common';
-import { Store } from '@/common/backend/store/store.entity';
+import { Store } from '@/lib/admin-api/store/store.entity';
 
 // Register the Language enum for GraphQL
 registerEnumType(Language, {

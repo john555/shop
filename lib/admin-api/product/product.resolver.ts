@@ -12,11 +12,11 @@ import {
 import { Logger, NotFoundException } from '@nestjs/common';
 import { Product } from './entities/product.entity';
 import { ProductService } from './product.service';
-import { Store } from '@/common/backend/store/store.entity';
-import { Category } from '../../common/backend/category/category.entity';
-import { Collection } from '../../common/backend/collection/collection.entity';
-import { Tag } from '../../common/backend/tag/tag.entity';
-import { Media } from '../../common/backend/media/media.entity';
+import { Store } from '@/lib/admin-api/store/store.entity';
+import { Category } from '../category/category.entity';
+import { Collection } from '../collection/collection.entity';
+import { Tag } from '../tag/tag.entity';
+import { Media } from '../media/media.entity';
 import { ProductOption } from './entities/product-option.entity';
 import { ProductVariant } from './entities/product-variant.entity';
 import {

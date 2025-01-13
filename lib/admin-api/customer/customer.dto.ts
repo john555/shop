@@ -3,7 +3,6 @@ import {
   Field,
   ID,
   InputType,
-  registerEnumType,
 } from '@nestjs/graphql';
 import { Language } from '@prisma/client';
 import {

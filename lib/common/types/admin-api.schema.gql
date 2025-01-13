@@ -190,6 +190,7 @@ type Collection {
 
   """Collection name"""
   name: String!
+  products: [Product!]!
 
   """SEO description"""
   seoDescription: String

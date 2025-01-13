@@ -25,14 +25,15 @@ import {
   BulkCollectionUpdateInput,
 } from './collection.dto';
 import { PaginationArgs } from '@/lib/common/backend/pagination/pagination.args';
-import { AuthContext } from '../utils/auth';
-import { Store } from '@/common/backend/store/store.entity';
+import { AuthContext } from '../../common/backend/utils/auth';
+import { Store } from '@/lib/admin-api/store/store.entity';
 import {
   AuthBulkCollections,
   AuthBulkProducts,
   AuthCollection,
   AuthStore,
 } from '@/common/backend/authorization/decorators/auth.decorator';
+import { Product } from '../product/entities/product.entity';
 
 @Resolver(() => Collection)
 export class CollectionResolver {
@@ -209,6 +210,16 @@ export class CollectionResolver {
   async store(@Parent() collection: Collection): Promise<Store> {
     try {
       return this.collectionService.findCollectionStore(collection.id);
+    } catch (error) {
+      this.logger.error(`Failed to resolve store for collection:`, error);
+      throw error;
+    }
+  }
+
+  @ResolveField(() => [Product])
+  async products(@Parent() collection: Collection): Promise<Product[]> {
+    try {
+      return this.collectionService.findCollectionProducts(collection.id);
     } catch (error) {
       this.logger.error(`Failed to resolve store for collection:`, error);
       throw error;

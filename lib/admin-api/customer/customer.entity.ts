@@ -1,6 +1,6 @@
 import { ObjectType, Field, ID, registerEnumType } from '@nestjs/graphql';
 import { Customer as CustomerModel, Language } from '@prisma/client';
-import { AddressOnOwner } from '../../common/backend/address-on-owner/address-on-owner.entity';
+import { AddressOnOwner } from '../address-on-owner/address-on-owner.entity';
 
 registerEnumType(Language, {
   name: 'Language',

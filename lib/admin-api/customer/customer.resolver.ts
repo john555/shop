@@ -23,8 +23,8 @@ import {
 import { AuthContext } from '../../common/backend/utils/auth';
 import { PaginationArgs } from '@/lib/common/backend/pagination/pagination.args';
 import { JwtAuthGuard } from '@/common/backend/authentication/guard/jwt-auth.guard';
-import { AddressOnOwner } from '../../common/backend/address-on-owner/address-on-owner.entity';
-import { AddressOnOwnerService } from '../../common/backend/address-on-owner/address-on-owner.service';
+import { AddressOnOwner } from '../address-on-owner/address-on-owner.entity';
+import { AddressOnOwnerService } from '../address-on-owner/address-on-owner.service';
 import { AddressOwnerType, AddressType } from '@prisma/client';
 
 @Resolver(() => Customer)

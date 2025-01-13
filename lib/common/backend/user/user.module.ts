@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { UserService } from './user.service';
 import { UserResolver } from './user.resolver';
-import { StoreModule } from '@/common/backend/store/store.module';
+import { StoreModule } from '@/lib/admin-api/store/store.module';
 import { AuthorizationModule } from '@/common/backend/authorization/authorization.module';
 
 @Module({

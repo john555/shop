@@ -4,7 +4,7 @@ import { Collection, Product, Prisma, Store } from '@prisma/client';
 import { PaginationArgs } from '@/lib/common/backend/pagination/pagination.args';
 import { paginate } from '@/lib/common/backend/pagination/paginate';
 import { CollectionBulkUpdateData } from './collection.dto';
-import { SlugService } from '@/lib/common/backend/slug/slug.service';
+import { SlugService } from '@/lib/admin-api/slug/slug.service';
 
 type CollectionWithRelations = Collection & {
   store?: Store;

@@ -8,10 +8,10 @@ import {
   MediaOwnership as MediaOwnershipModel,
 } from '@prisma/client';
 
-import { Category } from '@/common/backend/category/category.entity';
-import { Collection } from '@/common/backend/collection/collection.entity';
-import { Store } from '@/common/backend/store/store.entity';
-import { User } from '../user/user.entity';
+import { Category } from '@/lib/admin-api/category/category.entity';
+import { Collection } from '@/lib/admin-api/collection/collection.entity';
+import { Store } from '@/lib/admin-api/store/store.entity';
+import { User } from '../../common/backend/user/user.entity';
 
 registerEnumType(MediaType, {
   name: 'MediaType',
