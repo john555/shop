@@ -203,6 +203,7 @@ export type Collection = {
   isActive: Scalars['Boolean']['output'];
   /** Collection name */
   name: Scalars['String']['output'];
+  products: Array<Product>;
   /** SEO description */
   seoDescription?: Maybe<Scalars['String']['output']>;
   /** SEO title */
@@ -1693,6 +1694,7 @@ export type CollectionResolvers<ContextType = any, ParentType extends ResolversP
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   isActive?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  products?: Resolver<Array<ResolversTypes['Product']>, ParentType, ContextType>;
   seoDescription?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   seoTitle?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   slug?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
