@@ -196,6 +196,7 @@ model User {
 
   // Relations
   stores Store[]
+  carts  Cart[]
 
   // Timestamps
   createdAt DateTime @default(now()) @db.Timestamp(6)
@@ -245,6 +246,8 @@ model Store {
   customers        Customer[]
   orders           Order[]
   carts            Cart[]
+  discounts        Discount[]
+  discountSettings DiscountSettings?
 
   // Timestamps
   createdAt DateTime @default(now()) @db.Timestamp(6)
@@ -617,21 +620,23 @@ model AddressOnOwner {
 }
 
 model Customer {
-  id              String   @id @default(cuid())
+  id              String          @id @default(cuid())
   firstName       String?
   lastName        String?
-  language        Language @default(EN)
-  email           String
+  language        Language        @default(EN)
+  email           String?
   phoneNumber     String?
-  marketingEmails Boolean  @default(false)
-  marketingSMS    Boolean  @default(false)
+  marketingEmails Boolean         @default(false)
+  marketingSMS    Boolean         @default(false)
   notes           String?
   storeId         String
-  store           Store    @relation(fields: [storeId], references: [id])
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-  Order           Order[]
-  carts           Cart[]
+  store           Store           @relation(fields: [storeId], references: [id])
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+  orders          Order[]
+  discountUsages  DiscountUsage[]
+  customerGroup   CustomerGroup?  @relation(fields: [customerGroupId], references: [id])
+  customerGroupId String?
 
   @@unique([storeId, email])
   @@unique([storeId, phoneNumber])
@@ -652,89 +657,12 @@ enum OrderStatus {
   REFUNDED
 }
 
-enum PaymentMethod {
-  CASH
-  CARD
-  MOBILE_MONEY
-  BANK_TRANSFER
-  MANUAL
-  OTHER
-}
-
 enum PaymentStatus {
   PENDING
   COMPLETED
   FAILED
   REFUNDED
 }
-
-enum PaymentProvider {
-  STRIPE
-  MPESA
-  AIRTEL_MONEY
-  MANUAL
-}
-
-enum FulfillmentType {
-  PICKUP
-  DELIVERY
-  SHIPPING
-}
-
-enum ShippingStatus {
-  PENDING
-  PROCESSING
-  SHIPPED
-  IN_TRANSIT
-  OUT_FOR_DELIVERY
-  DELIVERED
-  FAILED
-  RETURNED
-  CANCELLED
-}
-
-enum TaxCalculationType {
-  INCLUSIVE
-  EXCLUSIVE
-}
-
-enum DiscountType {
-  PERCENTAGE
-  FIXED_AMOUNT
-  FREE_SHIPPING
-}
-
-enum OrderEventType {
-  STATUS_CHANGED
-  PAYMENT_RECEIVED
-  PAYMENT_FAILED
-  REFUND_ISSUED
-  SHIPMENT_CREATED
-  SHIPMENT_UPDATED
-  NOTE_ADDED
-  DISCOUNT_APPLIED
-  ITEM_ADDED
-  ITEM_REMOVED
-  ITEM_UPDATED
-}
-
-// Order related enums
-// enum OrderStatus {
-//   DRAFT       // Initial cart state
-//   PENDING     // Awaiting payment
-//   PROCESSING  // Payment received, being prepared
-//   SHIPPED     // Order has been shipped
-//   DELIVERED   // Order has been delivered
-//   CANCELLED   // Order was cancelled
-//   REFUNDED    // Order was refunded
-// }
-
-// enum PaymentStatus {
-//   PENDING   // Payment not yet received
-//   PAID      // Payment successful
-//   FAILED    // Payment failed
-//   REFUNDED  // Payment refunded
-// }
 
 enum ShipmentStatus {
   PENDING // Not yet shipped
@@ -771,11 +699,12 @@ model Order {
   trackingUrl    String?
 
   // Relations
-  store      Store       @relation(fields: [storeId], references: [id], onDelete: Cascade)
-  storeId    String
-  customer   Customer?   @relation(fields: [customerId], references: [id])
-  customerId String?
-  items      OrderItem[]
+  store          Store           @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  storeId        String
+  customer       Customer?       @relation(fields: [customerId], references: [id])
+  customerId     String?
+  items          OrderItem[]
+  discountUsages DiscountUsage[]
 
   // Timestamps
   createdAt   DateTime  @default(now()) @db.Timestamp(6)
@@ -850,12 +779,11 @@ model Cart {
   notes       String? @db.Text
 
   // Relations
-  store      Store          @relation(fields: [storeId], references: [id], onDelete: Cascade)
-  storeId    String
-  customer   Customer?      @relation(fields: [customerId], references: [id])
-  customerId String?
-  items      CartItem[]
-  discounts  CartDiscount[]
+  store   Store      @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  storeId String
+  user    User?      @relation(fields: [userId], references: [id])
+  userId  String?
+  items   CartItem[]
 
   // Session tracking
   sessionId String? // To track anonymous carts
@@ -871,7 +799,7 @@ model Cart {
   expiresAt         DateTime? @db.Timestamp(6)
 
   @@index([storeId])
-  @@index([customerId])
+  @@index([userId])
   @@index([sessionId])
   @@index([status])
   @@map("carts")
@@ -908,21 +836,263 @@ model CartItem {
   @@map("cart_items")
 }
 
-model CartDiscount {
-  id      String       @id @default(cuid())
-  code    String
-  type    DiscountType
-  amount  Decimal      @db.Decimal(10, 2)
-  applied Boolean      @default(false)
+// Discount related enums
+enum DiscountStatus {
+  DRAFT // Not yet active
+  SCHEDULED // Will be active in future
+  ACTIVE // Currently active
+  PAUSED // Temporarily disabled
+  EXPIRED // Past end date
+  ARCHIVED // Manually archived
+}
+
+enum DiscountType {
+  PERCENTAGE_OFF // Percentage discount off items/order
+  FIXED_AMOUNT_OFF // Fixed amount discount off items/order
+  FREE_SHIPPING // Free or discounted shipping
+  BUY_X_GET_Y // Buy X get Y free/discounted
+  FREE_GIFT // Free gift with purchase
+}
+
+enum DiscountTargetType {
+  ENTIRE_ORDER // Applies to full order
+  SPECIFIC_PRODUCTS // Only specific products
+  SPECIFIC_COLLECTIONS // Only specific collections
+  SPECIFIC_VARIANTS // Only specific variants
+  SPECIFIC_CATEGORIES // Only specific categories
+  SHIPPING // Only shipping costs
+}
+
+enum DiscountConditionType {
+  MINIMUM_PURCHASE // Minimum order amount
+  MINIMUM_QUANTITY // Minimum number of items
+  SPECIFIC_CUSTOMERS // Only for specific customers
+  CUSTOMER_GROUPS // Only for customer groups
+  FIRST_TIME_CUSTOMER // Only for first purchase
+  PAYMENT_METHOD // Only for specific payment methods
+  SHIPPING_METHOD // Only for specific shipping methods
+  LOCATION // Only for specific locations
+  TIME_OF_DAY // Only during certain hours
+  DAY_OF_WEEK // Only on specific days
+  WEATHER // Only during specific weather
+}
+
+enum DiscountStackingStrategy {
+  BEST_VALUE // Apply single most beneficial discount
+  ALL_VALID // Apply all valid discounts
+  SEQUENTIAL // Apply discounts in priority order
+}
+
+// Base discount model
+model Discount {
+  id          String         @id @default(cuid())
+  code        String // Discount code for manual entry
+  title       String // Internal title
+  description String? // Internal description
+  status      DiscountStatus @default(DRAFT)
+
+  // Validity period
+  startsAt DateTime  @default(now()) @db.Timestamp(6)
+  endsAt   DateTime? @db.Timestamp(6)
+
+  // Stacking configuration
+  priority  Int     @default(0)
+  stackable Boolean @default(false)
 
   // Relations
-  cart   Cart   @relation(fields: [cartId], references: [id], onDelete: Cascade)
-  cartId String
+  store          Store               @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  storeId        String
+  rules          DiscountRule[]
+  conditions     DiscountCondition[]
+  targets        DiscountTarget[]
+  customerGroups CustomerGroup[]
+  usageLimit     DiscountUsageLimit?
+  usages         DiscountUsage[]
+
+  // Metadata
+  metadata Json? @db.JsonB
+
+  // Timestamps
+  createdAt  DateTime  @default(now()) @db.Timestamp(6)
+  updatedAt  DateTime  @updatedAt @db.Timestamp(6)
+  archivedAt DateTime? @db.Timestamp(6)
+
+  @@unique([storeId, code])
+  @@index([status])
+  @@index([startsAt, endsAt])
+  @@map("discounts")
+}
+
+// Rules for how the discount is applied
+model DiscountRule {
+  id   String       @id @default(cuid())
+  type DiscountType
+
+  // Value configuration
+  value    Decimal  @db.Decimal(10, 2) // Amount or percentage
+  minValue Decimal? @db.Decimal(10, 2) // Minimum discount amount
+  maxValue Decimal? @db.Decimal(10, 2) // Maximum discount amount
+
+  // BOGO configuration
+  buyQuantity Int? // Number of items to buy
+  getQuantity Int? // Number of items to get discounted
+
+  // Free gift configuration
+  giftProductId String? // Product to give as gift
+  giftVariantId String? // Specific variant to give
+
+  // Relations
+  discount   Discount @relation(fields: [discountId], references: [id], onDelete: Cascade)
+  discountId String
 
   // Timestamps
   createdAt DateTime @default(now()) @db.Timestamp(6)
   updatedAt DateTime @updatedAt @db.Timestamp(6)
 
-  @@index([cartId])
-  @@map("cart_discounts")
+  @@index([discountId])
+  @@map("discount_rules")
+}
+
+// Conditions that must be met
+model DiscountCondition {
+  id   String                @id @default(cuid())
+  type DiscountConditionType
+
+  // Condition configuration stored as JSON
+  // Examples:
+  // - Minimum purchase: { "amount": 100 }
+  // - Time of day: { "start": "09:00", "end": "17:00" }
+  // - Weather: { "conditions": ["RAIN", "SNOW"], "location": "NAIROBI" }
+  configuration Json @db.JsonB
+
+  // Relations
+  discount   Discount @relation(fields: [discountId], references: [id], onDelete: Cascade)
+  discountId String
+
+  // Timestamps
+  createdAt DateTime @default(now()) @db.Timestamp(6)
+  updatedAt DateTime @updatedAt @db.Timestamp(6)
+
+  @@index([discountId])
+  @@map("discount_conditions")
+}
+
+// What the discount applies to
+model DiscountTarget {
+  id   String             @id @default(cuid())
+  type DiscountTargetType
+
+  // Target identifiers (only one should be set)
+  productId    String?
+  variantId    String?
+  collectionId String?
+  categoryId   String?
+
+  // Target configuration
+  excludeOnSale Boolean @default(false)
+  maxPerOrder   Int? // Maximum items that can be discounted
+
+  // Relations
+  discount   Discount @relation(fields: [discountId], references: [id], onDelete: Cascade)
+  discountId String
+
+  // Timestamps
+  createdAt DateTime @default(now()) @db.Timestamp(6)
+  updatedAt DateTime @updatedAt @db.Timestamp(6)
+
+  @@index([discountId])
+  @@index([productId])
+  @@index([variantId])
+  @@index([collectionId])
+  @@index([categoryId])
+  @@map("discount_targets")
+}
+
+// Usage limits and tracking
+model DiscountUsageLimit {
+  id               String @id @default(cuid())
+  totalLimit       Int? // Maximum total uses
+  perCustomerLimit Int? // Maximum uses per customer
+  currentUses      Int    @default(0)
+
+  // Relations
+  discount   Discount @relation(fields: [discountId], references: [id], onDelete: Cascade)
+  discountId String   @unique // One-to-one relationship
+
+  // Timestamps
+  createdAt DateTime @default(now()) @db.Timestamp(6)
+  updatedAt DateTime @updatedAt @db.Timestamp(6)
+
+  @@map("discount_usage_limits")
+}
+
+// Usage tracking
+model DiscountUsage {
+  id String @id @default(cuid())
+
+  // Amounts
+  discountedAmount Decimal @db.Decimal(10, 2)
+  originalAmount   Decimal @db.Decimal(10, 2)
+
+  // Relations
+  discount   Discount @relation(fields: [discountId], references: [id], onDelete: Cascade)
+  discountId String
+  order      Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  orderId    String
+  customer   Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  customerId String
+
+  // Stacking info
+  stackPosition Int @default(0)
+
+  // Snapshot of configuration at time of use
+  configuration Json @db.JsonB
+
+  // Timestamps
+  usedAt DateTime @default(now()) @db.Timestamp(6)
+
+  @@unique([orderId, discountId])
+  @@index([discountId])
+  @@index([customerId])
+  @@map("discount_usages")
+}
+
+// Store discount settings
+model DiscountSettings {
+  id String @id @default(cuid())
+
+  // Stacking configuration
+  allowMultipleDiscounts Boolean                  @default(false)
+  maxDiscountsPerOrder   Int                      @default(1)
+  stackingStrategy       DiscountStackingStrategy @default(BEST_VALUE)
+
+  // Calculation settings
+  applyDiscountsBeforeTax Boolean @default(true)
+  roundingPrecision       Int     @default(2)
+
+  // Relations
+  store   Store  @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  storeId String @unique // One-to-one relationship
+
+  // Timestamps
+  createdAt DateTime @default(now()) @db.Timestamp(6)
+  updatedAt DateTime @updatedAt @db.Timestamp(6)
+
+  @@map("discount_settings")
+}
+
+model CustomerGroup {
+  id          String  @id @default(cuid())
+  name        String
+  description String?
+
+  // Relations
+  discounts Discount[]
+  customers Customer[]
+
+  // Timestamps
+  createdAt DateTime @default(now()) @db.Timestamp(6)
+  updatedAt DateTime @updatedAt @db.Timestamp(6)
+
+  @@map("customer_groups")
 }
