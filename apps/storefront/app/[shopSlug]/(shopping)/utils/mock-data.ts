@@ -954,7 +954,7 @@ export const collections: Collection[] = [
 export const storeDetails = {
   name: 'Green Gadgets',
   description: 'Eco-friendly tech for a sustainable future',
-  logo: '/placeholder.svg?height=40&width=40',
+  logo: '',
 };
 
 export const reviews = [

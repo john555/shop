@@ -31,14 +31,9 @@ import { SearchBar } from './search-bar';
 import { StoreLogo } from './store-logo';
 import Link from 'next/link';
 import { createStoreFrontUrl } from '@/lib/common/url';
+import { storeDetails } from '../utils/mock-data';
 
-interface HeaderProps {
-  storeName: string;
-  logo: string;
-  primaryColor: string;
-}
-
-export function Header({ storeName, logo }: HeaderProps) {
+export function Header() {
   const shopSlug = useParams().shopSlug as string;
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState('All Categories');
@@ -144,7 +139,7 @@ export function Header({ storeName, logo }: HeaderProps) {
           </SheetContent>
         </Sheet>
 
-        <StoreLogo storeName={storeName} logo={logo} />
+        <StoreLogo storeName={storeDetails.name} logo={storeDetails.logo} />
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -238,13 +233,15 @@ export function Header({ storeName, logo }: HeaderProps) {
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
-          <Button variant="ghost" size="icon" className="relative">
-            <ShoppingCart className="h-5 w-5" />
-            <span className="sr-only">Shopping cart</span>
-            <span className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-xs font-bold text-primary-foreground">
-              0
-            </span>
-          </Button>
+          <Link href={createStoreFrontUrl(shopSlug, "/cart")}>
+            <Button variant="ghost" size="icon" className="relative">
+              <ShoppingCart className="h-5 w-5" />
+              <span className="sr-only">Shopping cart</span>
+              <span className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-xs font-bold text-primary-foreground">
+                2
+              </span>
+            </Button>
+          </Link>
         </div>
       </div>
     </header>

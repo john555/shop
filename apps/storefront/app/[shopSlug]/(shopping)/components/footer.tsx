@@ -7,15 +7,11 @@ import {
   TwitterIcon as TikTok,
 } from 'lucide-react';
 import { StoreLogo } from './store-logo';
+import { storeDetails } from '../utils/mock-data';
 
-interface FooterProps {
-  storeName: string;
-  storeDescription: string;
-  logoSrc?: string;
-  primaryColor: string;
-}
 
-export function Footer({ storeName, storeDescription, logoSrc }: FooterProps) {
+
+export function Footer() {
   return (
     <footer className="relative bg-gradient-to-b from-background via-background to-secondary/10 overflow-hidden pt-24">
       <div className="absolute inset-0 z-0">
@@ -28,9 +24,9 @@ export function Footer({ storeName, storeDescription, logoSrc }: FooterProps) {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center py-12">
           <div className="space-y-4">
             <div className="flex items-center space-x-2 mb-4">
-              <StoreLogo storeName={storeName} logo={logoSrc} />
+              <StoreLogo storeName={storeDetails.name} logo={storeDetails.logo} />
             </div>
-            <p className="text-sm max-w-md">{storeDescription}</p>
+            <p className="text-sm max-w-md">{storeDetails.description}</p>
             <div className="flex space-x-4">
               <Button
                 variant="ghost"
@@ -79,7 +75,7 @@ export function Footer({ storeName, storeDescription, logoSrc }: FooterProps) {
         <Separator className="my-8 bg-border/50" />
         <div className="flex flex-col md:flex-row justify-between items-center pb-12">
           <p className="text-sm">
-            &copy; {new Date().getFullYear()} {storeName}. All rights reserved.
+            &copy; {new Date().getFullYear()} {storeDetails.name}. All rights reserved.
           </p>
           <div className="flex space-x-4 mt-4 md:mt-0">
             <a href="#" className="text-sm hover:underline">
