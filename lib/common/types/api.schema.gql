@@ -351,7 +351,6 @@ type Mutation {
   createCart(input: CreateCartInput!): Cart!
   createStore(input: StoreCreateInput!): Store!
   deleteAddressOnOwner(id: String!): Boolean!
-  placeOrder(input: PlaceOrderInput!): Order!
 
   """Refresh auth token"""
   refresh: AuthSignin!
@@ -370,71 +369,6 @@ type Mutation {
   updatePassword(input: UserPasswordUpdateInput!): User!
   updateStore(input: StoreUpdateInput!): Store!
   updateUser(input: UserUpdateInput!): User!
-}
-
-type Order {
-  createdAt: DateTime!
-  customerNotes: String
-  discountAmount: Float!
-  id: ID!
-  items: [OrderItem!]!
-  orderNumber: String!
-  paymentStatus: PaymentStatus!
-  shipmentStatus: ShipmentStatus!
-  shippingAmount: Float!
-  status: OrderStatus!
-  subtotalAmount: Float!
-  taxAmount: Float!
-  totalAmount: Float!
-  updatedAt: DateTime!
-}
-
-type OrderItem {
-  discountAmount: Float!
-  id: ID!
-  productId: String!
-  quantity: Int!
-  sku: String
-  subtotal: Float!
-  taxAmount: Float!
-  title: String!
-  totalAmount: Float!
-  unitPrice: Float!
-  variantId: String!
-  variantName: String!
-}
-
-input OrderItemInput {
-  productId: String!
-  quantity: Float!
-  variantId: String!
-}
-
-"""Status of the order"""
-enum OrderStatus {
-  CANCELLED
-  DELIVERED
-  DRAFT
-  FULFILLED
-  PAID
-  PENDING
-  PROCESSING
-  REFUNDED
-  SHIPPED
-}
-
-"""Status of the payment"""
-enum PaymentStatus {
-  COMPLETED
-  FAILED
-  PENDING
-  REFUNDED
-}
-
-input PlaceOrderInput {
-  customerNotes: String
-  items: [OrderItemInput!]!
-  storeId: String!
 }
 
 """Product model"""
@@ -549,15 +483,6 @@ type Query {
   products(cursor: String, filters: ProductFiltersInput, skip: Int! = 0, sortOrder: SortOrder, storeIdOrSlug: String!, take: Int! = 25): [Product!]!
   store(idOrSlug: String!): Store!
   user(id: String!): User!
-}
-
-"""Status of the shipment"""
-enum ShipmentStatus {
-  DELIVERED
-  FAILED
-  PENDING
-  PROCESSING
-  SHIPPED
 }
 
 enum SortOrder {

@@ -15,6 +15,7 @@ import {
   MediaOwnerType,
 } from '@prisma/client';
 import { PrismaService } from '@/lib/common/prisma/prisma.service';
+import { DEFAULT_CURRENCY_SYMBOLS } from '@/common/constants';
 
 @Injectable()
 export class CartService {
@@ -70,7 +71,7 @@ export class CartService {
           phoneNumber: input.phoneNumber,
           notes: input.notes,
           currency: store.currency,
-          currencySymbol: store.currencySymbol || '',
+          currencySymbol: store.currencySymbol || DEFAULT_CURRENCY_SYMBOLS[store.currency],
         },
         include: {
           items: true,
