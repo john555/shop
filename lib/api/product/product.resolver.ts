@@ -10,11 +10,11 @@ import {
 import { Logger } from '@nestjs/common';
 import { Product } from './entities/product.entity';
 import { ProductService } from './product.service';
-import { Store } from '@/common/backend/store/store.entity';
-import { Category } from '@/common/backend/category/category.entity';
-import { Collection } from '@/common/backend/collection/collection.entity';
-import { Tag } from '@/common/backend/tag/tag.entity';
-import { Media } from '@/common/backend/media/media.entity';
+import { Store } from '@/lib/admin-api/store/store.entity';
+import { Category } from '@/lib/admin-api/category/category.entity';
+import { Collection } from '@/lib/admin-api/collection/collection.entity';
+import { Tag } from '@/lib/admin-api/tag/tag.entity';
+import { Media } from '@/lib/admin-api/media/media.entity';
 import { ProductOption } from './entities/product-option.entity';
 import { ProductVariant } from './entities/product-variant.entity';
 import {
